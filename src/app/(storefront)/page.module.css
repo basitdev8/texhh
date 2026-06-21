@@ -1,0 +1,415 @@
+/* ========================================
+   MARQUEE STRIP
+   ======================================== */
+.marqueeStrip {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* ========================================
+   SECTION HELPERS
+   ======================================== */
+.section {
+  padding: var(--space-24) 0;
+  position: relative;
+}
+
+.sectionDark {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.sectionHead {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-12);
+  align-items: end;
+  margin-bottom: var(--space-12);
+}
+
+.sectionHeadCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sectionEyebrowRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.sectionEyebrowLine {
+  width: 56px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.4;
+}
+
+.sectionEyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  font-weight: 600;
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(2.5rem, 5.2vw, 5rem);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: currentColor;
+}
+
+.italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--color-accent);
+}
+
+.sectionDescription {
+  font-size: var(--text-base);
+  line-height: 1.65;
+  color: var(--color-text-secondary);
+  max-width: 32rem;
+}
+
+.sectionDark .sectionDescription {
+  color: rgba(251, 247, 238, 0.65);
+}
+
+.sectionLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-weight: 600;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid currentColor;
+  width: fit-content;
+  margin-top: var(--space-4);
+  transition: gap var(--transition-base);
+}
+
+.sectionLink:hover {
+  gap: var(--space-4);
+  color: var(--color-accent);
+}
+
+/* ========================================
+   CATEGORIES — EDITORIAL GRID
+   ======================================== */
+.categoriesGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+/* ========================================
+   FEATURED PRODUCTS
+   ======================================== */
+.productsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6) var(--space-5);
+}
+
+/* Asymmetric: shift even cards down */
+.productsGrid > article:nth-child(even) {
+  margin-top: var(--space-12);
+}
+
+/* ========================================
+   QUOTE / EDITORIAL STATEMENT
+   ======================================== */
+.quote {
+  padding: var(--space-32) 0;
+  text-align: center;
+  position: relative;
+}
+
+.quoteText {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2rem, 4.5vw, 4rem);
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  max-width: 56rem;
+  margin: 0 auto;
+  color: var(--color-ink);
+}
+
+.quoteText em {
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+.quoteCite {
+  margin-top: var(--space-8);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+/* ========================================
+   PC BUILDER CTA — DARK EDITORIAL
+   ======================================== */
+.buildCta {
+  position: relative;
+  padding: var(--space-24) 0 var(--space-24);
+  background: var(--color-ink);
+  color: var(--color-paper);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.buildCta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 70% 50%,
+    rgba(181, 100, 46, 0.25) 0%,
+    transparent 55%
+  );
+  z-index: 0;
+}
+
+.buildCtaInner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: var(--space-16);
+  align-items: center;
+}
+
+.buildCtaHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.buildCtaEyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  font-weight: 600;
+  color: var(--color-paper);
+}
+
+.buildCtaEyebrowLine {
+  width: 56px;
+  height: 1px;
+  background: var(--color-paper);
+  opacity: 0.4;
+}
+
+.buildCtaTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(3rem, 6vw, 6rem);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--color-paper);
+}
+
+.buildCtaTitle em {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--color-accent);
+}
+
+.buildCtaText {
+  font-size: var(--text-lg);
+  color: rgba(251, 247, 238, 0.7);
+  line-height: 1.55;
+  max-width: 32rem;
+}
+
+.buildCtaButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 1.1rem 1.5rem 1.1rem 2rem;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-base);
+  width: fit-content;
+  margin-top: var(--space-4);
+}
+
+.buildCtaButton::after {
+  content: "";
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  margin: -10px -10px -10px 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'><path d='M2 7h10M8 3l4 4-4 4' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: center;
+  transition: transform var(--transition-base);
+}
+
+.buildCtaButton:hover { color: var(--color-ink); transform: translateY(-2px); }
+.buildCtaButton:hover::after { transform: rotate(-12deg) scale(1.1); }
+
+.buildCtaSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid rgba(251, 247, 238, 0.18);
+}
+
+.buildCtaStep {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: var(--space-4);
+  padding: var(--space-5) 0;
+  border-bottom: 1px solid rgba(251, 247, 238, 0.18);
+  align-items: center;
+  transition: padding var(--transition-base);
+}
+
+.buildCtaStep:hover { padding-left: var(--space-4); }
+
+.buildCtaStepNum {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-2xl);
+  color: var(--color-accent);
+  font-weight: 400;
+}
+
+.buildCtaStepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.buildCtaStepTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  color: var(--color-paper);
+  letter-spacing: -0.01em;
+}
+
+.buildCtaStepSub {
+  font-size: var(--text-sm);
+  color: rgba(251, 247, 238, 0.55);
+}
+
+.buildCtaStepArrow {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(251, 247, 238, 0.3);
+  color: rgba(251, 247, 238, 0.5);
+  transition: all var(--transition-base);
+}
+
+.buildCtaStep:hover .buildCtaStepArrow {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+  transform: rotate(-10deg);
+}
+
+/* ========================================
+   TRUST STRIP
+   ======================================== */
+.trustStrip {
+  padding: var(--space-12) 0;
+  border-top: 1px solid var(--color-border);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-8);
+}
+
+.trustItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-right: var(--space-6);
+  border-right: 1px solid var(--color-border);
+}
+
+.trustItem:last-child { border-right: none; }
+
+.trustIcon {
+  width: 32px;
+  height: 32px;
+  color: var(--color-accent);
+}
+
+.trustLabel {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  color: var(--color-ink);
+  font-size: var(--text-lg);
+  letter-spacing: -0.01em;
+}
+
+.trustSub {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.empty {
+  padding: var(--space-12);
+  text-align: center;
+  background: var(--color-paper);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-border);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+@media (max-width: 1024px) {
+  .sectionHead { grid-template-columns: 1fr; gap: var(--space-6); }
+  .categoriesGrid { grid-template-columns: repeat(2, 1fr); }
+  .productsGrid { grid-template-columns: repeat(2, 1fr); gap: var(--space-8) var(--space-5); }
+  .productsGrid > article:nth-child(even) { margin-top: 0; }
+  .buildCtaInner { grid-template-columns: 1fr; gap: var(--space-10); }
+  .trustStrip { grid-template-columns: repeat(2, 1fr); }
+  .trustItem:nth-child(2n) { border-right: none; }
+}
+
+@media (max-width: 640px) {
+  .section, .buildCta { padding: var(--space-16) 0; }
+  .quote { padding: var(--space-20) 0; }
+  .categoriesGrid { grid-template-columns: 1fr; }
+  .productsGrid { grid-template-columns: 1fr; }
+  .trustStrip { grid-template-columns: 1fr; gap: var(--space-6); }
+  .trustItem { border-right: none; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-4); }
+  .trustItem:last-child { border-bottom: none; }
+}

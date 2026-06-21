@@ -1,0 +1,71 @@
+.steps {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding: var(--space-4) 0;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.step:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.stepActive {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
+.stepCompleted {
+  background: var(--color-accent-subtle);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.stepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.stepActive .stepNumber {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.stepCompleted .stepNumber {
+  background: var(--color-accent);
+  color: white;
+}
+
+.divider {
+  width: 14px;
+  height: 1px;
+  background: var(--color-border);
+}
+
+@media (max-width: 640px) {
+  .step { padding: var(--space-1) var(--space-3); font-size: var(--text-xs); }
+  .divider { width: 6px; }
+}

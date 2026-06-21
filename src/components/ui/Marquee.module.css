@@ -1,0 +1,64 @@
+.marquee {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.track {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--space-12);
+  align-items: center;
+  animation: marqueeX var(--duration, 40s) linear infinite;
+  padding-right: var(--space-12);
+}
+
+.marquee:hover .track {
+  animation-play-state: paused;
+}
+
+.reverse {
+  animation-direction: reverse;
+}
+
+.item {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(3.5rem, 8vw, 7rem);
+  letter-spacing: -0.04em;
+  color: var(--color-ink);
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-12);
+  white-space: nowrap;
+}
+
+.itemSmall {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: inherit;
+}
+
+.divider {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--color-accent);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  display: inline-block;
+}
