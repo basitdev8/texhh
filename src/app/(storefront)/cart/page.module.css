@@ -20,19 +20,14 @@
 }
 
 .items {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-  padding: 0 var(--space-6);
+  padding: 0;
 }
 
 .summary {
   position: sticky;
   top: 100px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
+  padding: var(--space-6) 0 0;
+  border-top: 1px solid var(--color-border);
 }
 
 .summaryTitle {
@@ -91,7 +86,6 @@
 .empty {
   padding: var(--space-16);
   text-align: center;
-  background: var(--color-surface);
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-lg);
 }

@@ -22,11 +22,11 @@
   --color-border: #D7CFBD;
   --color-border-light: #E7E0CE;
 
-  --color-accent: #B5642E;         /* refined copper */
-  --color-accent-hover: #8E4D1F;
-  --color-accent-light: #E8D2BC;
-  --color-accent-subtle: #F3E5D3;
-  --color-accent-deep: #3E2613;     /* espresso */
+  --color-accent: #0E7C7B;         /* petrol teal */
+  --color-accent-hover: #0A5D5C;
+  --color-accent-light: #BFE0DE;
+  --color-accent-subtle: #DFF0EE;
+  --color-accent-deep: #103230;     /* deep teal */
 
   --color-dark: #0E0E0C;
   --color-dark-soft: #1B1B17;
@@ -90,7 +90,7 @@
   --shadow-md: 0 8px 28px rgba(20, 14, 5, 0.08);
   --shadow-lg: 0 18px 52px rgba(20, 14, 5, 0.12);
   --shadow-xl: 0 28px 72px rgba(20, 14, 5, 0.16);
-  --shadow-accent: 0 12px 36px rgba(181, 100, 46, 0.28);
+  --shadow-accent: 0 12px 36px rgba(14, 124, 123, 0.28);
 
   /* Easings */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);

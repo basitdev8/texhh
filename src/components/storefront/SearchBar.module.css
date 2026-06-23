@@ -15,7 +15,7 @@
 
 .form:focus-within {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(200, 121, 65, 0.1);
+  box-shadow: 0 0 0 3px rgba(14, 124, 123, 0.12);
 }
 
 .icon {

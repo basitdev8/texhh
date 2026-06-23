@@ -99,7 +99,7 @@
 
 .primaryBtn:hover:not(:disabled)::after {
   background: var(--color-paper);
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'><path d='M2 6h8M7 3l3 3-3 3' stroke='%23B5642E' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'><path d='M2 6h8M7 3l3 3-3 3' stroke='%230E7C7B' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
   transform: rotate(-10deg);
 }
 

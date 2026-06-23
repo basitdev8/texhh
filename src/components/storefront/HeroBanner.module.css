@@ -198,7 +198,7 @@
   aspect-ratio: 4 / 5;
   border-radius: var(--radius-xl);
   overflow: hidden;
-  background: linear-gradient(140deg, #2a1d14, #0e0e0c 60%, #1f140c);
+  background: linear-gradient(140deg, #0c2b2a, #0e0e0c 60%, #08201f);
   isolation: isolate;
   transition: transform var(--transition-base), box-shadow var(--transition-base);
 }
@@ -212,7 +212,7 @@ a.imageFrame:hover {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 30% 25%, rgba(181, 100, 46, 0.42), transparent 55%);
+  background: radial-gradient(circle at 30% 25%, rgba(14, 124, 123, 0.42), transparent 55%);
   z-index: 1;
   pointer-events: none;
 }
@@ -270,7 +270,7 @@ a.imageFrame:hover .productImage {
   position: absolute;
   inset: 12%;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #d99662 0%, #b5642e 35%, #4a2a14 70%, #1a0d05 100%);
+  background: radial-gradient(circle at 30% 30%, #3fb8b5 0%, #0e7c7b 35%, #0a4b49 70%, #04201f 100%);
   box-shadow: inset -40px -50px 100px rgba(0, 0, 0, 0.6), 0 30px 80px rgba(0, 0, 0, 0.5);
   z-index: 2;
   animation: float 6s ease-in-out infinite;

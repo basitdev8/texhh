@@ -19,7 +19,7 @@
   inset: 0;
   background: radial-gradient(
     ellipse at 0% 100%,
-    rgba(181, 100, 46, 0.16) 0%,
+    rgba(14, 124, 123, 0.16) 0%,
     transparent 55%
   );
   pointer-events: none;
@@ -132,7 +132,7 @@
 
 .navLinkActive {
   color: var(--color-paper);
-  background: rgba(181, 100, 46, 0.1);
+  background: rgba(14, 124, 123, 0.1);
 }
 
 .navLinkActive::before { height: 100%; }
