@@ -111,25 +111,39 @@ export default function ProductDetailPage({ params }: PageProps) {
       <div className="container">
         <nav className={styles.breadcrumbs}>
           <Link href="/">Home</Link>
-          <span>/</span>
+          <span className={styles.crumbSep}>/</span>
           <Link href="/products">Products</Link>
           {category && (
             <>
-              <span>/</span>
+              <span className={styles.crumbSep}>/</span>
               <Link href={`/products?category=${category.slug}`}>
                 {category.name}
               </Link>
             </>
           )}
-          <span>/</span>
-          <span>{product.name}</span>
+          <span className={styles.crumbSep}>/</span>
+          <span className={styles.crumbCurrent}>{product.name}</span>
         </nav>
 
         <div className={styles.layout}>
-          <ProductGallery images={product.images} alt={product.name} />
+          <div className={styles.galleryCol}>
+            <ProductGallery images={product.images} alt={product.name} />
+          </div>
 
           <div className={styles.info}>
-            <span className={styles.brand}>{product.brand}</span>
+            <div className={styles.eyebrowRow}>
+              <span className={styles.eyebrowLine} />
+              <span className={styles.brand}>{product.brand}</span>
+              {category && (
+                <Link
+                  href={`/products?category=${category.slug}`}
+                  className={styles.categoryChip}
+                >
+                  {category.name}
+                </Link>
+              )}
+            </div>
+
             <h1 className={styles.title}>{product.name}</h1>
 
             <div className={styles.ratingRow}>
@@ -158,31 +172,40 @@ export default function ProductDetailPage({ params }: PageProps) {
               </span>
             </div>
 
-            <div className={styles.priceRow}>
-              <span className={styles.price}>{formatPrice(product.price)}</span>
-              {isOnSale && (
-                <>
-                  <span className={styles.comparePrice}>
-                    {formatPrice(product.comparePrice!)}
-                  </span>
-                  <span className={styles.discount}>-{discount}%</span>
-                </>
-              )}
-            </div>
-
             <p className={styles.shortDesc}>{product.shortDescription}</p>
 
-            <div className={styles.stockRow}>
-              {product.stock > 0 ? (
-                <Badge variant="success">In Stock</Badge>
-              ) : (
-                <Badge variant="error">Out of Stock</Badge>
-              )}
-              {product.stock > 0 && product.stock <= 5 && (
-                <span style={{ color: "var(--color-warning)" }}>
-                  Only {product.stock} left
+            <div className={styles.priceCard}>
+              <div className={styles.priceRow}>
+                <span className={styles.price}>
+                  {formatPrice(product.price)}
                 </span>
-              )}
+                {isOnSale && (
+                  <>
+                    <span className={styles.comparePrice}>
+                      {formatPrice(product.comparePrice!)}
+                    </span>
+                    <span className={styles.discount}>−{discount}%</span>
+                  </>
+                )}
+              </div>
+              <div className={styles.stockRow}>
+                {product.stock > 0 ? (
+                  <Badge variant="success">In Stock</Badge>
+                ) : (
+                  <Badge variant="error">Out of Stock</Badge>
+                )}
+                {product.stock > 0 && product.stock <= 5 && (
+                  <span className={styles.lowStock}>
+                    Only {product.stock} left
+                  </span>
+                )}
+                {isOnSale && (
+                  <span className={styles.savings}>
+                    You save{" "}
+                    {formatPrice(product.comparePrice! - product.price)}
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className={styles.actionRow}>
@@ -191,6 +214,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                   className={styles.qtyBtn}
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   disabled={quantity <= 1}
+                  aria-label="Decrease quantity"
                 >
                   −
                 </button>
@@ -201,6 +225,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                     setQuantity((q) => Math.min(product.stock, q + 1))
                   }
                   disabled={quantity >= product.stock}
+                  aria-label="Increase quantity"
                 >
                   +
                 </button>
@@ -209,37 +234,104 @@ export default function ProductDetailPage({ params }: PageProps) {
                 className={styles.addToCart}
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}
+                data-cursor-text="Add"
               >
                 {product.stock === 0 ? "Out of stock" : "Add to Cart"}
+                {product.stock > 0 && (
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path
+                      d="M2 7h10M8 3l4 4-4 4"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
               </button>
             </div>
+
+            <ul className={styles.assurances}>
+              {[
+                {
+                  title: "Free 48h shipping",
+                  sub: "Express, on orders over ₹5,000",
+                  path: "M2 6h11l3 4v4h-2M2 6v8h2m10 0H8m-4 0a2 2 0 1 0 4 0m6 0a2 2 0 1 0 4 0",
+                },
+                {
+                  title: "2-year warranty",
+                  sub: "Backed by our atelier, no asterisk",
+                  path: "M10 1.8l6 2.6v4.2c0 4-2.6 6.8-6 7.6-3.4-.8-6-3.6-6-7.6V4.4l6-2.6zM7.2 9.6l1.8 1.8 3.8-3.8",
+                },
+                {
+                  title: "30-day returns",
+                  sub: "Changed your mind? Send it back",
+                  path: "M3 8a7 7 0 1 1 .9 3.4M3 8V4M3 8h4",
+                },
+              ].map((a) => (
+                <li key={a.title} className={styles.assurance}>
+                  <svg
+                    className={styles.assuranceIcon}
+                    viewBox="0 0 20 20"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d={a.path} />
+                  </svg>
+                  <div>
+                    <span className={styles.assuranceTitle}>{a.title}</span>
+                    <span className={styles.assuranceSub}>{a.sub}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
 
             {specEntries.length > 0 && (
               <div className={styles.specs}>
                 <h3 className={styles.specsTitle}>Key specifications</h3>
-                <table className={styles.specTable}>
-                  <tbody>
-                    {specEntries.map(([k, v]) => (
-                      <tr key={k}>
-                        <td className={styles.specKey}>{k}</td>
-                        <td className={styles.specValue}>{v}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div className={styles.specGrid}>
+                  {specEntries.map(([k, v]) => (
+                    <div key={k} className={styles.specItem}>
+                      <span className={styles.specKey}>{k}</span>
+                      <span className={styles.specValue}>{v}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
         </div>
 
         <div className={styles.description}>
-          <h2 className={styles.descriptionTitle}>Product Details</h2>
-          <p className={styles.descriptionText}>{product.description}</p>
+          <div className={styles.descriptionHead}>
+            <span className={styles.sectionEyebrow}>Details / The Story</span>
+            <h2 className={styles.descriptionTitle}>About this piece</h2>
+          </div>
+          <div className={styles.descriptionBody}>
+            <p className={styles.descriptionText}>{product.description}</p>
+            {product.tags?.length > 0 && (
+              <div className={styles.tags}>
+                {product.tags.map((tag) => (
+                  <span key={tag} className={styles.tag}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {related.length > 0 && (
           <section className={styles.relatedSection}>
-            <h2 className={styles.relatedTitle}>You may also like</h2>
+            <div className={styles.relatedHead}>
+              <span className={styles.sectionEyebrow}>More / You may like</span>
+              <h2 className={styles.relatedTitle}>
+                Pairs <em className={styles.italic}>well</em> with
+              </h2>
+            </div>
             <div className={styles.relatedGrid}>
               {related.slice(0, 4).map((p) => (
                 <ProductCard key={p._id} product={p} />

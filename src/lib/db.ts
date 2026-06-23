@@ -1,12 +1,14 @@
 import mongoose from 'mongoose';
 import dns from 'node:dns';
 
-// Force Google + Cloudflare DNS — many Windows setups refuse SRV lookups
-// against the system resolver, which breaks mongodb+srv:// connection strings.
-try {
-  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
-} catch {
-  /* ignore — not critical if it fails */
+// On Windows dev some setups refuse SRV lookups against the system DNS,
+// which breaks mongodb+srv:// strings locally. Force public DNS only there.
+if (process.platform === 'win32') {
+  try {
+    dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+  } catch {
+    /* ignore */
+  }
 }
 
 const MONGODB_URI = process.env.MONGODB_URI!;

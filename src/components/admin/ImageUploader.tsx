@@ -35,7 +35,7 @@ export default function ImageUploader({ images, onChange, maxImages = 8 }: Image
 
         if (res.ok) {
           const data = await res.json();
-          if (data.url) uploaded.push(data.url);
+          if (data.data?.url) uploaded.push(data.data.url);
         }
       }
       if (uploaded.length > 0) {

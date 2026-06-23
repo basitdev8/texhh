@@ -193,12 +193,19 @@
 
 .imageFrame {
   position: relative;
+  display: block;
   width: 100%;
   aspect-ratio: 4 / 5;
   border-radius: var(--radius-xl);
   overflow: hidden;
   background: linear-gradient(140deg, #2a1d14, #0e0e0c 60%, #1f140c);
   isolation: isolate;
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+a.imageFrame:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
 }
 
 .imageFrame::after {
@@ -207,6 +214,56 @@
   inset: 0;
   background: radial-gradient(circle at 30% 25%, rgba(181, 100, 46, 0.42), transparent 55%);
   z-index: 1;
+  pointer-events: none;
+}
+
+.productImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 2;
+  transition: transform var(--transition-slow);
+}
+
+a.imageFrame:hover .productImage {
+  transform: scale(1.05);
+}
+
+/* Bottom scrim so caption + price stay legible over any image */
+.imageScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: linear-gradient(
+    to top,
+    rgba(14, 14, 12, 0.78) 0%,
+    rgba(14, 14, 12, 0.32) 32%,
+    transparent 58%
+  );
+  pointer-events: none;
+}
+
+.imageCaptionBrand {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  color: var(--color-accent-light);
+  margin-bottom: var(--space-2);
+}
+
+.imageCaptionName {
+  display: block;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--text-lg);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-transform: none;
+  opacity: 1;
 }
 
 .imageOrb {
@@ -284,13 +341,12 @@
   position: absolute;
   bottom: var(--space-6);
   left: var(--space-6);
+  right: 38%;
   z-index: 5;
   color: var(--color-paper);
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.25em;
-  opacity: 0.7;
-  max-width: 8rem;
   line-height: 1.5;
 }
 

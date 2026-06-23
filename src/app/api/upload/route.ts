@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import type { UploadApiResponse } from 'cloudinary';
+import cloudinary from '@/lib/cloudinary';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
 
 const ALLOWED_TYPES = [
@@ -11,6 +11,7 @@ const ALLOWED_TYPES = [
   'image/svg+xml',
 ];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+const UPLOAD_FOLDER = 'techhh/products';
 
 export async function POST(request: NextRequest) {
   try {
@@ -60,25 +61,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadsDir, { recursive: true });
-
-    // Generate unique filename
-    const ext = path.extname(file.name) || `.${file.type.split('/')[1]}`;
-    const filename = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`;
-    const filepath = path.join(uploadsDir, filename);
-
-    // Write file to disk
+    // Upload to Cloudinary
     const bytes = await file.arrayBuffer();
-    await writeFile(filepath, Buffer.from(bytes));
+    const buffer = Buffer.from(bytes);
 
-    const url = `/uploads/${filename}`;
+    const result = await new Promise<UploadApiResponse>((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          { folder: UPLOAD_FOLDER, resource_type: 'image' },
+          (error, uploadResult) => {
+            if (error || !uploadResult) {
+              reject(error ?? new Error('Cloudinary upload failed'));
+              return;
+            }
+            resolve(uploadResult);
+          }
+        )
+        .end(buffer);
+    });
 
     return NextResponse.json(
       {
         success: true,
-        data: { url, filename },
+        data: { url: result.secure_url, publicId: result.public_id },
       },
       { status: 201 }
     );

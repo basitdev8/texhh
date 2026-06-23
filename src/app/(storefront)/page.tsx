@@ -52,7 +52,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroBanner />
+      <HeroBanner product={featured[0] ?? null} />
 
       {/* Marquee strip — editorial brand declaration */}
       <div className={styles.marqueeStrip}>
