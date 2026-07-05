@@ -18,6 +18,60 @@ interface ShippingForm {
   phone: string;
 }
 
+interface RazorpayResponse {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
+// Minimal shape of the Razorpay checkout constructor injected by their script.
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description?: string;
+  order_id: string;
+  prefill?: { name?: string; email?: string; contact?: string };
+  notes?: Record<string, string>;
+  theme?: { color?: string };
+  handler: (response: RazorpayResponse) => void;
+  modal?: { ondismiss?: () => void };
+}
+
+interface RazorpayInstance {
+  open: () => void;
+  on: (event: string, cb: (resp: unknown) => void) => void;
+}
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayOptions) => RazorpayInstance;
+  }
+}
+
+const RAZORPAY_SCRIPT = "https://checkout.razorpay.com/v1/checkout.js";
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") return resolve(false);
+    if (window.Razorpay) return resolve(true);
+    const existing = document.querySelector<HTMLScriptElement>(
+      `script[src="${RAZORPAY_SCRIPT}"]`
+    );
+    if (existing) {
+      existing.addEventListener("load", () => resolve(true));
+      existing.addEventListener("error", () => resolve(false));
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = RAZORPAY_SCRIPT;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
@@ -35,7 +89,7 @@ export default function CheckoutPage() {
     country: "US",
     phone: "",
   });
-  const [paymentMethod, setPaymentMethod] = useState("cash_on_delivery");
+  const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -81,24 +135,116 @@ export default function CheckoutPage() {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  const orderItemsPayload = () =>
+    items.map((i) => ({
+      product: i.productId,
+      name: i.name,
+      price: i.price,
+      quantity: i.quantity,
+      image: i.image,
+    }));
+
+  const handleRazorpayPayment = async () => {
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded || !window.Razorpay) {
+      setFormError(
+        "Couldn't load the payment gateway. Check your connection and try again."
+      );
+      setSubmitting(false);
+      return;
+    }
+
+    // 1. Create the Razorpay order (and a pending order) on the server.
+    const res = await fetch("/api/payment/razorpay", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        items: orderItemsPayload(),
+        shippingAddress: shipping,
+        notes,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      setFormError(data.error || "Failed to initiate payment");
+      setSubmitting(false);
+      return;
+    }
+
+    const { orderId, razorpayOrderId, amount, currency, keyId } = data.data;
+
+    // 2. Open Razorpay checkout.
+    const rzp = new window.Razorpay({
+      key: keyId,
+      amount,
+      currency,
+      name: "TechHH",
+      description: "Order payment",
+      order_id: razorpayOrderId,
+      prefill: {
+        name: shipping.fullName || user?.name,
+        email: user?.email,
+        contact: shipping.phone,
+      },
+      theme: { color: "#0E7C7B" },
+      handler: async (response: RazorpayResponse) => {
+        // 3. Verify the signature server-side before confirming the order.
+        try {
+          const verifyRes = await fetch("/api/payment/razorpay/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId, ...response }),
+          });
+          const verifyData = await verifyRes.json();
+          if (verifyRes.ok && verifyData.success) {
+            clearCart();
+            showToast("Payment successful — order confirmed!", "success");
+            router.push(`/account/orders/${orderId}`);
+          } else {
+            setFormError(
+              verifyData.error || "Payment verification failed. Contact support."
+            );
+            setSubmitting(false);
+          }
+        } catch {
+          setFormError("Payment verification failed. Please contact support.");
+          setSubmitting(false);
+        }
+      },
+      modal: {
+        ondismiss: () => {
+          setSubmitting(false);
+          showToast("Payment cancelled", "error");
+        },
+      },
+    });
+    rzp.open();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError("");
     if (!validate()) return;
 
     setSubmitting(true);
+
+    if (paymentMethod === "razorpay") {
+      try {
+        await handleRazorpayPayment();
+      } catch {
+        setFormError("Network error. Please try again.");
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    // Cash on delivery / bank transfer — record the order directly.
     try {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: items.map((i) => ({
-            product: i.productId,
-            name: i.name,
-            price: i.price,
-            quantity: i.quantity,
-            image: i.image,
-          })),
+          items: orderItemsPayload(),
           shippingAddress: shipping,
           paymentMethod,
           notes,
@@ -237,6 +383,11 @@ export default function CheckoutPage() {
                 <div className={styles.radioGroup}>
                   {[
                     {
+                      value: "razorpay",
+                      title: "Pay Online (Razorpay)",
+                      desc: "Cards, UPI, netbanking & wallets — secure checkout.",
+                    },
+                    {
                       value: "cash_on_delivery",
                       title: "Cash on Delivery",
                       desc: "Pay when your order arrives at your doorstep.",
@@ -316,7 +467,11 @@ export default function CheckoutPage() {
                 className={styles.placeOrderBtn}
                 disabled={submitting}
               >
-                {submitting ? "Placing order…" : "Place Order"}
+                {submitting
+                  ? "Processing…"
+                  : paymentMethod === "razorpay"
+                    ? `Pay ${formatPrice(total)}`
+                    : "Place Order"}
               </button>
             </aside>
           </div>

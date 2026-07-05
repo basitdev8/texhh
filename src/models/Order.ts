@@ -26,6 +26,8 @@ export interface IOrderDocument extends Document {
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
   paymentMethod: string;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -69,6 +71,8 @@ const OrderSchema = new Schema<IOrderDocument>({
     default: 'pending'
   },
   paymentMethod: { type: String, default: 'cash_on_delivery' },
+  razorpayOrderId: { type: String },
+  razorpayPaymentId: { type: String },
   notes: { type: String },
 }, { timestamps: true });
 

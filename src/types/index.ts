@@ -68,6 +68,8 @@ export interface IOrder {
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
   paymentMethod: string;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
