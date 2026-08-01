@@ -3,6 +3,7 @@ import { z } from 'zod';
 import dbConnect from '@/lib/db';
 import PCComponent from '@/models/PCComponent';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
+import { escapeRegex } from '@/lib/utils';
 
 const componentTypes = [
   'CPU', 'GPU', 'RAM', 'Storage', 'Motherboard', 'PSU', 'Case', 'Cooler',
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
     const filter: Record<string, any> = { isActive: true };
 
     if (type) filter.type = type;
-    if (brand) filter.brand = { $regex: brand, $options: 'i' };
+    if (brand) filter.brand = { $regex: escapeRegex(brand), $options: 'i' };
 
     if (minPrice || maxPrice) {
       filter.price = {};

@@ -65,11 +65,18 @@ export async function POST(request: NextRequest) {
     // Verify stock and compute the authoritative total server-side —
     // never trust amounts sent by the client.
     let subtotal = 0;
+    const serverItems = [];
     for (const item of items) {
       const product = await Product.findById(item.product);
       if (!product) {
         return NextResponse.json(
           { success: false, error: `Product not found: ${item.name}` },
+          { status: 400 }
+        );
+      }
+      if (!product.isActive) {
+        return NextResponse.json(
+          { success: false, error: `"${product.name}" is no longer available` },
           { status: 400 }
         );
       }
@@ -83,6 +90,13 @@ export async function POST(request: NextRequest) {
         );
       }
       subtotal += product.price * item.quantity;
+      serverItems.push({
+        product: product._id,
+        name: product.name,
+        price: product.price,
+        quantity: item.quantity,
+        image: product.images[0] || '',
+      });
     }
 
     const shippingCost = subtotal >= 100 ? 0 : 9.99;
@@ -105,7 +119,7 @@ export async function POST(request: NextRequest) {
     const order = await Order.create({
       orderNumber,
       user: payload.userId,
-      items,
+      items: serverItems,
       shippingAddress,
       subtotal,
       shippingCost,

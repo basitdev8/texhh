@@ -51,3 +51,9 @@ export function getDiscountPercentage(price: number, comparePrice: number): numb
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ');
 }
+
+// Escape user input before using it in a MongoDB $regex / RegExp so a
+// crafted pattern can't cause catastrophic backtracking (ReDoS).
+export function escapeRegex(input: string): string {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}

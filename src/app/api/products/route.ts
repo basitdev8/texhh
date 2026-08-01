@@ -3,7 +3,7 @@ import { z } from 'zod';
 import dbConnect from '@/lib/db';
 import Product from '@/models/Product';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
-import { generateSlug } from '@/lib/utils';
+import { generateSlug, escapeRegex } from '@/lib/utils';
 
 const createProductSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     const filter: Record<string, any> = {};
 
     if (category) filter.category = category;
-    if (brand) filter.brand = { $regex: brand, $options: 'i' };
+    if (brand) filter.brand = { $regex: escapeRegex(brand), $options: 'i' };
     if (featured === 'true') filter.featured = true;
     if (isActive !== 'all') filter.isActive = isActive !== 'false';
 
@@ -53,10 +53,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
+      const safe = escapeRegex(search);
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { tags: { $in: [new RegExp(search, 'i')] } },
+        { name: { $regex: safe, $options: 'i' } },
+        { description: { $regex: safe, $options: 'i' } },
+        { tags: { $in: [new RegExp(safe, 'i')] } },
       ];
     }
 

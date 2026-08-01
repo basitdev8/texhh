@@ -3,15 +3,29 @@ import { z } from 'zod';
 import dbConnect from '@/lib/db';
 import User from '@/models/User';
 import { hashPassword, createToken, createTokenCookie } from '@/lib/auth';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').trim(),
   email: z.string().email('Invalid email address').toLowerCase().trim(),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password is too long'),
 });
 
 export async function POST(request: NextRequest) {
   try {
+    // Limit account-creation spam: 5 per hour per IP.
+    const ip = getClientIp(request);
+    const { allowed, retryAfter } = rateLimit(`register:${ip}`, 5, 60 * 60 * 1000);
+    if (!allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
+    }
+
     await dbConnect();
 
     const body = await request.json();

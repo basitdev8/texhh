@@ -3,6 +3,7 @@ import { z } from 'zod';
 import dbConnect from '@/lib/db';
 import User from '@/models/User';
 import { verifyPassword, createToken, createTokenCookie } from '@/lib/auth';
+import { rateLimit, getClientIp } from '@/lib/rateLimit';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address').toLowerCase().trim(),
@@ -11,6 +12,16 @@ const loginSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Throttle credential guessing: 8 attempts per 15 min per IP.
+    const ip = getClientIp(request);
+    const { allowed, retryAfter } = rateLimit(`login:${ip}`, 8, 15 * 60 * 1000);
+    if (!allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many attempts. Please try again later.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+      );
+    }
+
     await dbConnect();
 
     const body = await request.json();

@@ -3,12 +3,12 @@ import type { UploadApiResponse } from 'cloudinary';
 import cloudinary from '@/lib/cloudinary';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
 
+// SVG intentionally excluded — it can carry embedded scripts.
 const ALLOWED_TYPES = [
   'image/jpeg',
   'image/png',
   'image/webp',
   'image/gif',
-  'image/svg+xml',
 ];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const UPLOAD_FOLDER = 'techchasers/products';
@@ -25,10 +25,10 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = verifyToken(token);
-    if (!payload) {
+    if (!payload || payload.role !== 'admin') {
       return NextResponse.json(
-        { success: false, error: 'Invalid or expired token' },
-        { status: 401 }
+        { success: false, error: 'Admin access required' },
+        { status: 403 }
       );
     }
 
