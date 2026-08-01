@@ -83,7 +83,7 @@ function loadScraped(): ScrapedData {
 function makeShortDescription(p: ScrapedProduct): string {
   const text = (p.shortDescription || p.description || '').replace(/\s+/g, ' ').trim();
   if (text.length < 16) {
-    return `${p.brand} ${p.name.replace(p.brand, '').trim() || 'electronics'} — handpicked for the TechHH edit.`;
+    return `${p.brand} ${p.name.replace(p.brand, '').trim() || 'electronics'} — handpicked for the TechChasers edit.`;
   }
   return text.slice(0, 220);
 }
@@ -91,7 +91,7 @@ function makeShortDescription(p: ScrapedProduct): string {
 function makeLongDescription(p: ScrapedProduct): string {
   let txt = (p.description || p.shortDescription || '').trim();
   if (txt.length < 32) {
-    txt = `The ${p.name} from ${p.brand} — chosen for its build quality, refined sound, and editorial design language. Part of the TechHH curated electronics edit.`;
+    txt = `The ${p.name} from ${p.brand} — chosen for its build quality, refined sound, and editorial design language. Part of the TechChasers curated electronics edit.`;
   }
   return txt;
 }
@@ -139,19 +139,19 @@ async function seed() {
   // Admin
   const adminPassword = await hashPassword('admin123');
   await User.create({
-    name: 'TechHH Admin',
-    email: 'admin@techhh.com',
+    name: 'TechChasers Admin',
+    email: 'admin@techchasers.com',
     passwordHash: adminPassword,
     role: 'admin',
     phone: '+91-90000-00000',
   });
-  console.log('👤 Admin created: admin@techhh.com / admin123');
+  console.log('👤 Admin created: admin@techchasers.com / admin123');
 
   // Demo customer
   const customerPassword = await hashPassword('customer123');
   await User.create({
     name: 'Aarav Mehta',
-    email: 'customer@techhh.com',
+    email: 'customer@techchasers.com',
     passwordHash: customerPassword,
     role: 'customer',
     phone: '+91-98765-43210',
@@ -168,14 +168,14 @@ async function seed() {
       },
     ],
   });
-  console.log('👤 Demo customer created: customer@techhh.com / customer123');
+  console.log('👤 Demo customer created: customer@techchasers.com / customer123');
 
   // Categories
   const categoryDocs = data.categories.map((c) => ({
     name: c.name,
     slug: c.slug,
     description:
-      CATEGORY_DESCRIPTIONS[c.slug] || `${c.name} — curated by the TechHH atelier.`,
+      CATEGORY_DESCRIPTIONS[c.slug] || `${c.name} — curated by the TechChasers atelier.`,
     image: CATEGORY_IMAGES[c.slug] || CATEGORY_IMAGES['headphones'],
     isActive: true,
   }));
@@ -258,8 +258,8 @@ async function seed() {
   console.log(`🧩 Created ${pcComponents.length} PC components`);
 
   console.log('\n✅ Seed complete.\n');
-  console.log('   Login as admin:    admin@techhh.com / admin123');
-  console.log('   Login as customer: customer@techhh.com / customer123');
+  console.log('   Login as admin:    admin@techchasers.com / admin123');
+  console.log('   Login as customer: customer@techchasers.com / customer123');
 }
 
 seed()

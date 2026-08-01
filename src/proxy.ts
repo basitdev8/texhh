@@ -6,7 +6,7 @@ export function proxy(request: NextRequest) {
 
   // Protect admin routes
   if (pathname.startsWith('/admin')) {
-    const token = request.cookies.get('techhh_token')?.value;
+    const token = request.cookies.get('techchasers_token')?.value;
 
     if (!token) {
       const loginUrl = new URL('/auth/login', request.url);
@@ -28,7 +28,7 @@ export function proxy(request: NextRequest) {
 
   // Protect account routes
   if (pathname.startsWith('/account')) {
-    const token = request.cookies.get('techhh_token')?.value;
+    const token = request.cookies.get('techchasers_token')?.value;
 
     if (!token) {
       const loginUrl = new URL('/auth/login', request.url);

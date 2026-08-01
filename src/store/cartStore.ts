@@ -62,7 +62,7 @@ export const useCartStore = create<CartState>()(
       },
     }),
     {
-      name: 'techhh-cart',
+      name: 'techchasers-cart',
     }
   )
 );

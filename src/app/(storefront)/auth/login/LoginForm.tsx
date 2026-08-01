@@ -105,7 +105,7 @@ export default function LoginForm() {
       </form>
 
       <p className={styles.footer}>
-        By continuing you agree to TechHH&apos;s Terms of Service and Privacy
+        By continuing you agree to TechChasers&apos;s Terms of Service and Privacy
         Policy.
       </p>
     </div>

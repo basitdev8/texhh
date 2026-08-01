@@ -11,7 +11,7 @@ const ALLOWED_TYPES = [
   'image/svg+xml',
 ];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-const UPLOAD_FOLDER = 'techhh/products';
+const UPLOAD_FOLDER = 'techchasers/products';
 
 export async function POST(request: NextRequest) {
   try {

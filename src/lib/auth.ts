@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
 
 const JWT_SECRET = process.env.JWT_SECRET!;
-const TOKEN_NAME = 'techhh_token';
+const TOKEN_NAME = 'techchasers_token';
 const TOKEN_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 export interface JWTPayload {

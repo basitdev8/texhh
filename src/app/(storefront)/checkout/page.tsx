@@ -178,7 +178,7 @@ export default function CheckoutPage() {
       key: keyId,
       amount,
       currency,
-      name: "TechHH",
+      name: "TechChasers",
       description: "Order payment",
       order_id: razorpayOrderId,
       prefill: {

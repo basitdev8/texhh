@@ -81,7 +81,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <div className={styles.logo}>
           <Link href="/admin" className={styles.logoLink}>
             <span className={styles.logoText}>
-              Tech<em>HH</em>
+              Tech<em>Chasers</em>
             </span>
             <span className={styles.logoAdmin}>Atelier · Admin</span>
           </Link>
@@ -131,7 +131,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             ← Sign out
           </button>
           <span className={styles.footerWordmark} aria-hidden="true">
-            Tec<em>hH</em>H
+            Tech<em>Chasers</em>
           </span>
         </div>
       </aside>

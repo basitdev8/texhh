@@ -86,7 +86,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </svg>
             </button>
             <div className={styles.topBreadcrumb}>
-              <span>TechHH · Atelier</span>
+              <span>TechChasers · Atelier</span>
               <span style={{ opacity: 0.4 }}>/</span>
               <span className={styles.topBreadcrumbAccent}>
                 {getSectionLabel(pathname)}

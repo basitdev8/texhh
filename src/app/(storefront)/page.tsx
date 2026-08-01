@@ -138,7 +138,7 @@ export default async function HomePage() {
             </p>
           </Reveal>
           <Reveal variant="up" delay={200}>
-            <p className={styles.quoteCite}>— TechHH Editorial</p>
+            <p className={styles.quoteCite}>— TechChasers Editorial</p>
           </Reveal>
         </div>
       </section>

@@ -1,8 +1,8 @@
-TechHH — Full-Stack Electronics E-Commerce Platform
+TechChasers — Full-Stack Electronics E-Commerce Platform
 A premium electronics e-commerce platform built with Next.js 15 (App Router) and MongoDB (Mongoose), featuring a customer storefront, admin panel, and custom PC builder.
 
 Brand & Design Direction
-Brand Name: TechHH (derived from workspace name)
+Brand Name: TechChasers (derived from workspace name)
 Brand Identity: Premium electronics retailer — clean, minimal, luxurious
 Color Palette (Light, neutral, with a warm accent):
 
@@ -22,7 +22,7 @@ Design Style: Generous whitespace, subtle shadows, smooth micro-animations, edit
 User Review Required
 IMPORTANT
 
-Brand Name: I've used "TechHH" as the brand name based on the workspace folder name. Would you like a different name?
+Brand Name: I've used "TechChasers" as the brand name based on the workspace folder name. Would you like a different name?
 
 IMPORTANT
 
@@ -63,9 +63,9 @@ No Tailwind — we'll use vanilla CSS with CSS Modules
 [NEW] 
 .env.local
 
-MONGODB_URI=mongodb://localhost:27017/techhh
+MONGODB_URI=mongodb://localhost:27017/techchasers
 JWT_SECRET=your-secret-key-here
-NEXT_PUBLIC_APP_NAME=TechHH
+NEXT_PUBLIC_APP_NAME=TechChasers
 [NEW] 
 next.config.ts
 Configure image remote patterns
@@ -274,7 +274,7 @@ Protect admin API routes (/api/admin/*, POST/PUT/DELETE on resources)
 src/lib/seed.ts
 Script to seed the database with:
 Default admin user (
-admin@techhh.com
+admin@techchasers.com
  / admin123)
 Sample categories (Laptops, Smartphones, Accessories, Audio, Monitors, PC Components)
 Sample products (3-5 per category with realistic data)

@@ -162,7 +162,7 @@ export default function ProductsContent() {
             <p className={styles.subtitle}>
               {activeCategory
                 ? activeCategory.description
-                : "Every piece in the TechHH edit — sortable, filterable, and photographed like an object should be."}
+                : "Every piece in the TechChasers edit — sortable, filterable, and photographed like an object should be."}
             </p>
             <div className={styles.headerStats}>
               <span className={styles.headerStatsLabel}>Showing</span>
@@ -306,7 +306,7 @@ export default function ProductsContent() {
           <div className={styles.empty}>
             <p className={styles.emptyTitle}>Nothing matches just yet.</p>
             <p className={styles.emptyText}>
-              Try widening your filters or clearing them. The TechHH edit is
+              Try widening your filters or clearing them. The TechChasers edit is
               tight on purpose — but never this tight.
             </p>
           </div>

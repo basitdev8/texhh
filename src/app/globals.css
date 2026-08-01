@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&display=swap');
 
 /* ========================================
-   DESIGN SYSTEM — TechHH (Editorial Luxe v2)
+   DESIGN SYSTEM — TechChasers (Editorial Luxe v2)
    ======================================== */
 
 :root {
@@ -384,17 +384,6 @@ ul, ol { list-style: none; }
 [data-reveal-delay="600"] { transition-delay: 600ms; }
 [data-reveal-delay="700"] { transition-delay: 700ms; }
 [data-reveal-delay="800"] { transition-delay: 800ms; }
-
-/* ========================================
-   CUSTOM CURSOR
-   ======================================== */
-
-@media (hover: hover) and (pointer: fine) {
-  body { cursor: none; }
-  a, button, [role="button"], input, textarea, select, label[for] {
-    cursor: none;
-  }
-}
 
 /* ========================================
    SCROLLBAR

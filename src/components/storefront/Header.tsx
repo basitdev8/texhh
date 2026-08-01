@@ -85,7 +85,7 @@ export default function Header() {
         <div className={styles.inner}>
           {/* Logo */}
           <Link href="/" className={styles.logo} id="header-logo">
-            Tech<span className={styles.logoAccent}>HH</span>
+            Tech<span className={styles.logoAccent}>Chasers</span>
           </Link>
 
           {/* Desktop Navigation */}

@@ -9,7 +9,7 @@ export default function Footer() {
       <div className={styles.inner}>
         <div className={styles.topMeta}>
           <span className={styles.topMetaLabel}>
-            TechHH · Edition 04 · 2026
+            TechChasers · Edition 04 · 2026
           </span>
           <span className={styles.topMetaItalic}>
             <em>Stay close.</em> Subscribe below.
@@ -20,7 +20,7 @@ export default function Footer() {
           <div className={styles.column}>
             <span className={styles.colTitle}>The Atelier</span>
             <p className={styles.aboutText}>
-              TechHH is a small studio obsessed with how technology{" "}
+              TechChasers is a small studio obsessed with how technology{" "}
               <em>feels</em>. We photograph it, vet it, and ship it like
               an object should be — with quiet care, never on the cheap.
             </p>
@@ -142,12 +142,12 @@ export default function Footer() {
 
         {/* Huge wordmark — the editorial signature */}
         <div className={styles.wordmark} aria-hidden="true">
-          Tec<em>hH</em>H
+          Tech<em>Chasers</em>
         </div>
 
         <div className={styles.bottom}>
           <p className={styles.copyright}>
-            © {new Date().getFullYear()} TechHH — Curated tech for the
+            © {new Date().getFullYear()} TechChasers — Curated tech for the
             considered.
           </p>
           <div className={styles.bottomLinks}>
