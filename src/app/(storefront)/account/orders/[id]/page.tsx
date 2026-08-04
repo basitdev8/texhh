@@ -77,6 +77,17 @@ export default function OrderDetailPage({ params }: PageProps) {
 
   const currentIndex = TIMELINE.findIndex((t) => t.key === order.status);
 
+  // First time each status was reached → shown as the timeline date.
+  const statusDate = new Map<string, string>();
+  (order.statusHistory || []).forEach((ev) => {
+    if (!statusDate.has(ev.status)) {
+      statusDate.set(ev.status, ev.timestamp as string);
+    }
+  });
+
+  const hasTracking =
+    order.trackingNumber || order.carrier || order.estimatedDelivery;
+
   return (
     <div className={styles.page}>
       <div className="container">
@@ -121,6 +132,7 @@ export default function OrderDetailPage({ params }: PageProps) {
               <div className={styles.timeline}>
                 {TIMELINE.map((step, i) => {
                   const isComplete = i <= currentIndex;
+                  const when = statusDate.get(step.key);
                   return (
                     <div key={step.key} className={styles.timelineStep}>
                       <div
@@ -130,15 +142,53 @@ export default function OrderDetailPage({ params }: PageProps) {
                       </div>
                       <div className={styles.timelineBody}>
                         <div className={styles.timelineLabel}>{step.label}</div>
-                        {i === currentIndex && (
+                        {when ? (
                           <div className={styles.timelineSub}>
-                            Current status
+                            {formatDateTime(when)}
+                            {i === currentIndex ? " · Current status" : ""}
                           </div>
-                        )}
+                        ) : i === currentIndex ? (
+                          <div className={styles.timelineSub}>Current status</div>
+                        ) : null}
                       </div>
                     </div>
                   );
                 })}
+              </div>
+            )}
+
+            {hasTracking && (
+              <div className={styles.trackingBox}>
+                <h3 className={styles.cardTitle} style={{ marginTop: 0 }}>
+                  Tracking
+                </h3>
+                {order.carrier && (
+                  <div className={styles.summaryRow}>
+                    <span>Carrier</span>
+                    <span style={{ fontWeight: 600 }}>{order.carrier}</span>
+                  </div>
+                )}
+                {order.trackingNumber && (
+                  <div className={styles.summaryRow}>
+                    <span>Tracking number</span>
+                    <span style={{ fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
+                      {order.trackingNumber}
+                    </span>
+                  </div>
+                )}
+                {order.estimatedDelivery && (
+                  <div className={styles.summaryRow}>
+                    <span>Estimated delivery</span>
+                    <span style={{ fontWeight: 600 }}>
+                      {new Date(order.estimatedDelivery).toLocaleDateString("en-IN", {
+                        weekday: "short",
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 

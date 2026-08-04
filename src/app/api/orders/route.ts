@@ -181,6 +181,9 @@ export async function POST(request: NextRequest) {
       tax,
       totalAmount,
       paymentMethod,
+      statusHistory: [
+        { status: 'pending', note: 'Order placed', timestamp: new Date() },
+      ],
       notes,
     });
 

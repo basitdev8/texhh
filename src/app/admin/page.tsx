@@ -8,6 +8,13 @@ import { formatDate, formatPrice } from "@/lib/utils";
 import type { IOrder, IUser } from "@/types";
 import styles from "./admin.module.css";
 
+interface LowStockItem {
+  _id: string;
+  name: string;
+  slug: string;
+  stock: number;
+}
+
 interface AdminStats {
   totalRevenue: number;
   orderCount: number;
@@ -15,6 +22,10 @@ interface AdminStats {
   customerCount: number;
   statusBreakdown: Record<string, number>;
   recentOrders: (IOrder & { user: IUser })[];
+  ordersToFulfill: number;
+  pendingPayments: number;
+  outOfStock: number;
+  lowStock: LowStockItem[];
 }
 
 const STATUS_LABEL: Record<IOrder["status"], { label: string; tone: string }> = {
@@ -208,6 +219,82 @@ export default function AdminDashboardPage() {
           sublabel="Registered accounts"
         />
       </div>
+
+      {/* Operations — actionable tiles that link straight to work queues */}
+      <section className={styles.opsGrid}>
+        <Link href="/admin/orders?status=pending" className={styles.opCard}>
+          <span className={styles.opValue}>{stats?.ordersToFulfill ?? 0}</span>
+          <span className={styles.opLabel}>Orders to fulfill</span>
+          <span className={styles.opHint}>Pending &amp; processing → ship these</span>
+        </Link>
+        <Link href="/admin/orders" className={styles.opCard}>
+          <span
+            className={styles.opValue}
+            style={{
+              color:
+                (stats?.pendingPayments ?? 0) > 0
+                  ? "var(--color-warning)"
+                  : undefined,
+            }}
+          >
+            {stats?.pendingPayments ?? 0}
+          </span>
+          <span className={styles.opLabel}>Pending payments</span>
+          <span className={styles.opHint}>Awaiting capture or confirmation</span>
+        </Link>
+        <Link href="/admin/products" className={styles.opCard}>
+          <span
+            className={styles.opValue}
+            style={{
+              color:
+                (stats?.outOfStock ?? 0) > 0 ? "var(--color-error)" : undefined,
+            }}
+          >
+            {stats?.outOfStock ?? 0}
+          </span>
+          <span className={styles.opLabel}>Out of stock</span>
+          <span className={styles.opHint}>Active products at zero stock</span>
+        </Link>
+        <Link href="/admin/products/new" className={styles.opCardAction}>
+          <span className={styles.opActionPlus}>＋</span>
+          <span className={styles.opLabel}>Quick actions</span>
+          <span className={styles.opHint}>Add a product · manage catalog</span>
+        </Link>
+      </section>
+
+      {/* Low stock — restock queue */}
+      {stats?.lowStock && stats.lowStock.length > 0 && (
+        <section className={styles.section}>
+          <div className={styles.sectionHead}>
+            <div>
+              <div className={styles.sectionEyebrowRow}>
+                <span className={styles.sectionEyebrowLine} />
+                <span className={styles.sectionEyebrow}>
+                  Inventory / Running low
+                </span>
+              </div>
+              <h2 className={styles.sectionTitle}>Restock soon.</h2>
+            </div>
+            <Link href="/admin/products" className={styles.sectionLink}>
+              Manage products →
+            </Link>
+          </div>
+          <div className={styles.lowStockList}>
+            {stats.lowStock.map((p) => (
+              <Link
+                key={p._id}
+                href={`/admin/products/${p._id}`}
+                className={styles.lowStockRow}
+              >
+                <span className={styles.lowStockName}>{p.name}</span>
+                <span className={styles.lowStockQty}>
+                  {p.stock} left
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Status breakdown — quiet, in-page list */}
       {stats?.statusBreakdown && Object.keys(stats.statusBreakdown).length > 0 && (

@@ -25,6 +25,13 @@ export async function fulfillPaidOrder(params: {
         status: 'processing',
         razorpayPaymentId: params.razorpayPaymentId,
       },
+      $push: {
+        statusHistory: {
+          status: 'processing',
+          note: 'Payment confirmed — order is now processing',
+          timestamp: new Date(),
+        },
+      },
     },
     { new: true }
   );

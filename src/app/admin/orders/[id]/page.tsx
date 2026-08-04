@@ -39,6 +39,13 @@ const STATUS_VARIANT: Record<
   cancelled: "error",
 };
 
+function toDateInput(value?: Date | string): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "";
+  return d.toISOString().slice(0, 10);
+}
+
 export default function AdminOrderDetailPage({ params }: PageProps) {
   const { id } = use(params);
   const [order, setOrder] = useState<(IOrder & { user: IUser }) | null>(null);
@@ -46,18 +53,33 @@ export default function AdminOrderDetailPage({ params }: PageProps) {
   const [updating, setUpdating] = useState(false);
   const { showToast } = useToast();
 
+  // Local, editable delivery fields
+  const [status, setStatus] = useState<IOrder["status"]>("pending");
+  const [trackingNumber, setTrackingNumber] = useState("");
+  const [carrier, setCarrier] = useState("");
+  const [estimatedDelivery, setEstimatedDelivery] = useState("");
+  const [statusNote, setStatusNote] = useState("");
+
+  const hydrate = (o: IOrder & { user: IUser }) => {
+    setOrder(o);
+    setStatus(o.status);
+    setTrackingNumber(o.trackingNumber || "");
+    setCarrier(o.carrier || "");
+    setEstimatedDelivery(toDateInput(o.estimatedDelivery));
+  };
+
   useEffect(() => {
     fetch(`/api/orders/${id}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.success) setOrder(data.data);
+        if (data.success) hydrate(data.data);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [id]);
 
   const updateField = async (
-    field: "status" | "paymentStatus",
+    field: "paymentStatus",
     value: string
   ) => {
     if (!order) return;
@@ -70,8 +92,38 @@ export default function AdminOrderDetailPage({ params }: PageProps) {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setOrder({ ...order, ...data.data });
-        showToast(`${field === "status" ? "Status" : "Payment"} updated`, "success");
+        hydrate(data.data);
+        showToast("Payment updated", "success");
+      } else {
+        showToast(data.error || "Failed to update", "error");
+      }
+    } catch {
+      showToast("Network error", "error");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const saveDelivery = async () => {
+    if (!order) return;
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/orders/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status,
+          trackingNumber: trackingNumber.trim() || null,
+          carrier: carrier.trim() || null,
+          estimatedDelivery: estimatedDelivery || null,
+          statusNote: statusNote.trim() || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        hydrate(data.data);
+        setStatusNote("");
+        showToast("Delivery details updated", "success");
       } else {
         showToast(data.error || "Failed to update", "error");
       }
@@ -198,13 +250,13 @@ export default function AdminOrderDetailPage({ params }: PageProps) {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-5)" }}>
           <div className={styles.section} style={{ margin: 0 }}>
-            <h2 className={styles.sectionTitle}>Update Status</h2>
+            <h2 className={styles.sectionTitle}>Delivery & Tracking</h2>
             <div className={styles.field}>
-              <label className={styles.label}>Order Status</label>
+              <label className={styles.label}>Delivery Status</label>
               <select
                 className={styles.input}
-                value={order.status}
-                onChange={(e) => updateField("status", e.target.value)}
+                value={status}
+                onChange={(e) => setStatus(e.target.value as IOrder["status"])}
                 disabled={updating}
               >
                 {STATUS_OPTIONS.map((s) => (
@@ -214,6 +266,59 @@ export default function AdminOrderDetailPage({ params }: PageProps) {
                 ))}
               </select>
             </div>
+            <div className={styles.field}>
+              <label className={styles.label}>Carrier</label>
+              <input
+                className={styles.input}
+                value={carrier}
+                onChange={(e) => setCarrier(e.target.value)}
+                placeholder="e.g. Delhivery, Blue Dart, DTDC"
+                disabled={updating}
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>Tracking Number</label>
+              <input
+                className={styles.input}
+                value={trackingNumber}
+                onChange={(e) => setTrackingNumber(e.target.value)}
+                placeholder="e.g. 1234567890"
+                disabled={updating}
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>Estimated Delivery</label>
+              <input
+                type="date"
+                className={styles.input}
+                value={estimatedDelivery}
+                onChange={(e) => setEstimatedDelivery(e.target.value)}
+                disabled={updating}
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.label}>Update note (optional)</label>
+              <input
+                className={styles.input}
+                value={statusNote}
+                onChange={(e) => setStatusNote(e.target.value)}
+                placeholder="Shown to the customer in the timeline"
+                disabled={updating}
+              />
+            </div>
+            <button
+              className={styles.primaryBtn}
+              style={{ width: "100%", justifyContent: "center", marginTop: "var(--space-2)" }}
+              onClick={saveDelivery}
+              disabled={updating}
+              data-cursor-text="Save"
+            >
+              {updating ? "Saving…" : "Save delivery update"}
+            </button>
+          </div>
+
+          <div className={styles.section} style={{ margin: 0 }}>
+            <h2 className={styles.sectionTitle}>Payment</h2>
             <div className={styles.field}>
               <label className={styles.label}>Payment Status</label>
               <select
@@ -230,6 +335,47 @@ export default function AdminOrderDetailPage({ params }: PageProps) {
               </select>
             </div>
           </div>
+
+          {order.statusHistory && order.statusHistory.length > 0 && (
+            <div className={styles.section} style={{ margin: 0 }}>
+              <h2 className={styles.sectionTitle}>Status History</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
+                {[...order.statusHistory].reverse().map((ev, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 2,
+                      paddingBottom: "var(--space-3)",
+                      borderBottom:
+                        i < order.statusHistory!.length - 1
+                          ? "1px solid var(--color-border-light)"
+                          : "none",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        textTransform: "capitalize",
+                        fontSize: "var(--text-sm)",
+                      }}
+                    >
+                      {ev.status}
+                    </span>
+                    {ev.note && (
+                      <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-secondary)" }}>
+                        {ev.note}
+                      </span>
+                    )}
+                    <span style={{ fontSize: 11, color: "var(--color-text-muted)" }}>
+                      {formatDateTime(ev.timestamp)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className={styles.section} style={{ margin: 0 }}>
             <h2 className={styles.sectionTitle}>Customer</h2>

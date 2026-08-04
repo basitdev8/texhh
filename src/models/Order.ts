@@ -28,6 +28,14 @@ export interface IOrderDocument extends Document {
   paymentMethod: string;
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
+  trackingNumber?: string;
+  carrier?: string;
+  estimatedDelivery?: Date;
+  statusHistory: {
+    status: string;
+    note?: string;
+    timestamp: Date;
+  }[];
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -39,6 +47,12 @@ const OrderItemSchema = new Schema({
   price: { type: Number, required: true },
   quantity: { type: Number, required: true, min: 1 },
   image: { type: String, default: '' },
+}, { _id: false });
+
+const StatusHistorySchema = new Schema({
+  status: { type: String, required: true },
+  note: { type: String },
+  timestamp: { type: Date, default: Date.now },
 }, { _id: false });
 
 const ShippingAddressSchema = new Schema({
@@ -73,6 +87,10 @@ const OrderSchema = new Schema<IOrderDocument>({
   paymentMethod: { type: String, default: 'cash_on_delivery' },
   razorpayOrderId: { type: String },
   razorpayPaymentId: { type: String },
+  trackingNumber: { type: String },
+  carrier: { type: String },
+  estimatedDelivery: { type: Date },
+  statusHistory: { type: [StatusHistorySchema], default: [] },
   notes: { type: String },
 }, { timestamps: true });
 

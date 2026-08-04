@@ -26,6 +26,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const LOW_STOCK_THRESHOLD = 5;
+
     // Gather all stats in parallel
     const [
       totalRevenueAgg,
@@ -34,6 +36,9 @@ export async function GET(request: NextRequest) {
       customerCount,
       recentOrders,
       ordersByStatus,
+      pendingPayments,
+      lowStock,
+      outOfStock,
     ] = await Promise.all([
       Order.aggregate([
         { $match: { paymentStatus: 'paid' } },
@@ -50,6 +55,13 @@ export async function GET(request: NextRequest) {
       Order.aggregate([
         { $group: { _id: '$status', count: { $sum: 1 } } },
       ]),
+      Order.countDocuments({ paymentStatus: 'pending' }),
+      Product.find({ isActive: true, stock: { $gt: 0, $lte: LOW_STOCK_THRESHOLD } })
+        .select('name slug stock')
+        .sort({ stock: 1 })
+        .limit(8)
+        .lean(),
+      Product.countDocuments({ isActive: true, stock: 0 }),
     ]);
 
     const totalRevenue = totalRevenueAgg[0]?.total || 0;
@@ -60,6 +72,10 @@ export async function GET(request: NextRequest) {
       statusBreakdown[entry._id] = entry.count;
     }
 
+    // Orders that need operational attention (placed/paid but not yet shipped).
+    const ordersToFulfill =
+      (statusBreakdown.pending || 0) + (statusBreakdown.processing || 0);
+
     return NextResponse.json({
       success: true,
       data: {
@@ -69,6 +85,10 @@ export async function GET(request: NextRequest) {
         customerCount,
         statusBreakdown,
         recentOrders,
+        ordersToFulfill,
+        pendingPayments,
+        outOfStock,
+        lowStock,
       },
     });
   } catch (error) {

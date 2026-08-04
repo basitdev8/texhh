@@ -7,6 +7,12 @@ import { getTokenFromRequest, verifyToken } from '@/lib/auth';
 const updateOrderSchema = z.object({
   status: z.enum(['pending', 'processing', 'shipped', 'delivered', 'cancelled']).optional(),
   paymentStatus: z.enum(['pending', 'paid', 'failed', 'refunded']).optional(),
+  trackingNumber: z.string().max(120).nullable().optional(),
+  carrier: z.string().max(120).nullable().optional(),
+  // ISO date string (or null/empty to clear)
+  estimatedDelivery: z.string().nullable().optional(),
+  // Optional note attached to the status-history entry when status changes
+  statusNote: z.string().max(300).optional(),
 });
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -104,19 +110,52 @@ export async function PUT(
       );
     }
 
-    const order = await Order.findByIdAndUpdate(id, validation.data, {
-      new: true,
-      runValidators: true,
-    })
-      .populate('user', 'name email')
-      .lean();
+    const {
+      status,
+      paymentStatus,
+      trackingNumber,
+      carrier,
+      estimatedDelivery,
+      statusNote,
+    } = validation.data;
 
+    const order = await Order.findById(id);
     if (!order) {
       return NextResponse.json(
         { success: false, error: 'Order not found' },
         { status: 404 }
       );
     }
+
+    // Record a timestamped history entry whenever the delivery status changes,
+    // so the customer can see a real tracking timeline.
+    if (status && status !== order.status) {
+      order.statusHistory.push({
+        status,
+        note: statusNote,
+        timestamp: new Date(),
+      });
+      order.status = status;
+    } else if (statusNote && statusNote.trim()) {
+      // A note added without a status change (e.g. an update from the courier).
+      order.statusHistory.push({
+        status: order.status,
+        note: statusNote,
+        timestamp: new Date(),
+      });
+    }
+
+    if (paymentStatus) order.paymentStatus = paymentStatus;
+    if (trackingNumber !== undefined) order.trackingNumber = trackingNumber || undefined;
+    if (carrier !== undefined) order.carrier = carrier || undefined;
+    if (estimatedDelivery !== undefined) {
+      order.estimatedDelivery = estimatedDelivery
+        ? new Date(estimatedDelivery)
+        : undefined;
+    }
+
+    await order.save();
+    await order.populate('user', 'name email');
 
     return NextResponse.json({ success: true, data: order });
   } catch (error) {

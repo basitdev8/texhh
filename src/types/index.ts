@@ -70,9 +70,19 @@ export interface IOrder {
   paymentMethod: string;
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
+  trackingNumber?: string;
+  carrier?: string;
+  estimatedDelivery?: Date | string;
+  statusHistory?: IOrderStatusEvent[];
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface IOrderStatusEvent {
+  status: string;
+  note?: string;
+  timestamp: Date | string;
 }
 
 export interface IOrderItem {

@@ -128,6 +128,13 @@ export async function POST(request: NextRequest) {
       paymentMethod: 'razorpay',
       paymentStatus: 'pending',
       razorpayOrderId: rzpOrder.id,
+      statusHistory: [
+        {
+          status: 'pending',
+          note: 'Order placed — awaiting payment',
+          timestamp: new Date(),
+        },
+      ],
       notes,
     });
 
