@@ -72,6 +72,9 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
     const [products, total] = await Promise.all([
       Product.find(filter)
+        // Card/list views never use these heavy fields — excluding them
+        // keeps the JSON small and fast to transfer & parse.
+        .select('-description -specifications')
         .populate('category', 'name slug')
         .sort(sortObj)
         .skip(skip)

@@ -37,11 +37,9 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: var(--font-body);
   font-size: var(--text-sm);
-  font-weight: 500;
-  letter-spacing: -0.02em;
+  font-weight: 600;
 }
 
 .trendUp { color: var(--color-success); }
@@ -49,11 +47,11 @@
 .trendIcon { width: 12px; height: 12px; }
 
 .value {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(2.5rem, 4vw, 3.75rem);
-  line-height: 1;
-  letter-spacing: -0.03em;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
   color: var(--color-ink);
   opacity: 0;
   transform: translateY(8px);
@@ -61,7 +59,6 @@
 }
 
 .valueAccent {
-  font-style: italic;
   color: var(--color-accent);
 }
 

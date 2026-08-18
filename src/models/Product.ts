@@ -40,10 +40,11 @@ const ProductSchema = new Schema<IProductDocument>({
   tags: [{ type: String, trim: true }],
 }, { timestamps: true });
 
-ProductSchema.index({ slug: 1 });
+// Note: `slug` already gets a unique index from `unique: true` on the field.
 ProductSchema.index({ category: 1 });
 ProductSchema.index({ featured: 1 });
 ProductSchema.index({ price: 1 });
+ProductSchema.index({ isActive: 1, createdAt: -1 });
 ProductSchema.index({ name: 'text', description: 'text', tags: 'text' });
 
 const Product = mongoose.models.Product || mongoose.model<IProductDocument>('Product', ProductSchema);

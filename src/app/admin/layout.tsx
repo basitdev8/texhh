@@ -20,7 +20,7 @@ function getSectionLabel(pathname: string): string {
   if (SECTION_LABEL[pathname]) return SECTION_LABEL[pathname];
   if (pathname.startsWith('/admin/products/')) return 'Edit product';
   if (pathname.startsWith('/admin/orders/')) return 'Order detail';
-  return 'Atelier';
+  return 'Admin';
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -56,12 +56,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           style={{
             textAlign: 'center',
             color: 'var(--color-text-muted)',
-            fontFamily: 'var(--font-display)',
-            fontStyle: 'italic',
-            fontSize: 'var(--text-2xl)',
+            fontFamily: 'var(--font-body)',
+            fontSize: 'var(--text-base)',
           }}
         >
-          Loading the atelier…
+          Loading…
         </div>
       </div>
     );
@@ -86,7 +85,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </svg>
             </button>
             <div className={styles.topBreadcrumb}>
-              <span>TechChasers · Atelier</span>
+              <span>TechChasers Admin</span>
               <span style={{ opacity: 0.4 }}>/</span>
               <span className={styles.topBreadcrumbAccent}>
                 {getSectionLabel(pathname)}
@@ -104,7 +103,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
               <div className={styles.adminMeta}>
                 <span className={styles.adminName}>{user?.name || 'Admin'}</span>
-                <span className={styles.adminRole}>Atelier · Curator</span>
+                <span className={styles.adminRole}>Administrator</span>
               </div>
             </div>
           </div>

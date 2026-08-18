@@ -54,9 +54,6 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
     window.location.href = '/auth/login';
   };
 
-  // Continuous numbering across all sections (№01 … №06)
-  let counter = 0;
-
   return (
     <>
       <div
@@ -83,7 +80,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             <span className={styles.logoText}>
               Tech<em>Chasers</em>
             </span>
-            <span className={styles.logoAdmin}>Atelier · Admin</span>
+            <span className={styles.logoAdmin}>Admin Panel</span>
           </Link>
         </div>
 
@@ -92,7 +89,6 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             <div key={section.section} className={styles.navSection}>
               <div className={styles.navSectionTitle}>{section.section}</div>
               {section.links.map((link) => {
-                counter += 1;
                 const active = isActive(link.href, link.exact);
                 return (
                   <Link
@@ -102,11 +98,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     onClick={() => {
                       if (window.innerWidth <= 1024) onToggle();
                     }}
-                    data-cursor-text={link.label.slice(0, 8)}
                   >
-                    <span className={styles.navNum}>
-                      №{String(counter).padStart(2, '0')}
-                    </span>
                     {link.label}
                   </Link>
                 );

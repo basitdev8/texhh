@@ -87,14 +87,10 @@ export default function AdminDashboardPage() {
         <Link
           href={`/admin/orders/${o._id}`}
           style={{
-            fontFamily: "var(--font-display)",
-            fontStyle: "italic",
+            fontWeight: 600,
             color: "var(--color-ink)",
-            fontWeight: 500,
-            letterSpacing: "-0.01em",
-            fontSize: "var(--text-base)",
+            fontSize: "var(--text-sm)",
           }}
-          data-cursor-text="Open"
         >
           {o.orderNumber}
         </Link>
@@ -129,11 +125,9 @@ export default function AdminDashboardPage() {
       render: (o) => (
         <span
           style={{
-            fontFamily: "var(--font-display)",
-            fontWeight: 400,
-            fontSize: "var(--text-base)",
+            fontWeight: 600,
+            fontSize: "var(--text-sm)",
             color: "var(--color-ink)",
-            letterSpacing: "-0.01em",
           }}
         >
           {formatPrice(o.totalAmount)}
@@ -157,7 +151,7 @@ export default function AdminDashboardPage() {
   ];
 
   if (loading) {
-    return <div className={styles.loading}>Reading the books…</div>;
+    return <div className={styles.loading}>Loading…</div>;
   }
 
   const today = new Date().toLocaleDateString("en-IN", {
@@ -172,18 +166,12 @@ export default function AdminDashboardPage() {
       <header className={styles.pageHeader}>
         <div>
           <div className={styles.pageHeaderEyebrowRow}>
-            <span className={styles.pageHeaderEyebrowLine} />
-            <span className={styles.pageHeaderEyebrow}>
-              Dashboard / {today}
-            </span>
+            <span className={styles.pageHeaderEyebrow}>{today}</span>
           </div>
-          <h1 className={styles.pageTitle}>
-            The <span className={styles.pageTitleItalic}>atelier</span>, in numbers.
-          </h1>
+          <h1 className={styles.pageTitle}>Dashboard</h1>
           <p className={styles.pageSubtitle}>
-            A live read of revenue, orders, and the people interacting with
-            your storefront. Nothing here is cached — these numbers are
-            queried fresh on every visit.
+            Revenue, orders, and customers at a glance. Figures refresh on
+            every visit.
           </p>
         </div>
         <Link
@@ -307,7 +295,7 @@ export default function AdminDashboardPage() {
                   Breakdown / Order status
                 </span>
               </div>
-              <h2 className={styles.sectionTitle}>Where things stand.</h2>
+              <h2 className={styles.sectionTitle}>Order status</h2>
             </div>
           </div>
           <div
@@ -333,11 +321,10 @@ export default function AdminDashboardPage() {
                 >
                   <span
                     style={{
-                      fontFamily: "var(--font-display)",
-                      fontWeight: 400,
-                      fontStyle: "italic",
-                      fontSize: "var(--text-4xl)",
-                      letterSpacing: "-0.03em",
+                      fontFamily: "var(--font-heading)",
+                      fontWeight: 700,
+                      fontSize: "var(--text-3xl)",
+                      letterSpacing: "-0.02em",
                       color: info?.tone || "var(--color-ink)",
                       lineHeight: 1,
                     }}
@@ -372,7 +359,7 @@ export default function AdminDashboardPage() {
                 Activity / Recent orders
               </span>
             </div>
-            <h2 className={styles.sectionTitle}>The latest ten.</h2>
+            <h2 className={styles.sectionTitle}>Recent orders</h2>
           </div>
           <Link
             href="/admin/orders"

@@ -68,12 +68,11 @@
 
 .topBreadcrumbAccent {
   color: var(--color-accent);
-  font-family: var(--font-display);
-  font-style: italic;
+  font-family: var(--font-body);
   text-transform: none;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   font-size: var(--text-sm);
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .topBarRight {

@@ -41,6 +41,11 @@ async function dbConnect(): Promise<typeof mongoose> {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      maxPoolSize: 10,
+      minPoolSize: 1,
+      // Fail fast instead of hanging if a node is unreachable.
+      serverSelectionTimeoutMS: 8000,
+      socketTimeoutMS: 45000,
     };
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       return mongoose;

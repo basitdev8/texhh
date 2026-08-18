@@ -17,45 +17,43 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
 }
 
 .pageHeaderEyebrowLine {
-  width: 36px;
-  height: 1px;
-  background: var(--color-ink);
+  display: none;
 }
 
 .pageHeaderEyebrow {
   font-family: var(--font-body);
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.12em;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--color-text-muted);
 }
 
 .pageTitle {
   font-family: var(--font-heading);
-  font-size: clamp(2.25rem, 3.6vw, 3.5rem);
+  font-size: clamp(1.5rem, 2.2vw, 1.875rem);
   font-weight: 700;
-  line-height: 0.95;
-  letter-spacing: -0.035em;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
   color: var(--color-ink);
 }
 
 .pageTitleItalic {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
+  font-family: var(--font-heading);
+  font-style: normal;
+  font-weight: 700;
   color: var(--color-accent);
 }
 
 .pageSubtitle {
   color: var(--color-text-secondary);
-  margin-top: var(--space-3);
-  font-size: var(--text-base);
-  max-width: 36rem;
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  max-width: 42rem;
   line-height: 1.55;
 }
 
@@ -63,44 +61,23 @@
 .primaryBtn {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: 0.7rem 1rem 0.7rem 1.3rem;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0.6rem 1.1rem;
   background: var(--color-ink);
   color: var(--color-paper);
   font-family: var(--font-body);
   font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  border-radius: var(--radius-full);
-  transition: all var(--transition-base);
+  font-size: var(--text-sm);
+  letter-spacing: 0;
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast), opacity var(--transition-fast);
   cursor: pointer;
-}
-
-.primaryBtn::after {
-  content: "";
-  display: inline-block;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  margin: -8px -6px -8px 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'><path d='M2 6h8M7 3l3 3-3 3' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  background-repeat: no-repeat;
-  background-position: center;
-  transition: transform var(--transition-base);
 }
 
 .primaryBtn:hover:not(:disabled) {
   background: var(--color-accent);
   color: white;
-  transform: translateY(-1px);
-}
-
-.primaryBtn:hover:not(:disabled)::after {
-  background: var(--color-paper);
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'><path d='M2 6h8M7 3l3 3-3 3' stroke='%230E7C7B' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  transform: rotate(-10deg);
 }
 
 .primaryBtn:disabled {
@@ -109,15 +86,13 @@
 }
 
 .secondaryBtn {
-  padding: 0.7rem 1.2rem;
-  background: transparent;
+  padding: 0.6rem 1.1rem;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   font-family: var(--font-body);
   font-weight: 500;
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
   color: var(--color-text);
   transition: all var(--transition-fast);
   cursor: pointer;
@@ -125,21 +100,18 @@
 
 .secondaryBtn:hover {
   border-color: var(--color-ink);
-  background: var(--color-ink);
-  color: var(--color-paper);
+  background: var(--color-bg-soft);
 }
 
 .dangerBtn {
-  padding: 0.7rem 1.2rem;
-  background: transparent;
+  padding: 0.6rem 1.1rem;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   font-family: var(--font-body);
   font-weight: 500;
-  font-size: 11px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  border-radius: var(--radius-full);
-  color: var(--color-text);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
   transition: all var(--transition-fast);
   cursor: pointer;
 }
@@ -165,10 +137,10 @@
   flex: 1;
   min-width: 220px;
   max-width: 380px;
-  padding: 0.55rem 1.1rem;
-  background: transparent;
+  padding: 0.55rem 0.85rem;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-md);
   font-size: var(--text-sm);
   font-family: var(--font-body);
   color: var(--color-ink);
@@ -186,10 +158,10 @@
 
 .filterSelect {
   appearance: none;
-  padding: 0.55rem 2.25rem 0.55rem 1.1rem;
-  background: transparent;
+  padding: 0.55rem 2.25rem 0.55rem 0.85rem;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-md);
   font-size: var(--text-sm);
   font-weight: 500;
   cursor: pointer;
@@ -246,18 +218,18 @@
 }
 
 .opValue {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: var(--text-4xl);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--text-3xl);
   line-height: 1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--color-ink);
 }
 
 .opActionPlus {
   font-family: var(--font-heading);
   font-weight: 300;
-  font-size: var(--text-4xl);
+  font-size: var(--text-3xl);
   line-height: 1;
   color: var(--color-accent);
 }
@@ -326,28 +298,25 @@
 }
 
 .sectionEyebrowLine {
-  width: 36px;
-  height: 1px;
-  background: var(--color-ink);
-  opacity: 0.6;
+  display: none;
 }
 
 .sectionEyebrow {
   font-family: var(--font-body);
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.12em;
   font-weight: 600;
-  color: var(--color-ink);
+  color: var(--color-text-muted);
 }
 
 .sectionTitle {
   font-family: var(--font-heading);
-  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-size: var(--text-xl);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   color: var(--color-ink);
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
 .sectionLink {
@@ -462,34 +431,40 @@
 }
 
 .input {
-  padding: 0.75rem 0;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--color-border);
+  padding: 0.6rem 0.85rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-family: var(--font-body);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   color: var(--color-ink);
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .input:focus {
   outline: none;
-  border-bottom-color: var(--color-ink);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(14, 124, 123, 0.12);
 }
 
 .textarea {
-  padding: 0.75rem 0;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--color-border);
+  padding: 0.6rem 0.85rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-family: var(--font-body);
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   color: var(--color-ink);
-  min-height: 80px;
+  min-height: 90px;
   resize: vertical;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.textarea:focus { outline: none; border-bottom-color: var(--color-ink); }
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(14, 124, 123, 0.12);
+}
 
 .formActions {
   display: flex;
@@ -535,9 +510,8 @@
 .loading {
   padding: var(--space-20);
   text-align: center;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: var(--text-2xl);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
   color: var(--color-text-muted);
   letter-spacing: -0.02em;
 }
