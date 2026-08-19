@@ -443,3 +443,35 @@ ul, ol { list-style: none; }
   h1 { font-size: var(--text-4xl); }
   h2 { font-size: var(--text-3xl); }
 }
+
+/* ========================================
+   REDUCED MOTION
+   Scroll reveals resolve instantly and looping
+   animations hold still when the visitor asks
+   the OS for less motion.
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .animate-fade-in,
+  .animate-fade-in-up,
+  .animate-slide-in-right,
+  .animate-scale-in {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
