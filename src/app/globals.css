@@ -252,6 +252,14 @@ ul, ol { list-style: none; }
   padding-right: var(--space-6);
 }
 
+/* The storefront header is fixed and starts out transparent so it can
+   float over the hero. Every other page needs its own clearance, or its
+   first line of content sits behind the nav. The hero cancels this with
+   a matching negative margin. */
+.storefront-main {
+  padding-top: var(--space-20);
+}
+
 /* ========================================
    UTILITY CLASSES
    ======================================== */

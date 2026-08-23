@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import Reveal from "@/components/ui/Reveal";
 import { formatPrice } from "@/lib/utils";
 import type { IProduct } from "@/types";
 import styles from "./HeroBanner.module.css";
@@ -12,171 +11,98 @@ interface HeroBannerProps {
 export default function HeroBanner({ product }: HeroBannerProps) {
   const heroImage = product?.images?.[0];
 
+  const plate = (
+    <>
+      {heroImage ? (
+        <Image
+          src={heroImage}
+          alt={product?.name ?? ""}
+          fill
+          sizes="(max-width: 1024px) 460px, 40vw"
+          className={styles.productImage}
+          priority
+        />
+      ) : (
+        <div className={styles.imageOrb} />
+      )}
+      <div className={styles.imageScrim} aria-hidden="true" />
+      {product ? (
+        <div className={styles.plate}>
+          <span>
+            {product.brand && (
+              <span className={styles.plateBrand}>{product.brand}</span>
+            )}
+            <span className={styles.plateName}>{product.name}</span>
+          </span>
+          <span className={styles.plateMeta}>
+            <span className={styles.plateMetaLabel}>From</span>
+            <span className={styles.plateMetaValue}>
+              {formatPrice(product.price)}
+            </span>
+          </span>
+        </div>
+      ) : (
+        <span className={styles.plateEmpty}>
+          Featured pieces appear here once the catalog is seeded
+        </span>
+      )}
+    </>
+  );
+
   return (
     <section className={styles.hero} id="hero-banner">
       <div className={styles.inner}>
-        <div className={styles.topMeta}>
-          <div className={styles.metaLeft}>
-            <span className={styles.metaDot} />
-            <span>Live · Edition 04 / 2026</span>
-          </div>
-          <div className={styles.metaRight}>
-            <span>Curated in Berlin</span>
-            <span>·</span>
-            <span>Shipped Worldwide</span>
-          </div>
-        </div>
-
         <div className={styles.grid}>
           <div className={styles.headlineWrap}>
-            <Reveal variant="up" delay={100}>
-              <div className={styles.eyebrowRow}>
-                <span className={styles.eyebrowLine} />
-                <span className={styles.eyebrow}>The Premium Tech Atelier</span>
-              </div>
-            </Reveal>
+            <div className={styles.eyebrowRow}>
+              <span className={styles.eyebrowLine} />
+              <span className={styles.eyebrow}>The premium tech atelier</span>
+            </div>
 
-            <Reveal variant="up" delay={200}>
-              <h1 className={styles.headline}>
-                <span>Objects of</span>
-                <span className={styles.italic}>quiet</span>
-                <span>obsession.</span>
-              </h1>
-            </Reveal>
+            <h1 className={styles.headline}>
+              <span className={styles.line}>
+                <span className={styles.lineInner}>Objects of</span>
+              </span>
+              <span className={styles.line}>
+                <span className={`${styles.lineInner} ${styles.italic}`}>
+                  quiet
+                </span>
+              </span>
+              <span className={styles.line}>
+                <span className={styles.lineInner}>obsession.</span>
+              </span>
+            </h1>
 
-            <Reveal variant="up" delay={400}>
-              <p className={styles.subheading}>
-                A curated edit of premium electronics, custom PC builds, and
-                considered tech — photographed, vetted, and shipped by people
-                who care more about the details than the average.
-              </p>
-            </Reveal>
+            <p className={styles.subheading}>
+              A tight edit of premium electronics and custom builds, vetted and
+              photographed before anything ships.
+            </p>
 
-            <Reveal variant="up" delay={550}>
-              <div className={styles.ctaRow}>
-                <Link
-                  href="/products"
-                  className={styles.ctaPrimary}
-                  data-cursor-text="Shop"
-                >
-                  Explore the Edit
-                </Link>
-                <Link
-                  href="/pc-builder"
-                  className={styles.ctaSecondary}
-                  data-cursor-text="Build"
-                >
-                  Build a PC
-                </Link>
-              </div>
-            </Reveal>
-          </div>
-
-          <Reveal variant="scale" delay={300} className={styles.visualWrap}>
-            {product ? (
-              <Link
-                href={`/products/${product.slug}`}
-                className={styles.imageFrame}
-                data-cursor-text="View"
-              >
-                <div className={styles.imageBadge}>
-                  <span className={styles.imageBadgeDot} />
-                  Featured Drop
-                </div>
-                {heroImage ? (
-                  <Image
-                    src={heroImage}
-                    alt={product.name}
-                    fill
-                    sizes="(max-width: 1024px) 480px, 40vw"
-                    className={styles.productImage}
-                    priority
-                  />
-                ) : (
-                  <div className={styles.imageOrb} />
-                )}
-                <div className={styles.imageScrim} />
-                <div className={styles.imageCaption}>
-                  {product.brand && (
-                    <span className={styles.imageCaptionBrand}>
-                      {product.brand}
-                    </span>
-                  )}
-                  <span className={styles.imageCaptionName}>{product.name}</span>
-                </div>
-                <div className={styles.imageStat}>
-                  <div className={styles.imageStatLabel}>From</div>
-                  <div className={styles.imageStatValue}>
-                    {formatPrice(product.price)}
-                  </div>
-                </div>
+            <div className={styles.ctaRow}>
+              <Link href="/products" className={styles.ctaPrimary}>
+                Explore the edit
               </Link>
-            ) : (
-              <div className={styles.imageFrame}>
-                <div className={styles.imageBadge}>
-                  <span className={styles.imageBadgeDot} />
-                  Featured Drop
-                </div>
-                <div className={styles.imageOrb} />
-                <div className={styles.imageCaption}>
-                  <span className={styles.imageCaptionName}>
-                    Featured pieces appear here once seeded
-                  </span>
-                </div>
-              </div>
-            )}
-          </Reveal>
-        </div>
-
-        <Reveal variant="up" delay={700}>
-          <div className={styles.bottomRow}>
-            <div className={styles.stat}>
-              <span className={styles.statValue}>
-                250<span className={styles.statValueItalic}>+</span>
-              </span>
-              <span className={styles.statLabel}>
-                Pieces curated
-                <br />
-                this season
-              </span>
-            </div>
-            <div className={styles.stat}>
-              <span className={styles.statValue}>
-                <span className={styles.statValueItalic}>32</span>
-              </span>
-              <span className={styles.statLabel}>
-                Brands
-                <br />
-                represented
-              </span>
-            </div>
-            <div className={styles.stat}>
-              <span className={styles.statValue}>
-                <span className={styles.statValueItalic}>4.9</span>
-              </span>
-              <span className={styles.statLabel}>
-                Average review
-                <br />
-                from 12,000+ buyers
-              </span>
-            </div>
-            <div className={styles.stat}>
-              <span className={styles.statValue}>
-                48<span className={styles.statValueItalic}>h</span>
-              </span>
-              <span className={styles.statLabel}>
-                Express shipping
-                <br />
-                worldwide
-              </span>
+              <Link href="/pc-builder" className={styles.ctaSecondary}>
+                Build a PC
+              </Link>
             </div>
           </div>
-        </Reveal>
-      </div>
 
-      <div className={styles.scrollHint}>
-        <span>Scroll</span>
-        <span className={styles.scrollLine} />
+          <div className={styles.visualWrap}>
+            <div className={styles.plateTilt}>
+              {product ? (
+                <Link
+                  href={`/products/${product.slug}`}
+                  className={styles.imageFrame}
+                >
+                  {plate}
+                </Link>
+              ) : (
+                <div className={styles.imageFrame}>{plate}</div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

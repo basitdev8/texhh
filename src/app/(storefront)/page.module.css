@@ -1,55 +1,40 @@
-/* ========================================
-   MARQUEE STRIP
-   ======================================== */
-.marqueeStrip {
-  background: var(--color-ink);
-  color: var(--color-paper);
-  padding: var(--space-3) 0;
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-}
+/* ===============================================================
+   HOME — TechChasers editorial
+   Same tokens as the rest of the site. Cream ground, one teal
+   accent, ink used for the two dark moments only.
 
-/* ========================================
-   SECTION HELPERS
-   ======================================== */
+   Seven sections, seven different layout families:
+   cover · horizontal rail · sticky column and spread ·
+   full-bleed statement · kinetic marquee · ink split · figure ledger
+
+   Motion is native CSS. Reveals use IntersectionObserver through
+   <Reveal>; drift and progress use scroll-driven animations behind
+   @supports, so a browser without them simply gets the static page.
+   =============================================================== */
+
+/* --------------------------------------------------------------
+   SHARED TYPE
+   -------------------------------------------------------------- */
 .section {
   padding: var(--space-24) 0;
   position: relative;
 }
 
-.sectionDark {
-  background: var(--color-ink);
-  color: var(--color-paper);
-}
-
-.sectionHead {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-12);
-  align-items: end;
-  margin-bottom: var(--space-12);
-}
-
-.sectionHeadCol {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.sectionEyebrowRow {
+.eyebrowRow {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  color: var(--color-text-secondary);
 }
 
-.sectionEyebrowLine {
+.eyebrowLine {
   width: 56px;
   height: 1px;
   background: currentColor;
-  opacity: 0.4;
+  opacity: 0.45;
 }
 
-.sectionEyebrow {
+.eyebrow {
   font-family: var(--font-body);
   font-size: var(--text-xs);
   text-transform: uppercase;
@@ -59,11 +44,12 @@
 
 .sectionTitle {
   font-family: var(--font-heading);
-  font-size: clamp(2.5rem, 5.2vw, 5rem);
+  font-size: clamp(2.5rem, 5.2vw, 4.5rem);
   font-weight: 600;
-  line-height: 0.95;
+  line-height: 1;
   letter-spacing: -0.04em;
-  color: currentColor;
+  padding-bottom: 0.08em;
+  color: var(--color-ink);
 }
 
 .italic {
@@ -73,101 +59,225 @@
   color: var(--color-accent);
 }
 
-.sectionDescription {
-  font-size: var(--text-base);
-  line-height: 1.65;
+.sectionBody {
+  font-size: var(--text-lg);
+  line-height: 1.6;
   color: var(--color-text-secondary);
-  max-width: 32rem;
-}
-
-.sectionDark .sectionDescription {
-  color: rgba(251, 247, 238, 0.65);
+  max-width: 34rem;
 }
 
 .sectionLink {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+  width: fit-content;
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid currentColor;
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.22em;
   font-weight: 600;
-  padding: var(--space-2) 0;
-  border-bottom: 1px solid currentColor;
-  width: fit-content;
-  margin-top: var(--space-4);
-  transition: gap var(--transition-base);
+  transition: gap var(--transition-base), color var(--transition-fast);
 }
 
-.sectionLink:hover {
-  gap: var(--space-4);
-  color: var(--color-accent);
+.sectionLink:hover { gap: var(--space-4); color: var(--color-accent); }
+
+.sectionLink:focus-visible,
+.buildCtaButton:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
 }
 
-/* ========================================
-   CATEGORIES — EDITORIAL GRID
-   ======================================== */
-.categoriesGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-6);
-}
-
-/* ========================================
-   FEATURED PRODUCTS
-   ======================================== */
-.productsGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-6) var(--space-5);
-}
-
-/* Asymmetric: shift even cards down */
-.productsGrid > article:nth-child(even) {
-  margin-top: var(--space-12);
-}
-
-/* ========================================
-   QUOTE / EDITORIAL STATEMENT
-   ======================================== */
-.quote {
-  padding: var(--space-32) 0;
+.empty {
+  padding: var(--space-12);
   text-align: center;
-  position: relative;
+  background: var(--color-paper);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
 }
 
-.quoteText {
+/* --------------------------------------------------------------
+   1. CATEGORY RAIL
+   Bleeds off the right edge so the edit reads as longer than the
+   viewport. The cut-off card is the affordance; no scroll label.
+   -------------------------------------------------------------- */
+.railSection { padding: var(--space-24) 0 var(--space-20); }
+
+.railHead {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-bottom: var(--space-12);
+}
+
+.railScroller {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-inline: max(
+    var(--container-padding),
+    calc((100% - var(--container-max)) / 2)
+  );
+  /* snap to the same inset as the padding, or the first card jumps flush
+     to the viewport edge when it snaps */
+  scroll-padding-inline-start: max(
+    var(--container-padding),
+    calc((100% - var(--container-max)) / 2)
+  );
+  /* overflow-y is clipped, so the hover lift needs headroom inside the box */
+  padding-top: var(--space-4);
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 0,
+    #000 calc(100% - 96px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    #000 0,
+    #000 calc(100% - 96px),
+    transparent 100%
+  );
+}
+
+.railScroller::-webkit-scrollbar { display: none; }
+
+.railTrack {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 320px);
+  gap: var(--space-6);
+  padding-bottom: var(--space-4);
+}
+
+.railItem {
+  scroll-snap-align: start;
+  transition: transform var(--transition-base);
+}
+
+.railItem:hover { transform: translateY(-6px); }
+
+/* --------------------------------------------------------------
+   2. THE EDIT
+   The heading column stays with you while the spread moves, and a
+   hairline in that column reports how far through the edit you are.
+   -------------------------------------------------------------- */
+.editLayout {
+  display: grid;
+  grid-template-columns: 0.8fr 1.55fr;
+  gap: var(--space-16);
+  align-items: start;
+}
+
+.editAside {
+  position: sticky;
+  /* 80px header plus breathing room */
+  top: calc(var(--space-20) + var(--space-6));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.editProgress {
+  display: none;
+  height: 2px;
+  margin-top: var(--space-4);
+  background: var(--color-border-light);
+}
+
+.editProgress span {
+  display: block;
+  height: 100%;
+  background: var(--color-accent);
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+
+.editSpread {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-12) var(--space-6);
+}
+
+.spreadItem { transition: transform var(--transition-base); }
+.spreadItem:nth-child(even) { margin-top: var(--space-16); }
+.spreadItem:hover { transform: translateY(-6px); }
+
+/* --------------------------------------------------------------
+   3. FULL-BLEED STATEMENT
+   The brand line over a real photograph, the image drifting against
+   the scroll so the type feels fixed to the page.
+   -------------------------------------------------------------- */
+.band {
+  position: relative;
+  padding: var(--space-32) 0;
+  background: var(--color-ink);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.bandMedia {
+  position: absolute;
+  inset: -8% 0;
+  z-index: 0;
+}
+
+.bandImage {
+  object-fit: cover;
+  opacity: 0.5;
+}
+
+.bandScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(14, 14, 12, 0.72),
+    rgba(14, 14, 12, 0.52) 45%,
+    rgba(14, 14, 12, 0.78)
+  );
+}
+
+.bandInner {
+  position: relative;
+  z-index: 2;
+}
+
+.bandText {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(2rem, 4.5vw, 4rem);
-  line-height: 1.15;
+  font-size: clamp(2rem, 4.6vw, 4rem);
+  line-height: 1.14;
   letter-spacing: -0.03em;
-  max-width: 56rem;
-  margin: 0 auto;
-  color: var(--color-ink);
+  text-align: center;
+  color: var(--color-paper);
+  padding-bottom: 0.08em;
 }
 
-.quoteText em {
+.bandText em {
   font-style: italic;
-  color: var(--color-accent);
+  color: var(--color-accent-light);
 }
 
-.quoteCite {
-  margin-top: var(--space-8);
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
-  color: var(--color-text-muted);
-  font-weight: 500;
+/* --------------------------------------------------------------
+   4. MARQUEE
+   The one marquee on the page.
+   -------------------------------------------------------------- */
+.marqueeBlock {
+  padding: var(--space-20) 0;
+  border-bottom: 1px solid var(--color-border);
 }
 
-/* ========================================
-   PC BUILDER CTA — DARK EDITORIAL
-   ======================================== */
+/* --------------------------------------------------------------
+   5. PC BUILDER — the ink band
+   -------------------------------------------------------------- */
 .buildCta {
   position: relative;
-  padding: var(--space-24) 0 var(--space-24);
+  padding: var(--space-24) 0;
   background: var(--color-ink);
   color: var(--color-paper);
   overflow: hidden;
@@ -178,12 +288,12 @@
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 0;
   background: radial-gradient(
-    ellipse at 70% 50%,
+    ellipse at 72% 50%,
     rgba(14, 124, 123, 0.25) 0%,
     transparent 55%
   );
-  z-index: 0;
 }
 
 .buildCtaInner {
@@ -221,10 +331,11 @@
 
 .buildCtaTitle {
   font-family: var(--font-heading);
-  font-size: clamp(3rem, 6vw, 6rem);
+  font-size: clamp(3rem, 6vw, 5.5rem);
   font-weight: 600;
-  line-height: 0.95;
+  line-height: 1;
   letter-spacing: -0.04em;
+  padding-bottom: 0.08em;
   color: var(--color-paper);
 }
 
@@ -232,13 +343,13 @@
   font-family: var(--font-display);
   font-style: italic;
   font-weight: 400;
-  color: var(--color-accent);
+  color: var(--color-accent-light);
 }
 
 .buildCtaText {
   font-size: var(--text-lg);
-  color: rgba(251, 247, 238, 0.7);
   line-height: 1.55;
+  color: rgba(251, 247, 238, 0.72);
   max-width: 32rem;
 }
 
@@ -246,17 +357,18 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-4);
-  padding: 1.1rem 1.5rem 1.1rem 2rem;
+  width: fit-content;
+  margin-top: var(--space-2);
+  padding: 1.05rem 1.5rem 1.05rem 2rem;
   background: var(--color-paper);
   color: var(--color-ink);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   border-radius: var(--radius-full);
-  transition: all var(--transition-base);
-  width: fit-content;
-  margin-top: var(--space-4);
+  transition: background var(--transition-base), color var(--transition-base),
+    transform var(--transition-base);
 }
 
 .buildCtaButton::after {
@@ -264,65 +376,61 @@
   display: inline-block;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background: var(--color-accent);
   margin: -10px -10px -10px 0;
+  border-radius: 50%;
+  background-color: var(--color-accent);
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'><path d='M2 7h10M8 3l4 4-4 4' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
   background-repeat: no-repeat;
   background-position: center;
   transition: transform var(--transition-base);
 }
 
-.buildCtaButton:hover { color: var(--color-ink); transform: translateY(-2px); }
-.buildCtaButton:hover::after { transform: rotate(-12deg) scale(1.1); }
+.buildCtaButton:hover {
+  color: var(--color-ink);
+  transform: translateY(-2px);
+}
+
+.buildCtaButton:hover::after { transform: rotate(-12deg) scale(1.08); }
 
 .buildCtaSteps {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
   border-top: 1px solid rgba(251, 247, 238, 0.18);
 }
 
+/* transform, not padding: hovering a row must not reflow the column */
 .buildCtaStep {
   display: grid;
-  grid-template-columns: 80px 1fr auto;
+  grid-template-columns: 1fr auto;
   gap: var(--space-4);
+  align-items: center;
   padding: var(--space-5) 0;
   border-bottom: 1px solid rgba(251, 247, 238, 0.18);
-  align-items: center;
-  transition: padding var(--transition-base);
+  transition: transform var(--transition-base);
 }
 
-.buildCtaStep:hover { padding-left: var(--space-4); }
-
-.buildCtaStepNum {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: var(--text-2xl);
-  color: var(--color-accent);
-  font-weight: 400;
-}
+.buildCtaStep:hover { transform: translateX(var(--space-3)); }
 
 .buildCtaStepBody {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .buildCtaStepTitle {
   font-family: var(--font-heading);
   font-size: var(--text-xl);
   font-weight: 500;
-  color: var(--color-paper);
   letter-spacing: -0.01em;
+  color: var(--color-paper);
 }
 
 .buildCtaStepSub {
   font-size: var(--text-sm);
-  color: rgba(251, 247, 238, 0.55);
+  color: rgba(251, 247, 238, 0.6);
 }
 
 .buildCtaStepArrow {
+  flex: none;
   width: 32px;
   height: 32px;
   display: inline-flex;
@@ -330,86 +438,153 @@
   justify-content: center;
   border-radius: 50%;
   border: 1px solid rgba(251, 247, 238, 0.3);
-  color: rgba(251, 247, 238, 0.5);
-  transition: all var(--transition-base);
+  color: rgba(251, 247, 238, 0.6);
+  transition: background var(--transition-base), border-color var(--transition-base),
+    color var(--transition-base), transform var(--transition-base);
 }
 
 .buildCtaStep:hover .buildCtaStepArrow {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: white;
+  color: var(--color-paper);
   transform: rotate(-10deg);
 }
 
-/* ========================================
-   TRUST STRIP
-   ======================================== */
-.trustStrip {
-  padding: var(--space-12) 0;
-  border-top: 1px solid var(--color-border);
+/* --------------------------------------------------------------
+   6. FIGURE LEDGER
+   Real counts from the catalog plus the two service commitments.
+   No cards, hairlines only, same ledger language as /account.
+   -------------------------------------------------------------- */
+/* auto-fit so the grid has exactly as many cells as there is real
+   data for, never a blank column */
+.ledger {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-8);
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  margin: var(--space-24) 0;
 }
 
-.trustItem {
+.ledgerCell {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding-right: var(--space-6);
-  border-right: 1px solid var(--color-border);
+  padding: var(--space-10) var(--space-6);
 }
 
-.trustItem:last-child { border-right: none; }
+.ledgerCell + .ledgerCell { border-left: 1px solid var(--color-border-light); }
+.ledgerCell:first-child { padding-left: 0; }
+.ledgerCell:last-child { padding-right: 0; }
 
-.trustIcon {
-  width: 32px;
-  height: 32px;
+.ledgerFigure {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.ledgerFigure em {
+  font-style: italic;
   color: var(--color-accent);
 }
 
-.trustLabel {
-  font-family: var(--font-heading);
+.ledgerLabel {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
   font-weight: 600;
-  color: var(--color-ink);
-  font-size: var(--text-lg);
-  letter-spacing: -0.01em;
-}
-
-.trustSub {
-  font-size: var(--text-sm);
   color: var(--color-text-secondary);
   line-height: 1.5;
 }
 
-.empty {
-  padding: var(--space-12);
-  text-align: center;
-  background: var(--color-paper);
-  border-radius: var(--radius-lg);
-  color: var(--color-text-muted);
-  border: 1px dashed var(--color-border);
+/* --------------------------------------------------------------
+   SCROLL-DRIVEN ENHANCEMENTS
+   -------------------------------------------------------------- */
+@supports (animation-timeline: view()) {
+  .bandMedia {
+    animation: bandPan linear both;
+    animation-timeline: view();
+    animation-range: cover 0% cover 100%;
+  }
 }
 
-/* ========================================
+@keyframes bandPan {
+  from { transform: translateY(-6%); }
+  to { transform: translateY(6%); }
+}
+
+/* The progress hairline reads the spread's own scroll position. It is
+   hidden entirely where named timelines are unavailable. */
+@supports (timeline-scope: --edit) {
+  .editLayout { timeline-scope: --edit; }
+
+  .editSpread {
+    view-timeline-name: --edit;
+    view-timeline-axis: block;
+  }
+
+  .editProgress { display: block; }
+
+  .editProgress span {
+    animation: editFill linear both;
+    animation-timeline: --edit;
+    animation-range: cover 0% cover 100%;
+  }
+}
+
+@keyframes editFill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* --------------------------------------------------------------
    RESPONSIVE
-   ======================================== */
+   -------------------------------------------------------------- */
 @media (max-width: 1024px) {
-  .sectionHead { grid-template-columns: 1fr; gap: var(--space-6); }
-  .categoriesGrid { grid-template-columns: repeat(2, 1fr); }
-  .productsGrid { grid-template-columns: repeat(2, 1fr); gap: var(--space-8) var(--space-5); }
-  .productsGrid > article:nth-child(even) { margin-top: 0; }
+  .editLayout { grid-template-columns: 1fr; gap: var(--space-10); }
+  .editAside { position: static; top: auto; }
+  /* the heading scrolls away here, so a progress hairline reports nothing */
+  .editProgress { display: none; }
+  .editSpread { gap: var(--space-8) var(--space-5); }
+  .spreadItem:nth-child(even) { margin-top: 0; }
   .buildCtaInner { grid-template-columns: 1fr; gap: var(--space-10); }
-  .trustStrip { grid-template-columns: repeat(2, 1fr); }
-  .trustItem:nth-child(2n) { border-right: none; }
+  .ledger { grid-template-columns: repeat(2, 1fr); }
+  .ledgerCell { padding: var(--space-8) var(--space-5); }
+  .ledgerCell:nth-child(odd) { padding-left: 0; border-left: none; }
+  .ledgerCell:nth-child(even) { padding-right: 0; }
+  .ledgerCell:nth-child(n + 3) { border-top: 1px solid var(--color-border-light); }
 }
 
 @media (max-width: 640px) {
-  .section, .buildCta { padding: var(--space-16) 0; }
-  .quote { padding: var(--space-20) 0; }
-  .categoriesGrid { grid-template-columns: 1fr; }
-  .productsGrid { grid-template-columns: 1fr; }
-  .trustStrip { grid-template-columns: 1fr; gap: var(--space-6); }
-  .trustItem { border-right: none; border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-4); }
-  .trustItem:last-child { border-bottom: none; }
+  .section,
+  .railSection,
+  .buildCta { padding: var(--space-16) 0; }
+
+  .band { padding: var(--space-20) 0; }
+  .marqueeBlock { padding: var(--space-12) 0; }
+  .ledger { margin: var(--space-16) 0; }
+  .editSpread { grid-template-columns: 1fr; gap: var(--space-10); }
+  .railTrack { grid-auto-columns: minmax(0, 262px); }
+  .railScroller {
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 48px), transparent 100%);
+    mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 48px), transparent 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bandMedia,
+  .editProgress span {
+    animation: none;
+  }
+
+  .editProgress span { transform: scaleX(1); }
+
+  .railItem:hover,
+  .spreadItem:hover,
+  .buildCtaStep:hover,
+  .buildCtaStep:hover .buildCtaStepArrow,
+  .buildCtaButton:hover { transform: none; }
 }
