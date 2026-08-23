@@ -1,10 +1,9 @@
 import type { NextConfig } from "next";
 
 // Content-Security-Policy tuned to the app's third parties (Razorpay checkout,
-// Cloudinary/Unsplash images, Google Fonts). Shipped in Report-Only mode first
-// so it can't break payments/fonts/images — check the browser console for
-// violations, then rename the header to `Content-Security-Policy` to enforce.
-const cspReportOnly = [
+// Cloudinary/Unsplash images, Google Fonts). Enforced — if a legitimate third party
+// is added later it has to be listed here or the browser will block it.
+const csp = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
@@ -30,7 +29,7 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=()",
   },
-  { key: "Content-Security-Policy-Report-Only", value: cspReportOnly },
+  { key: "Content-Security-Policy", value: csp },
 ];
 
 const nextConfig: NextConfig = {

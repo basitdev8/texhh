@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import dbConnect from '@/lib/db';
 import Product from '@/models/Product';
+// Registers the Category model in this route's module graph. Without it, the first
+// `populate('category')` in a fresh serverless instance throws MissingSchemaError.
+import '@/models/Category';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
 import { generateSlug, escapeRegex } from '@/lib/utils';
 
