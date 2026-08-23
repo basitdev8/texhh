@@ -123,6 +123,29 @@ function uniqueImages(images: string[]): string[] {
 }
 
 async function seed() {
+  // This script DELETES every user, category, product and component. That is fine on a
+  // local database and catastrophic on a live one, so it refuses to run without an
+  // explicit flag. To add the catalogue to a database with real data in it, use
+  // `npm run import-catalog`, which only ever upserts.
+  if (!process.argv.includes('--force-reset')) {
+    console.error(
+      [
+        '',
+        '✋ Refusing to run: this seed wipes users, categories, products and components.',
+        '',
+        `   Target database: ${process.env.MONGODB_URI?.replace(/\/\/[^@]*@/, '//***@') ?? '(MONGODB_URI unset)'}`,
+        '',
+        '   To add the catalogue without deleting anything:',
+        '     npm run import-catalog',
+        '',
+        '   To wipe and reseed anyway (local databases only):',
+        '     npm run seed -- --force-reset',
+        '',
+      ].join('\n')
+    );
+    process.exit(1);
+  }
+
   await dbConnect();
   console.log('🌱 Connected to MongoDB. Starting seed...\n');
 
