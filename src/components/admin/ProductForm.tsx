@@ -134,14 +134,26 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
     }));
   };
 
-  // Validation
+  // Mirrors the API's Zod schema, so a submit cannot be rejected server-side for a
+  // rule the form never showed. Failures land on the field, not in a bare toast.
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
     if (!form.name.trim()) errs.name = 'Product name is required';
+    if (form.name.trim().length < 2) errs.name = 'Name must be at least 2 characters';
     if (!form.slug.trim()) errs.slug = 'Slug is required';
+    if (!form.brand.trim()) errs.brand = 'Brand is required';
     if (form.price === '' || form.price <= 0) errs.price = 'Valid price is required';
+    if (form.comparePrice !== '' && Number(form.comparePrice) < Number(form.price)) {
+      errs.comparePrice = 'Compare price should be higher than the price';
+    }
     if (!form.category) errs.category = 'Category is required';
     if (form.stock === '' || form.stock < 0) errs.stock = 'Valid stock is required';
+    if (form.shortDescription.trim() && form.shortDescription.trim().length < 5) {
+      errs.shortDescription = 'Short description must be at least 5 characters';
+    }
+    if (form.description.trim() && form.description.trim().length < 10) {
+      errs.description = 'Description must be at least 10 characters';
+    }
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -189,15 +201,18 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>Brand</label>
+            <label className={styles.label}>
+              Brand <span className={styles.required}>*</span>
+            </label>
             <input
               type="text"
               name="brand"
               value={form.brand}
               onChange={handleChange}
-              className={styles.input}
+              className={`${styles.input} ${errors.brand ? styles.inputError : ''}`}
               placeholder="Brand name"
             />
+            {errors.brand && <span className={styles.errorText}>{errors.brand}</span>}
           </div>
 
           <div className={`${styles.field} ${styles.gridFull}`}>
@@ -207,9 +222,12 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
               name="shortDescription"
               value={form.shortDescription}
               onChange={handleChange}
-              className={styles.input}
-              placeholder="Brief product description"
+              className={`${styles.input} ${errors.shortDescription ? styles.inputError : ''}`}
+              placeholder="Brief product description (5+ characters, or leave blank)"
             />
+            {errors.shortDescription && (
+              <span className={styles.errorText}>{errors.shortDescription}</span>
+            )}
           </div>
 
           <div className={`${styles.field} ${styles.gridFull}`}>
@@ -218,9 +236,12 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
               name="description"
               value={form.description}
               onChange={handleChange}
-              className={styles.textarea}
-              placeholder="Detailed product description"
+              className={`${styles.textarea} ${errors.description ? styles.inputError : ''}`}
+              placeholder="Detailed product description (10+ characters, or leave blank)"
             />
+            {errors.description && (
+              <span className={styles.errorText}>{errors.description}</span>
+            )}
           </div>
         </div>
       </div>
@@ -231,7 +252,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
         <div className={styles.grid}>
           <div className={styles.field}>
             <label className={styles.label}>
-              Price ($) <span className={styles.required}>*</span>
+              Price (₹) <span className={styles.required}>*</span>
             </label>
             <input
               type="number"
@@ -247,17 +268,20 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>Compare Price ($)</label>
+            <label className={styles.label}>Compare Price (₹)</label>
             <input
               type="number"
               name="comparePrice"
               value={form.comparePrice}
               onChange={handleNumberChange}
-              className={styles.input}
-              placeholder="0.00"
+              className={`${styles.input} ${errors.comparePrice ? styles.inputError : ''}`}
+              placeholder="0"
               min="0"
-              step="0.01"
+              step="1"
             />
+            {errors.comparePrice && (
+              <span className={styles.errorText}>{errors.comparePrice}</span>
+            )}
           </div>
 
           <div className={styles.field}>

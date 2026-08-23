@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import DataTable, { Column } from "@/components/admin/DataTable";
+import Pagination from "@/components/ui/Pagination";
 import Badge from "@/components/ui/Badge";
 import { formatDate, formatPrice } from "@/lib/utils";
 import styles from "../admin.module.css";
@@ -20,23 +21,37 @@ export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState<CustomerRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
+  const PER_PAGE = 25;
+
+  // Searching starts from the first page again.
   useEffect(() => {
-    fetch("/api/admin/customers")
-      .then((res) => res.json())
-      .then((data) => setCustomers(data.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    setPage(1);
+  }, [search]);
 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase().trim();
-    if (!q) return customers;
-    return customers.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)
-    );
-  }, [customers, search]);
+  // Filtering happens server-side, so a large customer list is never all in memory.
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set("limit", String(PER_PAGE));
+    params.set("page", String(page));
+    if (search.trim()) params.set("search", search.trim());
+    setLoading(true);
+    const timeout = setTimeout(() => {
+      fetch(`/api/admin/customers?${params.toString()}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setCustomers(data.data || []);
+          setTotalPages(data.pagination?.totalPages || 1);
+          setTotal(data.pagination?.total || 0);
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    }, 200);
+    return () => clearTimeout(timeout);
+  }, [search, page]);
 
   const columns: Column<CustomerRow>[] = useMemo(
     () => [
@@ -97,7 +112,7 @@ export default function AdminCustomersPage() {
           <div className={styles.pageHeaderEyebrowRow}>
             <span className={styles.pageHeaderEyebrowLine} />
             <span className={styles.pageHeaderEyebrow}>
-              People / {customers.length} customer{customers.length !== 1 ? "s" : ""}
+              People / {total} customer{total !== 1 ? "s" : ""}
             </span>
           </div>
           <h1 className={styles.pageTitle}>
@@ -123,12 +138,15 @@ export default function AdminCustomersPage() {
       {loading ? (
         <div className={styles.loading}>Loading customers…</div>
       ) : (
-        <DataTable
-          columns={columns}
-          data={filtered}
-          emptyMessage="No customers found"
-          emptyDescription="When users register, they will appear here."
-        />
+        <>
+          <DataTable
+            columns={columns}
+            data={customers}
+            emptyMessage="No customers found"
+            emptyDescription="When users register, they will appear here."
+          />
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        </>
       )}
     </>
   );
