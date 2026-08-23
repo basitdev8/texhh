@@ -118,7 +118,10 @@ export default function PCBuilderPage() {
     parts.forEach((part) => {
       addItem({
         productId: part._id,
-        name: `[Build] ${part.type}: ${part.name}`,
+        // Build parts live in their own collection, so the line has to say so or the
+        // order API cannot resolve, price, or restock it.
+        itemType: "component",
+        name: `${part.type}: ${part.name}`,
         price: part.price,
         quantity: 1,
         image: part.image || "/placeholder.svg",
@@ -186,7 +189,6 @@ export default function PCBuilderPage() {
                     active ? styles.stepActive : done ? styles.stepDone : ""
                   }`}
                   onClick={() => goToStep(s)}
-                  data-cursor-text={s}
                 >
                   <span className={styles.stepDot}>
                     {done && !active ? "✓" : String(i + 1).padStart(2, "0")}
@@ -244,7 +246,6 @@ export default function PCBuilderPage() {
                 className={styles.sortSelect}
                 value={sort}
                 onChange={(e) => setSort(e.target.value as typeof sort)}
-                data-cursor-text="Sort"
               >
                 <option value="price-asc">Sort: Price ↑</option>
                 <option value="price-desc">Sort: Price ↓</option>
@@ -275,7 +276,6 @@ export default function PCBuilderPage() {
                       onClick={() =>
                         c.stock > 0 && handleSelect(selected ? null : c)
                       }
-                      data-cursor-text={selected ? "Remove" : "Select"}
                       role="button"
                       tabIndex={0}
                     >
@@ -349,7 +349,6 @@ export default function PCBuilderPage() {
                 className={styles.stepNavBtn}
                 onClick={handlePrev}
                 disabled={stepIndex === 0}
-                data-cursor-text="Prev"
               >
                 ← {stepIndex > 0 ? STEPS[stepIndex - 1] : "Start"}
               </button>
@@ -357,7 +356,6 @@ export default function PCBuilderPage() {
                 className={`${styles.stepNavBtn} ${styles.stepNavNext}`}
                 onClick={handleNext}
                 disabled={stepIndex >= STEPS.length - 1}
-                data-cursor-text="Next"
               >
                 {stepIndex < STEPS.length - 1 ? STEPS[stepIndex + 1] : "Done"} →
               </button>
@@ -387,7 +385,6 @@ export default function PCBuilderPage() {
                       }`}
                       role="button"
                       tabIndex={0}
-                      data-cursor-text={part ? "Edit" : "Pick"}
                     >
                       <span className={styles.slotNum}>
                         {String(i + 1).padStart(2, "0")}
@@ -436,7 +433,6 @@ export default function PCBuilderPage() {
                 className={styles.cta}
                 onClick={handleAddToCart}
                 disabled={filled === 0}
-                data-cursor-text="Cart"
               >
                 {filled === 0
                   ? "Pick a part to begin"

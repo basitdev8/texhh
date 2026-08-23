@@ -129,3 +129,74 @@
   .layout { grid-template-columns: 1fr; }
   .summary { position: relative; top: 0; }
 }
+
+/* Cart revalidation notices — prices and stock move while a cart sits in
+   localStorage, so the customer is told before they reach payment. */
+.alertError,
+.alertInfo {
+  margin-bottom: var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+}
+
+.alertError {
+  background: var(--color-error-light);
+  color: var(--color-error);
+  border: 1px solid currentColor;
+}
+
+.alertInfo {
+  background: var(--color-accent-subtle);
+  color: var(--color-accent-deep);
+  border: 1px solid var(--color-accent-light);
+}
+
+.alertTitle {
+  display: block;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: var(--space-2);
+}
+
+.alertList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.alertRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.alertAction {
+  border: 1px solid currentColor;
+  background: transparent;
+  color: inherit;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.alertAction:hover {
+  background: currentColor;
+  filter: brightness(1.05);
+  color: var(--color-surface);
+}
+
+.checkoutBtn:disabled {
+  background: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}

@@ -50,6 +50,7 @@ export default function ProductCard({ product, index }: ProductCardProps) {
     e.stopPropagation();
     addItem({
       productId: product._id,
+      itemType: "product",
       name: product.name,
       price: product.price,
       quantity: 1,
@@ -68,7 +69,6 @@ export default function ProductCard({ product, index }: ProductCardProps) {
         <Link
           href={`/products/${product.slug}`}
           aria-label={product.name}
-          data-cursor-text="View"
         >
           <Image
             src={product.images[0] || "/placeholder.svg"}
@@ -100,7 +100,6 @@ export default function ProductCard({ product, index }: ProductCardProps) {
           onClick={handleAddToCart}
           id={`add-to-cart-${product._id}`}
           disabled={product.stock === 0}
-          data-cursor-text="Add"
         >
           Add to Cart
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -118,12 +117,15 @@ export default function ProductCard({ product, index }: ProductCardProps) {
       <div className={styles.info}>
         <div className={styles.brandRow}>
           <span className={styles.brand}>{product.brand}</span>
-          <span className={styles.rating}>
-            <span className={styles.stars}>{renderStars(product.rating)}</span>
-            <span className={styles.reviewCount}>
-              ({product.reviewCount})
+          {/* Hidden until reviews exist — see the reviews ticket. */}
+          {product.reviewCount > 0 && (
+            <span className={styles.rating}>
+              <span className={styles.stars}>{renderStars(product.rating)}</span>
+              <span className={styles.reviewCount}>
+                ({product.reviewCount})
+              </span>
             </span>
-          </span>
+          )}
         </div>
 
         <h3 className={styles.name}>
