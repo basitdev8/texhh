@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import Order from '@/models/Order';
+// Registers the User model so `populate('user')` cannot throw MissingSchemaError.
+import '@/models/User';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
 
 const updateOrderSchema = z.object({
@@ -10,7 +13,14 @@ const updateOrderSchema = z.object({
   trackingNumber: z.string().max(120).nullable().optional(),
   carrier: z.string().max(120).nullable().optional(),
   // ISO date string (or null/empty to clear)
-  estimatedDelivery: z.string().nullable().optional(),
+  estimatedDelivery: z
+    .string()
+    .nullable()
+    .optional()
+    .refine(
+      (v) => v == null || v === '' || !Number.isNaN(Date.parse(v)),
+      'Estimated delivery must be a valid date'
+    ),
   // Optional note attached to the status-history entry when status changes
   statusNote: z.string().max(300).optional(),
 });
@@ -42,9 +52,18 @@ export async function GET(
     }
 
     const { id } = await context.params;
+    // A malformed id would otherwise throw a cast error and surface as a 500.
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, error: 'Order not found' },
+        { status: 404 }
+      );
+    }
+
+    // Order lines carry their own name/price/image snapshot, and a line can point at
+    // either catalogue, so the product refs are deliberately not populated here.
     const order = await Order.findById(id)
       .populate('user', 'name email')
-      .populate('items.product', 'name slug images')
       .lean();
 
     if (!order) {
@@ -54,11 +73,16 @@ export async function GET(
       );
     }
 
-    // Customers can only view their own orders
-    if (
-      payload.role !== 'admin' &&
-      order.user._id.toString() !== payload.userId
-    ) {
+    // Customers can only view their own orders. `user` is null when the account was
+    // deleted, which must not crash the page — treat it as not yours.
+    const ownerId =
+      order.user && typeof order.user === 'object' && '_id' in order.user
+        ? String((order.user as { _id: unknown })._id)
+        : order.user
+          ? String(order.user)
+          : null;
+
+    if (payload.role !== 'admin' && ownerId !== payload.userId) {
       return NextResponse.json(
         { success: false, error: 'Not authorized to view this order' },
         { status: 403 }
@@ -100,6 +124,13 @@ export async function PUT(
     }
 
     const { id } = await context.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { success: false, error: 'Order not found' },
+        { status: 404 }
+      );
+    }
+
     const body = await request.json();
     const validation = updateOrderSchema.safeParse(body);
 

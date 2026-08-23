@@ -2,16 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import dbConnect from '@/lib/db';
 import Order from '@/models/Order';
-import Product from '@/models/Product';
+// Registers the User model so `populate('user')` cannot throw MissingSchemaError.
+import '@/models/User';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
 import { generateOrderNumber } from '@/lib/utils';
+import { getSettings } from '@/lib/settings';
+import { computeTotals } from '@/lib/pricing';
+import { resolveOrderItems, decrementStock, restoreStock } from '@/lib/orderItems';
 
 const orderItemSchema = z.object({
   product: z.string().min(1, 'Product ID is required'),
-  name: z.string().min(1),
-  price: z.number().min(0),
+  itemType: z.enum(['product', 'component']).optional(),
+  name: z.string().optional(),
+  price: z.number().min(0).optional(),
   quantity: z.number().int().min(1),
-  image: z.string().optional().default(''),
 });
 
 const shippingAddressSchema = z.object({
@@ -20,15 +24,15 @@ const shippingAddressSchema = z.object({
   city: z.string().min(1, 'City is required'),
   state: z.string().min(1, 'State is required'),
   zipCode: z.string().min(1, 'Zip code is required'),
-  country: z.string().optional().default('US'),
+  country: z.string().optional().default('IN'),
   phone: z.string().min(1, 'Phone is required'),
 });
 
 const createOrderSchema = z.object({
   items: z.array(orderItemSchema).min(1, 'At least one item is required'),
   shippingAddress: shippingAddressSchema,
-  paymentMethod: z.string().optional().default('cash_on_delivery'),
-  notes: z.string().optional(),
+  paymentMethod: z.enum(['cash_on_delivery', 'bank_transfer']).default('cash_on_delivery'),
+  notes: z.string().max(1000).optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -53,9 +57,10 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1') || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '10') || 10));
     const status = searchParams.get('status');
+    const search = searchParams.get('search')?.trim();
 
     // Build filter — admin sees all, customer sees own
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,6 +70,10 @@ export async function GET(request: NextRequest) {
     }
     if (status) {
       filter.status = status;
+    }
+    // Admin order search is by order number — the one identifier a customer quotes.
+    if (search) {
+      filter.orderNumber = { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
     }
 
     const skip = (page - 1) * limit;
@@ -129,77 +138,91 @@ export async function POST(request: NextRequest) {
     }
 
     const { items, shippingAddress, paymentMethod, notes } = validation.data;
+    const settings = await getSettings();
 
-    // Verify stock and rebuild each line from the DB — never trust the
-    // client-supplied price/name/image (prevents order-total tampering).
-    let subtotal = 0;
-    const serverItems = [];
-    for (const item of items) {
-      const product = await Product.findById(item.product);
-      if (!product) {
-        return NextResponse.json(
-          { success: false, error: `Product not found: ${item.name}` },
-          { status: 400 }
-        );
-      }
-      if (!product.isActive) {
-        return NextResponse.json(
-          { success: false, error: `"${product.name}" is no longer available` },
-          { status: 400 }
-        );
-      }
-      if (product.stock < item.quantity) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Insufficient stock for "${product.name}". Available: ${product.stock}`,
-          },
-          { status: 400 }
-        );
-      }
-      subtotal += product.price * item.quantity;
-      serverItems.push({
-        product: product._id,
-        name: product.name,
-        price: product.price,
-        quantity: item.quantity,
-        image: product.images[0] || '',
-      });
+    if (paymentMethod === 'cash_on_delivery' && !settings.codEnabled) {
+      return NextResponse.json(
+        { success: false, error: 'Cash on delivery is currently unavailable' },
+        { status: 400 }
+      );
     }
 
-    const shippingCost = subtotal >= 100 ? 0 : 9.99;
-    const tax = parseFloat((subtotal * 0.08).toFixed(2));
-    const totalAmount = parseFloat((subtotal + shippingCost + tax).toFixed(2));
-
-    const order = await Order.create({
-      orderNumber: generateOrderNumber(),
-      user: payload.userId,
-      items: serverItems,
-      shippingAddress,
-      subtotal,
-      shippingCost,
-      tax,
-      totalAmount,
-      paymentMethod,
-      statusHistory: [
-        { status: 'pending', note: 'Order placed', timestamp: new Date() },
-      ],
-      notes,
-    });
-
-    // Decrement stock for each product
-    for (const item of items) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { stock: -item.quantity },
-      });
+    // Rebuild every line from the catalogue — client prices and names are never trusted.
+    const resolution = await resolveOrderItems(items);
+    if (resolution.blockers.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: resolution.blockers[0].message,
+          changes: resolution.changes,
+          blockers: resolution.blockers,
+        },
+        { status: 409 }
+      );
+    }
+    if (resolution.items.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No orderable items in this cart' },
+        { status: 400 }
+      );
     }
 
-    await order.populate('user', 'name email');
+    const totals = computeTotals(resolution.subtotal, settings);
 
-    return NextResponse.json(
-      { success: true, data: order },
-      { status: 201 }
-    );
+    // Take stock first: if another order beat us to the last unit, no order is written.
+    const stockResult = await decrementStock(resolution.items);
+    if (!stockResult.ok) {
+      await restoreStock(stockResult.taken);
+      return NextResponse.json(
+        {
+          success: false,
+          error: `"${stockResult.failed[0].name}" sold out while you were checking out.`,
+          blockers: stockResult.failed.map((f) => ({
+            product: f.product,
+            name: f.name,
+            kind: 'stock' as const,
+            message: `"${f.name}" is no longer available in that quantity.`,
+          })),
+        },
+        { status: 409 }
+      );
+    }
+
+    try {
+      const order = await Order.create({
+        orderNumber: generateOrderNumber(),
+        user: payload.userId,
+        items: resolution.items.map((i) => ({
+          product: i.product,
+          itemType: i.itemType,
+          name: i.name,
+          price: i.price,
+          quantity: i.quantity,
+          image: i.image,
+        })),
+        shippingAddress,
+        subtotal: totals.subtotal,
+        shippingCost: totals.shippingCost,
+        tax: totals.tax,
+        totalAmount: totals.totalAmount,
+        paymentMethod,
+        statusHistory: [
+          { status: 'pending', note: 'Order placed', timestamp: new Date() },
+        ],
+        notes,
+      });
+
+      await order.populate('user', 'name email');
+
+      return NextResponse.json(
+        { success: true, data: order, changes: resolution.changes },
+        { status: 201 }
+      );
+    } catch (createError) {
+      // The order never existed, so the stock we took has to go back.
+      await restoreStock(stockResult.taken);
+      throw createError;
+    }
   } catch (error) {
     console.error('Create order error:', error);
     return NextResponse.json(

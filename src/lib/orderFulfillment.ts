@@ -1,5 +1,5 @@
 import Order from '@/models/Order';
-import Product from '@/models/Product';
+import { decrementStock } from '@/lib/orderItems';
 import type { IOrderDocument } from '@/models/Order';
 
 /**
@@ -44,11 +44,33 @@ export async function fulfillPaidOrder(params: {
     return { transitioned: false, order: existing };
   }
 
-  // We won the transition — decrement stock once.
-  for (const item of order.items) {
-    await Product.findByIdAndUpdate(item.product, {
-      $inc: { stock: -item.quantity },
+  // We won the transition — decrement stock once, atomically, against whichever
+  // catalogue each line came from.
+  const stockResult = await decrementStock(
+    order.items.map((item: IOrderDocument['items'][number]) => ({
+      product: String(item.product),
+      itemType: item.itemType === 'component' ? 'component' as const : 'product' as const,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      image: item.image,
+      stock: 0,
+    }))
+  );
+
+  // The payment is already captured, so an oversold line cannot undo the order —
+  // it needs a human. Log loudly rather than failing the request.
+  if (!stockResult.ok) {
+    console.error(
+      `Order ${order.orderNumber} paid but oversold:`,
+      stockResult.failed.map((f) => `${f.name} x${f.quantity}`).join(', ')
+    );
+    order.statusHistory.push({
+      status: order.status,
+      note: `Stock shortfall on: ${stockResult.failed.map((f) => f.name).join(', ')} — needs manual review`,
+      timestamp: new Date(),
     });
+    await order.save();
   }
 
   return { transitioned: true, order };
