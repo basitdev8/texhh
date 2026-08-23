@@ -121,7 +121,6 @@ export default function Header() {
                 aria-expanded={dropdownOpen}
                 aria-haspopup="true"
                 id="nav-categories-dropdown"
-                data-cursor-text="Browse"
               >
                 Categories
                 <svg
@@ -166,7 +165,6 @@ export default function Header() {
                       className={styles.dropdownItem}
                       role="menuitem"
                       onClick={() => setDropdownOpen(false)}
-                      data-cursor-text="Open"
                     >
                       <span className={styles.dropdownItemNum}>
                         №{String(i + 1).padStart(2, "0")}
@@ -202,7 +200,6 @@ export default function Header() {
                       href="/products"
                       className={styles.dropdownFooterCTA}
                       onClick={() => setDropdownOpen(false)}
-                      data-cursor-text="All"
                     >
                       View entire catalogue →
                     </Link>

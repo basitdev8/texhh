@@ -180,7 +180,6 @@ export default function ProductsContent() {
             <button
               className={`${styles.chip} ${!categoryParam ? styles.chipActive : ""}`}
               onClick={() => updateParams({ category: null })}
-              data-cursor-text="All"
             >
               All
             </button>
@@ -189,7 +188,6 @@ export default function ProductsContent() {
                 key={cat._id}
                 className={`${styles.chip} ${categoryParam === cat.slug ? styles.chipActive : ""}`}
                 onClick={() => updateParams({ category: cat.slug })}
-                data-cursor-text={cat.name.slice(0, 8)}
               >
                 <span className={styles.chipNum}>
                   №{String(i + 1).padStart(2, "0")}
@@ -209,7 +207,6 @@ export default function ProductsContent() {
               className={`${styles.priceToggle} ${hasPriceFilter || priceOpen ? styles.priceToggleActive : ""}`}
               onClick={() => setPriceOpen((v) => !v)}
               aria-expanded={priceOpen}
-              data-cursor-text="Price"
             >
               <svg
                 width="13"
@@ -234,7 +231,6 @@ export default function ProductsContent() {
                 className={styles.sortSelect}
                 value={sortParam}
                 onChange={(e) => updateParams({ sort: e.target.value })}
-                data-cursor-text="Sort"
               >
                 <option value="-createdAt">Sort: Newest</option>
                 <option value="createdAt">Sort: Oldest</option>
@@ -285,14 +281,12 @@ export default function ProductsContent() {
             <button
               className={styles.applyBtn}
               onClick={applyPrice}
-              data-cursor-text="Apply"
             >
               Apply
             </button>
             <button
               className={styles.clearBtn}
               onClick={clearAll}
-              data-cursor-text="Clear"
             >
               Clear all
             </button>
