@@ -9,7 +9,7 @@ export default function StorefrontLayout({
   return (
     <>
       <Header />
-      <main>{children}</main>
+      <main className="storefront-main">{children}</main>
       <Footer />
     </>
   );

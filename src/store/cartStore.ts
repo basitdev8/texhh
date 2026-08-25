@@ -4,12 +4,23 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { ICartItem } from '@/types';
 
+/** What the server says a line really costs and how many are left. */
+export interface ServerCartLine {
+  productId: string;
+  itemType?: 'product' | 'component';
+  name: string;
+  price: number;
+  image: string;
+  maxStock: number;
+}
+
 interface CartState {
   items: ICartItem[];
   addItem: (item: ICartItem) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
+  applyServerState: (lines: ServerCartLine[]) => void;
   getItemCount: () => number;
   getSubtotal: () => number;
 }
@@ -52,6 +63,27 @@ export const useCartStore = create<CartState>()(
       },
 
       clearCart: () => set({ items: [] }),
+
+      // The cart is persisted in localStorage and can sit for weeks, so the server's
+      // price, name, image and stock replace whatever was cached, and quantities are
+      // clamped to what is actually available.
+      applyServerState: (lines: ServerCartLine[]) => {
+        set((state) => ({
+          items: state.items.map((item) => {
+            const line = lines.find((l) => l.productId === item.productId);
+            if (!line) return item;
+            return {
+              ...item,
+              itemType: line.itemType ?? item.itemType,
+              name: line.name,
+              price: line.price,
+              image: line.image || item.image,
+              maxStock: line.maxStock,
+              quantity: Math.max(1, Math.min(item.quantity, Math.max(1, line.maxStock))),
+            };
+          }),
+        }));
+      },
 
       getItemCount: () => {
         return get().items.reduce((total, item) => total + item.quantity, 0);

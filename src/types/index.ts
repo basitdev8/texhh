@@ -87,6 +87,7 @@ export interface IOrderStatusEvent {
 
 export interface IOrderItem {
   product: string | IProduct;
+  itemType?: 'product' | 'component';
   name: string;
   price: number;
   quantity: number;
@@ -112,6 +113,8 @@ export interface IPCComponent {
 
 export interface ICartItem {
   productId: string;
+  /** Which catalogue this line came from — build parts are not products. */
+  itemType?: 'product' | 'component';
   name: string;
   price: number;
   quantity: number;

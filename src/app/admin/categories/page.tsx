@@ -186,7 +186,7 @@ export default function AdminCategoriesPage() {
             hero image and short description.
           </p>
         </div>
-        <button className={styles.primaryBtn} onClick={openCreate} data-cursor-text="New">
+        <button className={styles.primaryBtn} onClick={openCreate}>
           New category
         </button>
       </header>

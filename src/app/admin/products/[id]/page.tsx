@@ -110,7 +110,6 @@ export default function EditProductPage({ params }: PageProps) {
               href="/admin/products"
               className={styles.pageHeaderEyebrow}
               style={{ color: "var(--color-ink)" }}
-              data-cursor-text="Back"
             >
               ← Catalogue / Products
             </Link>

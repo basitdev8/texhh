@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import DataTable, { Column } from "@/components/admin/DataTable";
+import Pagination from "@/components/ui/Pagination";
 import Badge from "@/components/ui/Badge";
 import { formatDate, formatPrice } from "@/lib/utils";
 import type { IOrder, IUser } from "@/types";
@@ -23,18 +24,38 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<(IOrder & { user: IUser })[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+
+  const PER_PAGE = 25;
+
+  // A new filter or search starts from the first page again.
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, search]);
 
   useEffect(() => {
     const params = new URLSearchParams();
-    params.set("limit", "100");
+    params.set("limit", String(PER_PAGE));
+    params.set("page", String(page));
     if (statusFilter) params.set("status", statusFilter);
+    if (search.trim()) params.set("search", search.trim());
     setLoading(true);
-    fetch(`/api/orders?${params.toString()}`)
-      .then((res) => res.json())
-      .then((data) => setOrders(data.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [statusFilter]);
+    const timeout = setTimeout(() => {
+      fetch(`/api/orders?${params.toString()}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setOrders(data.data || []);
+          setTotalPages(data.pagination?.totalPages || 1);
+          setTotal(data.pagination?.total || 0);
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+    }, 200);
+    return () => clearTimeout(timeout);
+  }, [statusFilter, search, page]);
 
   const columns: Column<IOrder & { user: IUser }>[] = useMemo(
     () => [
@@ -97,7 +118,7 @@ export default function AdminOrdersPage() {
           <div className={styles.pageHeaderEyebrowRow}>
             <span className={styles.pageHeaderEyebrowLine} />
             <span className={styles.pageHeaderEyebrow}>
-              Activity / {orders.length} order{orders.length !== 1 ? "s" : ""}
+              Activity / {total} order{total !== 1 ? "s" : ""}
             </span>
           </div>
           <h1 className={styles.pageTitle}>
@@ -111,6 +132,13 @@ export default function AdminOrdersPage() {
       </header>
 
       <div className={styles.toolbar}>
+        <input
+          type="search"
+          placeholder="Search by order number…"
+          className={styles.searchInput}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <select
           className={styles.filterSelect}
           value={statusFilter}
@@ -128,12 +156,15 @@ export default function AdminOrdersPage() {
       {loading ? (
         <div className={styles.loading}>Loading orders…</div>
       ) : (
-        <DataTable
-          columns={columns}
-          data={orders}
-          emptyMessage="No orders yet"
-          emptyDescription="When customers place orders, they will appear here."
-        />
+        <>
+          <DataTable
+            columns={columns}
+            data={orders}
+            emptyMessage="No orders yet"
+            emptyDescription="When customers place orders, they will appear here."
+          />
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        </>
       )}
     </>
   );

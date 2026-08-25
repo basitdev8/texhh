@@ -97,6 +97,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   const handleAddToCart = () => {
     addItem({
       productId: product._id,
+      itemType: "product",
       name: product.name,
       price: product.price,
       quantity,
@@ -146,31 +147,36 @@ export default function ProductDetailPage({ params }: PageProps) {
 
             <h1 className={styles.title}>{product.name}</h1>
 
-            <div className={styles.ratingRow}>
-              <span className={styles.stars}>
-                {Array.from({ length: 5 }, (_, i) => (
-                  <svg
-                    key={i}
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill={i < Math.round(product.rating) ? "currentColor" : "none"}
-                    className={
-                      i >= Math.round(product.rating) ? styles.starEmpty : ""
-                    }
-                  >
-                    <path
-                      d="M8 1.5l2 4 4.5.65L11.25 9.4 12 14l-4-2.1L4 14l.75-4.6L1.5 6.15 6 5.5l2-4z"
-                      stroke="currentColor"
-                      strokeWidth="0.5"
-                    />
-                  </svg>
-                ))}
-              </span>
-              <span className={styles.reviewCount}>
-                {product.rating.toFixed(1)} · {product.reviewCount} reviews
-              </span>
-            </div>
+            {/* Ratings stay hidden until there is a review system to fill them —
+                "0.0 · 0 reviews" on every product reads as "nobody bought this". */}
+            {product.reviewCount > 0 && (
+              <div className={styles.ratingRow}>
+                <span className={styles.stars}>
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <svg
+                      key={i}
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill={i < Math.round(product.rating) ? "currentColor" : "none"}
+                      className={
+                        i >= Math.round(product.rating) ? styles.starEmpty : ""
+                      }
+                    >
+                      <path
+                        d="M8 1.5l2 4 4.5.65L11.25 9.4 12 14l-4-2.1L4 14l.75-4.6L1.5 6.15 6 5.5l2-4z"
+                        stroke="currentColor"
+                        strokeWidth="0.5"
+                      />
+                    </svg>
+                  ))}
+                </span>
+                <span className={styles.reviewCount}>
+                  {product.rating.toFixed(1)} · {product.reviewCount} review
+                  {product.reviewCount !== 1 ? "s" : ""}
+                </span>
+              </div>
+            )}
 
             <p className={styles.shortDesc}>{product.shortDescription}</p>
 
@@ -234,7 +240,6 @@ export default function ProductDetailPage({ params }: PageProps) {
                 className={styles.addToCart}
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}
-                data-cursor-text="Add"
               >
                 {product.stock === 0 ? "Out of stock" : "Add to Cart"}
                 {product.stock > 0 && (

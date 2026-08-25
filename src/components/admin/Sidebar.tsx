@@ -38,6 +38,12 @@ const NAV: NavSection[] = [
       { href: '/admin/customers', label: 'Customers' },
     ],
   },
+  {
+    section: 'Store',
+    links: [
+      { href: '/admin/settings', label: 'Settings' },
+    ],
+  },
 ];
 
 export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
@@ -111,14 +117,12 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
           <Link
             href="/"
             className={styles.viewSite}
-            data-cursor-text="Storefront"
           >
             → View storefront
           </Link>
           <button
             className={styles.logoutBtn}
             onClick={handleLogout}
-            data-cursor-text="Out"
           >
             ← Sign out
           </button>

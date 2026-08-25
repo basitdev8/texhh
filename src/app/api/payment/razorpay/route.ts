@@ -2,17 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import dbConnect from '@/lib/db';
 import Order from '@/models/Order';
-import Product from '@/models/Product';
 import razorpay from '@/lib/razorpay';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
 import { generateOrderNumber } from '@/lib/utils';
+import { getSettings } from '@/lib/settings';
+import { computeTotals } from '@/lib/pricing';
+import { resolveOrderItems } from '@/lib/orderItems';
 
 const orderItemSchema = z.object({
   product: z.string().min(1, 'Product ID is required'),
-  name: z.string().min(1),
-  price: z.number().min(0),
+  itemType: z.enum(['product', 'component']).optional(),
+  name: z.string().optional(),
+  price: z.number().min(0).optional(),
   quantity: z.number().int().min(1),
-  image: z.string().optional().default(''),
 });
 
 const shippingAddressSchema = z.object({
@@ -28,7 +30,7 @@ const shippingAddressSchema = z.object({
 const createPaymentSchema = z.object({
   items: z.array(orderItemSchema).min(1, 'At least one item is required'),
   shippingAddress: shippingAddressSchema,
-  notes: z.string().optional(),
+  notes: z.string().max(1000).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -62,47 +64,43 @@ export async function POST(request: NextRequest) {
 
     const { items, shippingAddress, notes } = validation.data;
 
-    // Verify stock and compute the authoritative total server-side —
-    // never trust amounts sent by the client.
-    let subtotal = 0;
-    const serverItems = [];
-    for (const item of items) {
-      const product = await Product.findById(item.product);
-      if (!product) {
-        return NextResponse.json(
-          { success: false, error: `Product not found: ${item.name}` },
-          { status: 400 }
-        );
-      }
-      if (!product.isActive) {
-        return NextResponse.json(
-          { success: false, error: `"${product.name}" is no longer available` },
-          { status: 400 }
-        );
-      }
-      if (product.stock < item.quantity) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Insufficient stock for "${product.name}". Available: ${product.stock}`,
-          },
-          { status: 400 }
-        );
-      }
-      subtotal += product.price * item.quantity;
-      serverItems.push({
-        product: product._id,
-        name: product.name,
-        price: product.price,
-        quantity: item.quantity,
-        image: product.images[0] || '',
-      });
+    // Rebuild the cart from the catalogue and price it server-side. Stock is only
+    // checked here — it is decremented when the payment is confirmed.
+    const resolution = await resolveOrderItems(items);
+    if (resolution.blockers.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: resolution.blockers[0].message,
+          changes: resolution.changes,
+          blockers: resolution.blockers,
+        },
+        { status: 409 }
+      );
+    }
+    if (resolution.items.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No orderable items in this cart' },
+        { status: 400 }
+      );
     }
 
-    const shippingCost = subtotal >= 100 ? 0 : 9.99;
-    const tax = parseFloat((subtotal * 0.08).toFixed(2));
-    const totalAmount = parseFloat((subtotal + shippingCost + tax).toFixed(2));
-    const amountInPaise = Math.round(totalAmount * 100);
+    // A price that moved since the cart was filled must be confirmed before we
+    // open a payment for the new amount.
+    if (resolution.changes.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Prices in your cart have changed. Review the new total and try again.',
+          changes: resolution.changes,
+        },
+        { status: 409 }
+      );
+    }
+
+    const settings = await getSettings();
+    const totals = computeTotals(resolution.subtotal, settings);
+    const amountInPaise = Math.round(totals.totalAmount * 100);
 
     const orderNumber = generateOrderNumber();
 
@@ -119,12 +117,19 @@ export async function POST(request: NextRequest) {
     const order = await Order.create({
       orderNumber,
       user: payload.userId,
-      items: serverItems,
+      items: resolution.items.map((i) => ({
+        product: i.product,
+        itemType: i.itemType,
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity,
+        image: i.image,
+      })),
       shippingAddress,
-      subtotal,
-      shippingCost,
-      tax,
-      totalAmount,
+      subtotal: totals.subtotal,
+      shippingCost: totals.shippingCost,
+      tax: totals.tax,
+      totalAmount: totals.totalAmount,
       paymentMethod: 'razorpay',
       paymentStatus: 'pending',
       razorpayOrderId: rzpOrder.id,

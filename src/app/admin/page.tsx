@@ -177,7 +177,6 @@ export default function AdminDashboardPage() {
         <Link
           href="/admin/orders"
           className={styles.primaryBtn}
-          data-cursor-text="Orders"
         >
           Open orders
         </Link>
@@ -364,7 +363,6 @@ export default function AdminDashboardPage() {
           <Link
             href="/admin/orders"
             className={styles.sectionLink}
-            data-cursor-text="All"
           >
             View all orders →
           </Link>

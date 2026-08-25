@@ -24,7 +24,6 @@ export default function CategoryCard({
     <Link
       href={`/products?category=${slug}`}
       className={styles.card}
-      data-cursor-text="Browse"
       aria-label={`Browse ${name}`}
     >
       <div className={styles.imageWrap}>

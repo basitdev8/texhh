@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
+import { useCartValidation } from "@/hooks/useCartValidation";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { formatPrice } from "@/lib/utils";
@@ -79,6 +81,7 @@ export default function CheckoutPage() {
   const subtotal = useCartStore((s) => s.getSubtotal());
   const clearCart = useCartStore((s) => s.clearCart);
   const { showToast } = useToast();
+  const { changes, blockers, totals, settings, revalidate } = useCartValidation();
 
   const [shipping, setShipping] = useState<ShippingForm>({
     fullName: "",
@@ -86,10 +89,11 @@ export default function CheckoutPage() {
     city: "",
     state: "",
     zipCode: "",
-    country: "US",
+    country: "IN",
     phone: "",
   });
   const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  const [priceNoticeSeen, setPriceNoticeSeen] = useState(false);
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -113,9 +117,15 @@ export default function CheckoutPage() {
     }
   }, [items.length, router, submitting]);
 
-  const shippingCost = subtotal >= 100 ? 0 : 9.99;
-  const tax = Number((subtotal * 0.08).toFixed(2));
-  const total = subtotal + shippingCost + tax;
+  // Server totals are what Razorpay will be asked to charge; the local figures are
+  // only a placeholder until the first validation response lands.
+  const shippingCost =
+    totals?.shippingCost ??
+    (subtotal >= settings.freeShippingThreshold ? 0 : settings.flatShippingRate);
+  const tax =
+    totals?.tax ??
+    Number(((subtotal * settings.gstRate) / (100 + settings.gstRate)).toFixed(2));
+  const total = totals?.totalAmount ?? subtotal + shippingCost;
 
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
@@ -138,10 +148,10 @@ export default function CheckoutPage() {
   const orderItemsPayload = () =>
     items.map((i) => ({
       product: i.productId,
+      itemType: i.itemType ?? "product",
       name: i.name,
       price: i.price,
       quantity: i.quantity,
-      image: i.image,
     }));
 
   const handleRazorpayPayment = async () => {
@@ -168,6 +178,9 @@ export default function CheckoutPage() {
     if (!res.ok || !data.success) {
       setFormError(data.error || "Failed to initiate payment");
       setSubmitting(false);
+      // Pull fresh prices and stock so the summary matches what the server just said.
+      await revalidate();
+      setPriceNoticeSeen(false);
       return;
     }
 
@@ -226,6 +239,21 @@ export default function CheckoutPage() {
     setFormError("");
     if (!validate()) return;
 
+    if (blockers.length > 0) {
+      setFormError(blockers[0].message);
+      return;
+    }
+
+    // A price that moved since the cart page has to be acknowledged before we take
+    // money for a different number than the customer last saw.
+    if (changes.length > 0 && !priceNoticeSeen) {
+      setPriceNoticeSeen(true);
+      setFormError(
+        "Prices in your cart changed. Check the updated total, then place the order again."
+      );
+      return;
+    }
+
     setSubmitting(true);
 
     if (paymentMethod === "razorpay") {
@@ -257,6 +285,8 @@ export default function CheckoutPage() {
         router.push(`/account/orders/${data.data._id}`);
       } else {
         setFormError(data.error || "Failed to place order");
+        await revalidate();
+        setPriceNoticeSeen(false);
       }
     } catch {
       setFormError("Network error. Please try again.");
@@ -284,6 +314,17 @@ export default function CheckoutPage() {
           <div className={styles.layout}>
             <div className={styles.form}>
               {formError && <div className={styles.formError}>{formError}</div>}
+
+              {blockers.length > 0 && (
+                <div className={styles.formError}>
+                  {blockers.map((b) => (
+                    <div key={`${b.product}-${b.kind}`}>{b.message}</div>
+                  ))}
+                  <Link href="/cart" className={styles.formErrorLink}>
+                    Go back to the cart to fix this →
+                  </Link>
+                </div>
+              )}
 
               <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>
@@ -387,15 +428,19 @@ export default function CheckoutPage() {
                       title: "Pay Online (Razorpay)",
                       desc: "Cards, UPI, netbanking & wallets — secure checkout.",
                     },
-                    {
-                      value: "cash_on_delivery",
-                      title: "Cash on Delivery",
-                      desc: "Pay when your order arrives at your doorstep.",
-                    },
+                    ...(settings.codEnabled
+                      ? [
+                          {
+                            value: "cash_on_delivery",
+                            title: "Cash on Delivery",
+                            desc: "Pay when your order arrives at your doorstep.",
+                          },
+                        ]
+                      : []),
                     {
                       value: "bank_transfer",
                       title: "Bank Transfer",
-                      desc: "We will send banking details after order placement.",
+                      desc: "We will share banking details for this order over email or phone.",
                     },
                   ].map((opt) => (
                     <label
@@ -455,7 +500,7 @@ export default function CheckoutPage() {
                 </span>
               </div>
               <div className={styles.row}>
-                <span>Tax (8%)</span>
+                <span>Incl. GST ({settings.gstRate}%)</span>
                 <span>{formatPrice(tax)}</span>
               </div>
               <div className={`${styles.row} ${styles.totalRow}`}>
@@ -465,7 +510,7 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 className={styles.placeOrderBtn}
-                disabled={submitting}
+                disabled={submitting || blockers.length > 0}
               >
                 {submitting
                   ? "Processing…"

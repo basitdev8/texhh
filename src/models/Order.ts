@@ -5,6 +5,7 @@ export interface IOrderDocument extends Document {
   user: mongoose.Types.ObjectId;
   items: {
     product: mongoose.Types.ObjectId;
+    itemType: 'product' | 'component';
     name: string;
     price: number;
     quantity: number;
@@ -42,7 +43,10 @@ export interface IOrderDocument extends Document {
 }
 
 const OrderItemSchema = new Schema({
-  product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+  product: { type: Schema.Types.ObjectId, required: true },
+  // Which catalogue the line came from. PC build parts live in their own
+  // collection, so the id alone is not enough to resolve or restock a line.
+  itemType: { type: String, enum: ['product', 'component'], default: 'product' },
   name: { type: String, required: true },
   price: { type: Number, required: true },
   quantity: { type: Number, required: true, min: 1 },
@@ -61,7 +65,7 @@ const ShippingAddressSchema = new Schema({
   city: { type: String, required: true },
   state: { type: String, required: true },
   zipCode: { type: String, required: true },
-  country: { type: String, required: true, default: 'US' },
+  country: { type: String, required: true, default: 'IN' },
   phone: { type: String, required: true },
 }, { _id: false });
 

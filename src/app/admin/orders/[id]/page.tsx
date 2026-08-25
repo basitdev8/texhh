@@ -155,7 +155,6 @@ export default function AdminOrderDetailPage({ params }: PageProps) {
               href="/admin/orders"
               className={styles.pageHeaderEyebrow}
               style={{ color: "var(--color-ink)" }}
-              data-cursor-text="Back"
             >
               ← Activity / Orders
             </Link>
@@ -311,7 +310,6 @@ export default function AdminOrderDetailPage({ params }: PageProps) {
               style={{ width: "100%", justifyContent: "center", marginTop: "var(--space-2)" }}
               onClick={saveDelivery}
               disabled={updating}
-              data-cursor-text="Save"
             >
               {updating ? "Saving…" : "Save delivery update"}
             </button>

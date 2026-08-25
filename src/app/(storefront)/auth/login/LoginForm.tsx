@@ -9,7 +9,12 @@ import styles from "./page.module.css";
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/account";
+  // Only same-site paths: `//evil.com` and absolute URLs would navigate off-site.
+  const redirectParam = searchParams.get("redirect") || "";
+  const redirect =
+    redirectParam.startsWith("/") && !redirectParam.startsWith("//")
+      ? redirectParam
+      : "/account";
   const { login, register } = useAuth();
 
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -90,11 +95,15 @@ export default function LoginForm() {
           label="Password"
           type="password"
           required
-          minLength={6}
+          minLength={mode === "register" ? 8 : undefined}
+          title={mode === "register" ? "At least 8 characters" : undefined}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete={mode === "login" ? "current-password" : "new-password"}
         />
+        {mode === "register" && (
+          <p className={styles.hint}>Use at least 8 characters.</p>
+        )}
         <button type="submit" className={styles.submit} disabled={loading}>
           {loading
             ? "Please wait…"

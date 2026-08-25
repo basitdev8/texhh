@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import DataTable, { Column } from "@/components/admin/DataTable";
+import Pagination from "@/components/ui/Pagination";
 import Badge from "@/components/ui/Badge";
 import Modal from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
@@ -19,18 +20,28 @@ export default function AdminProductsPage() {
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [deleting, setDeleting] = useState<IProduct | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const { showToast } = useToast();
+
+  const PER_PAGE = 25;
 
   const fetchProducts = () => {
     setLoading(true);
     const params = new URLSearchParams();
-    params.set("limit", "100");
+    params.set("limit", String(PER_PAGE));
+    params.set("page", String(page));
     params.set("isActive", "all");
     if (search) params.set("search", search);
     if (categoryFilter) params.set("category", categoryFilter);
     fetch(`/api/products?${params.toString()}`)
       .then((res) => res.json())
-      .then((data) => setProducts(data.data || []))
+      .then((data) => {
+        setProducts(data.data || []);
+        setTotalPages(data.pagination?.totalPages || 1);
+        setTotal(data.pagination?.total || 0);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   };
@@ -42,11 +53,16 @@ export default function AdminProductsPage() {
       .catch(() => {});
   }, []);
 
+  // A new search or filter starts from the first page again.
+  useEffect(() => {
+    setPage(1);
+  }, [search, categoryFilter]);
+
   useEffect(() => {
     const timeout = setTimeout(fetchProducts, 200);
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, categoryFilter]);
+  }, [search, categoryFilter, page]);
 
   const handleDelete = async () => {
     if (!deleting) return;
@@ -57,8 +73,8 @@ export default function AdminProductsPage() {
       });
       if (res.ok) {
         showToast("Product deleted", "success");
-        setProducts((prev) => prev.filter((p) => p._id !== deleting._id));
         setDeleting(null);
+        fetchProducts();
       } else {
         const data = await res.json();
         showToast(data.error || "Failed to delete", "error");
@@ -156,7 +172,7 @@ export default function AdminProductsPage() {
           <div className={styles.pageHeaderEyebrowRow}>
             <span className={styles.pageHeaderEyebrowLine} />
             <span className={styles.pageHeaderEyebrow}>
-              Catalogue / {products.length} pieces
+              Catalogue / {total} pieces
             </span>
           </div>
           <h1 className={styles.pageTitle}>
@@ -167,7 +183,7 @@ export default function AdminProductsPage() {
             live the moment you save.
           </p>
         </div>
-        <Link href="/admin/products/new" className={styles.primaryBtn} data-cursor-text="New">
+        <Link href="/admin/products/new" className={styles.primaryBtn}>
           New product
         </Link>
       </header>
@@ -197,12 +213,15 @@ export default function AdminProductsPage() {
       {loading ? (
         <div className={styles.loading}>Loading products…</div>
       ) : (
-        <DataTable
-          columns={columns}
-          data={products}
-          emptyMessage="No products found"
-          emptyDescription="Try adjusting filters, or add your first product."
-        />
+        <>
+          <DataTable
+            columns={columns}
+            data={products}
+            emptyMessage="No products found"
+            emptyDescription="Try adjusting filters, or add your first product."
+          />
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        </>
       )}
 
       <Modal

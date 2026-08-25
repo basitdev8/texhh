@@ -3,17 +3,26 @@
 import Link from "next/link";
 import CartItem from "@/components/storefront/CartItem";
 import { useCartStore } from "@/store/cartStore";
+import { useCartValidation } from "@/hooks/useCartValidation";
 import { formatPrice } from "@/lib/utils";
 import styles from "./page.module.css";
 
 export default function CartPage() {
   const items = useCartStore((s) => s.items);
+  const removeItem = useCartStore((s) => s.removeItem);
   const subtotal = useCartStore((s) => s.getSubtotal());
   const itemCount = useCartStore((s) => s.getItemCount());
+  const { changes, blockers, totals, settings } = useCartValidation();
 
-  const shipping = subtotal === 0 ? 0 : subtotal >= 100 ? 0 : 9.99;
-  const tax = Number((subtotal * 0.08).toFixed(2));
-  const total = subtotal + shipping + tax;
+  // Server totals are authoritative — they are what checkout will charge. The local
+  // figures only stand in for the moment before the first response arrives.
+  const shipping =
+    totals?.shippingCost ??
+    (subtotal === 0 || subtotal >= settings.freeShippingThreshold
+      ? 0
+      : settings.flatShippingRate);
+  const tax = totals?.tax ?? Number(((subtotal * settings.gstRate) / (100 + settings.gstRate)).toFixed(2));
+  const total = totals?.totalAmount ?? subtotal + shipping;
 
   if (items.length === 0) {
     return (
@@ -61,6 +70,43 @@ export default function CartPage() {
           {itemCount} item{itemCount !== 1 ? "s" : ""} ready for checkout
         </p>
 
+        {blockers.length > 0 && (
+          <div className={styles.alertError}>
+            <span className={styles.alertTitle}>
+              Some items need your attention before checkout
+            </span>
+            <ul className={styles.alertList}>
+              {blockers.map((b) => (
+                <li key={`${b.product}-${b.kind}`} className={styles.alertRow}>
+                  <span>{b.message}</span>
+                  <button
+                    type="button"
+                    className={styles.alertAction}
+                    onClick={() => removeItem(b.product)}
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {changes.length > 0 && (
+          <div className={styles.alertInfo}>
+            <span className={styles.alertTitle}>Prices updated</span>
+            <ul className={styles.alertList}>
+              {changes.map((c) => (
+                <li key={`${c.product}-${c.kind}`}>
+                  {c.name}:{" "}
+                  {typeof c.was === "number" && <s>{formatPrice(c.was)}</s>}{" "}
+                  {typeof c.now === "number" && <strong>{formatPrice(c.now)}</strong>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div className={styles.layout}>
           <div className={styles.items}>
             {items.map((item) => (
@@ -81,22 +127,26 @@ export default function CartPage() {
               </span>
             </div>
             <div className={styles.row}>
-              <span>Tax (8%)</span>
+              <span>Incl. GST ({settings.gstRate}%)</span>
               <span>{formatPrice(tax)}</span>
             </div>
             <div className={`${styles.row} ${styles.rowTotal}`}>
               <span>Total</span>
               <span>{formatPrice(total)}</span>
             </div>
-            <Link href="/checkout" className={styles.checkoutBtn}>
-              Proceed to Checkout →
-            </Link>
+            {blockers.length > 0 ? (
+              <button type="button" className={styles.checkoutBtn} disabled>
+                Resolve items above to continue
+              </button>
+            ) : (
+              <Link href="/checkout" className={styles.checkoutBtn}>
+                Proceed to Checkout →
+              </Link>
+            )}
             <Link href="/products" className={styles.continueLink}>
               ← Continue shopping
             </Link>
-            <p className={styles.note}>
-              Free shipping on orders over $100. Taxes calculated at checkout.
-            </p>
+            <p className={styles.note}>{settings.shippingBannerText}</p>
           </aside>
         </div>
       </div>

@@ -3,6 +3,8 @@ import { z } from 'zod';
 import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import Product from '@/models/Product';
+// Needed so `populate('category')` can resolve — see the note in ../route.ts.
+import '@/models/Category';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
 import { generateSlug } from '@/lib/utils';
 
@@ -33,6 +35,11 @@ export async function GET(
 
     const { id } = await context.params;
 
+    // Admins can preview unpublished products; shoppers cannot reach them by URL.
+    const token = getTokenFromRequest(request);
+    const payload = token ? verifyToken(token) : null;
+    const isAdmin = payload?.role === 'admin';
+
     // Try to find by ID first, then by slug
     let product;
     if (mongoose.Types.ObjectId.isValid(id)) {
@@ -45,6 +52,10 @@ export async function GET(
       product = await Product.findOne({ slug: id })
         .populate('category', 'name slug')
         .lean();
+    }
+
+    if (product && !isAdmin && (product as { isActive?: boolean }).isActive === false) {
+      product = null;
     }
 
     if (!product) {

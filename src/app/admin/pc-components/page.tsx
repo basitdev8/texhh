@@ -266,7 +266,7 @@ export default function AdminPCComponentsPage() {
             everything the PC Builder pulls from.
           </p>
         </div>
-        <button className={styles.primaryBtn} onClick={openCreate} data-cursor-text="New">
+        <button className={styles.primaryBtn} onClick={openCreate}>
           New component
         </button>
       </header>
@@ -360,7 +360,7 @@ export default function AdminPCComponentsPage() {
             />
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Price ($)</label>
+            <label className={styles.label}>Price (₹)</label>
             <input
               type="number"
               className={styles.input}
