@@ -7,6 +7,7 @@ import { useCartStore } from "@/store/cartStore";
 import { useCartValidation } from "@/hooks/useCartValidation";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/Toast";
+import LoadingState from "@/components/ui/LoadingState";
 import { formatPrice } from "@/lib/utils";
 import styles from "./page.module.css";
 
@@ -298,9 +299,7 @@ export default function CheckoutPage() {
   if (authLoading || items.length === 0) {
     return (
       <div className="container">
-        <div style={{ padding: "var(--space-16) 0", textAlign: "center" }}>
-          Loading…
-        </div>
+        <LoadingState label="Preparing checkout" detail="Checking your cart and account." />
       </div>
     );
   }

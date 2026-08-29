@@ -77,7 +77,7 @@ export const useCartStore = create<CartState>()(
               itemType: line.itemType ?? item.itemType,
               name: line.name,
               price: line.price,
-              image: line.image || item.image,
+              image: line.image || '',
               maxStock: line.maxStock,
               quantity: Math.max(1, Math.min(item.quantity, Math.max(1, line.maxStock))),
             };

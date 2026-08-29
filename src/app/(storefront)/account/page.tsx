@@ -8,6 +8,7 @@ import Badge from "@/components/ui/Badge";
 import Reveal from "@/components/ui/Reveal";
 import { useAuth } from "@/context/AuthContext";
 import { formatDate, formatPrice } from "@/lib/utils";
+import { isAllowedImageSource } from "@/lib/image";
 import type { IAddress, IOrder } from "@/types";
 import styles from "./page.module.css";
 
@@ -50,10 +51,6 @@ const ORDER_FETCH_LIMIT = 100;
 
 function padCount(value: number): string {
   return value < 10 ? `0${value}` : String(value);
-}
-
-function hasImage(src?: string): src is string {
-  return typeof src === "string" && (src.startsWith("http") || src.startsWith("/"));
 }
 
 export default function AccountPage() {
@@ -331,7 +328,7 @@ export default function AccountPage() {
                       <span className={styles.thumbs} aria-hidden="true">
                         {order.items.slice(0, 3).map((item, index) => (
                           <span key={index} className={styles.thumb}>
-                            {hasImage(item.image) ? (
+                            {isAllowedImageSource(item.image) ? (
                               <Image
                                 src={item.image}
                                 alt=""

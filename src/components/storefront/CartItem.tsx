@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ICartItem } from "@/types";
 import { useCartStore } from "@/store/cartStore";
+import { isAllowedImageSource } from "@/lib/image";
 import { formatPrice } from "@/lib/utils";
 import styles from "./CartItem.module.css";
 
@@ -19,7 +20,7 @@ export default function CartItem({ item }: CartItemProps) {
     <div className={styles.row}>
       <div className={styles.imageWrap}>
         <Image
-          src={item.image || "/placeholder.svg"}
+          src={isAllowedImageSource(item.image) ? item.image : "/placeholder.svg"}
           alt={item.name}
           fill
           sizes="100px"

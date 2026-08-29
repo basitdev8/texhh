@@ -13,6 +13,24 @@ interface PaginationData {
   total: number;
 }
 
+export function ProductGridLoading() {
+  return (
+    <div className={styles.loadingGrid} aria-busy="true">
+      <span className="sr-only">Loading products</span>
+      {Array.from({ length: 8 }, (_, index) => (
+        <div className={styles.skeletonCard} key={index} aria-hidden="true">
+          <div className={styles.skeletonImage} />
+          <div className={styles.skeletonMeta}>
+            <span className={styles.skeletonLine} />
+            <span className={`${styles.skeletonLine} ${styles.skeletonLineShort}`} />
+            <span className={`${styles.skeletonLine} ${styles.skeletonPrice}`} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -130,6 +148,7 @@ export default function ProductsContent() {
 
   const hasPriceFilter = !!(minPriceParam || maxPriceParam);
   const activeCategory = categories.find((c) => c.slug === categoryParam);
+  const categoryTitleWords = activeCategory?.name.trim().split(/\s+/) || [];
 
   return (
     <div className={styles.page}>
@@ -145,12 +164,16 @@ export default function ProductsContent() {
             </div>
             <h1 className={styles.title}>
               {activeCategory ? (
-                <>
-                  {activeCategory.name.split(" ").slice(0, -1).join(" ") || activeCategory.name}{" "}
-                  <span className={styles.titleItalic}>
-                    {activeCategory.name.split(" ").slice(-1)[0]}
-                  </span>
-                </>
+                categoryTitleWords.length > 1 ? (
+                  <>
+                    {categoryTitleWords.slice(0, -1).join(" ")}{" "}
+                    <span className={styles.titleItalic}>
+                      {categoryTitleWords[categoryTitleWords.length - 1]}
+                    </span>
+                  </>
+                ) : (
+                  activeCategory.name
+                )
               ) : (
                 <>
                   The whole <span className={styles.titleItalic}>catalogue</span>.
@@ -295,7 +318,7 @@ export default function ProductsContent() {
 
         {/* Grid */}
         {loading ? (
-          <div className={styles.loading}>Loading the edit…</div>
+          <ProductGridLoading />
         ) : products.length === 0 ? (
           <div className={styles.empty}>
             <p className={styles.emptyTitle}>Nothing matches just yet.</p>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useCartStore } from "@/store/cartStore";
 import { useToast } from "@/components/ui/Toast";
+import LoadingState from "@/components/ui/LoadingState";
 import { formatPrice } from "@/lib/utils";
 import type { IPCBuild, IPCComponent, PCComponentType } from "@/types";
 import styles from "./page.module.css";
@@ -256,7 +257,7 @@ export default function PCBuilderPage() {
             {/* Component grid */}
             {loading ? (
               <div className={styles.gridLoading}>
-                Loading {currentStep} options…
+                <LoadingState label={`Finding ${currentStep} options`} compact />
               </div>
             ) : sortedComponents.length === 0 ? (
               <div className={styles.gridEmpty}>

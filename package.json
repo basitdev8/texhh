@@ -7,9 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "scrape": "node scripts/scrape-astbharat.mjs",
-    "seed": "tsx --env-file=.env src/lib/seed.ts",
-    "import-catalog": "tsx --env-file=.env scripts/import-catalog.ts"
+    "import-products": "tsx --env-file=.env scripts/import-products.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

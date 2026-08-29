@@ -8,7 +8,7 @@ const csp = [
   "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
-  "img-src 'self' data: https://res.cloudinary.com https://images.unsplash.com https://cdn.pixabay.com https://astbharat.com",
+  "img-src 'self' data: https://res.cloudinary.com https://images.unsplash.com https://cdn.pixabay.com",
   "frame-src https://checkout.razorpay.com https://api.razorpay.com https://*.razorpay.com",
   "connect-src 'self' https://*.razorpay.com https://api.cloudinary.com",
   "object-src 'none'",
@@ -35,7 +35,6 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "astbharat.com" },
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "cdn.pixabay.com" },

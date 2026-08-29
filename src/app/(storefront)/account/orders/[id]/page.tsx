@@ -4,7 +4,9 @@ import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Badge from "@/components/ui/Badge";
+import LoadingState from "@/components/ui/LoadingState";
 import { formatDateTime, formatPrice } from "@/lib/utils";
+import { isAllowedImageSource } from "@/lib/image";
 import type { IOrder } from "@/types";
 import styles from "./page.module.css";
 
@@ -48,9 +50,7 @@ export default function OrderDetailPage({ params }: PageProps) {
   if (loading) {
     return (
       <div className="container">
-        <div style={{ padding: "var(--space-16) 0", textAlign: "center" }}>
-          Loading order…
-        </div>
+        <LoadingState label="Opening your order" detail="Fetching your order timeline and items." />
       </div>
     );
   }
@@ -197,7 +197,7 @@ export default function OrderDetailPage({ params }: PageProps) {
               {order.items.map((item, i) => (
                 <div key={i} className={styles.item}>
                   <div className={styles.itemImage}>
-                    {item.image && (
+                    {isAllowedImageSource(item.image) && (
                       <Image
                         src={item.image}
                         alt={item.name}

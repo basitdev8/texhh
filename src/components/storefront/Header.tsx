@@ -34,10 +34,15 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const [categories, setCategories] = useState<NavCategory[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const itemCount = useCartStore((s) => s.getItemCount());
   const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -245,7 +250,7 @@ export default function Header() {
                 <circle cx="8.5" cy="16.5" r="1.5" fill="currentColor" />
                 <circle cx="15.5" cy="16.5" r="1.5" fill="currentColor" />
               </svg>
-              {itemCount > 0 && (
+              {hasMounted && itemCount > 0 && (
                 <span className={styles.cartBadge}>{itemCount > 99 ? "99+" : itemCount}</span>
               )}
             </Link>
