@@ -39,7 +39,7 @@ export default function Header() {
   const [categories, setCategories] = useState<NavCategory[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const hamburgerRef = useRef<HTMLButtonElement>(null);
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimer = useRef<number | null>(null);
   const itemCount = useCartStore((s) => s.getItemCount());
   const { isAuthenticated } = useAuth();
 

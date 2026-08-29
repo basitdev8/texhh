@@ -177,7 +177,11 @@ export default async function HomePage() {
               Featured pieces appear here once the database is seeded.
             </div>
           ) : (
-            <div className={styles.editSpread}>
+            <div
+              className={styles.editSpread}
+              role="region"
+              aria-label="Featured products"
+            >
               {editProducts.map((product, i) => (
                 <Reveal
                   key={product._id}

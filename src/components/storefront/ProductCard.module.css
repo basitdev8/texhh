@@ -267,3 +267,13 @@
   font-weight: 600;
   color: var(--color-ink);
 }
+
+@media (max-width: 768px), (hover: none) {
+  .addToCart {
+    inset: auto var(--space-3) var(--space-3) var(--space-3);
+    opacity: 1;
+    transform: none;
+  }
+
+  .card:hover .image { transform: none; }
+}

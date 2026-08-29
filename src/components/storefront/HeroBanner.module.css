@@ -385,14 +385,36 @@ a.imageFrame:hover {
   }
 
   .grid { grid-template-columns: 1fr; gap: var(--space-12); }
-  .imageFrame { max-width: 460px; aspect-ratio: 1 / 1; }
-  .visualWrap { max-width: 460px; }
+  .imageFrame { max-width: 640px; aspect-ratio: 1 / 1; }
+  .visualWrap {
+    width: 100%;
+    max-width: 640px;
+    margin-inline: auto;
+  }
 }
 
 @media (max-width: 640px) {
   .hero { padding: var(--space-20) 0 var(--space-12); }
-  .ctaRow { width: 100%; }
-  .ctaPrimary, .ctaSecondary { flex: 1; justify-content: center; }
+  .grid { gap: var(--space-8); }
+  .eyebrowRow { margin-bottom: var(--space-4); }
+  .eyebrowLine { width: 40px; }
+  .eyebrow { font-size: 10px; letter-spacing: 0.25em; }
+  .headline { font-size: clamp(3.05rem, 14vw, 3.55rem); }
+  .subheading { margin-top: var(--space-5); font-size: var(--text-base); }
+  .ctaRow {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+  }
+  .ctaPrimary, .ctaSecondary {
+    width: 100%;
+    min-height: 56px;
+    justify-content: center;
+  }
+  .ctaPrimary { justify-content: space-between; padding-left: var(--space-6); }
+  .visualWrap, .imageFrame { width: 100%; max-width: none; }
   .plate { flex-direction: column; align-items: flex-start; gap: var(--space-3); }
   .plateMeta { text-align: left; }
 }
