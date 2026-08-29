@@ -443,6 +443,13 @@ ul, ol { list-style: none; }
   h3 { font-size: var(--text-2xl); }
 }
 
+@media (max-width: 640px) {
+  /* Mobile browsers use overlay scrollbars. Hiding the desktop-style custom
+     rail here prevents a pale 10px strip on the right of narrow viewports. */
+  html { scrollbar-width: none; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+}
+
 @media (max-width: 480px) {
   :root {
     --container-padding: var(--space-4);

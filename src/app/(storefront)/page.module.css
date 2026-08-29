@@ -16,7 +16,10 @@
    SHARED TYPE
    -------------------------------------------------------------- */
 .section {
-  padding: var(--space-24) 0;
+  /* Keep the shared .container inline padding intact. Using the `padding`
+     shorthand here previously reset it to zero on sections that combine both
+     classes, making the featured rail bleed past the viewport on phones. */
+  padding-block: var(--space-24);
   position: relative;
 }
 
@@ -562,7 +565,7 @@
 @media (max-width: 640px) {
   .section,
   .railSection,
-  .buildCta { padding: var(--space-16) 0; }
+  .buildCta { padding-block: var(--space-16); }
 
   .sectionTitle {
     font-size: clamp(2.25rem, 11vw, 3rem);
