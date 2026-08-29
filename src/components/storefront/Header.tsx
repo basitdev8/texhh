@@ -33,10 +33,13 @@ export default function Header() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileMounted, setMobileMounted] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
   const [categories, setCategories] = useState<NavCategory[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const itemCount = useCartStore((s) => s.getItemCount());
   const { isAuthenticated } = useAuth();
 
@@ -51,7 +54,7 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    setMobileOpen(false);
+    closeMobileMenu();
     setDropdownOpen(false);
   }, [pathname]);
 
@@ -66,9 +69,13 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    document.body.style.overflow = mobileMounted ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [mobileOpen]);
+  }, [mobileMounted]);
+
+  useEffect(() => () => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+  }, []);
 
   useEffect(() => {
     fetch("/api/categories")
@@ -80,6 +87,21 @@ export default function Header() {
   }, []);
 
   const isActive = (path: string) => pathname === path;
+
+  function openMobileMenu() {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    setMobileMounted(true);
+    setMobileOpen(true);
+  }
+
+  function closeMobileMenu() {
+    setMobileOpen(false);
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => {
+      setMobileMounted(false);
+      hamburgerRef.current?.focus();
+    }, 340);
+  }
 
   return (
     <>
@@ -257,9 +279,12 @@ export default function Header() {
 
             {/* Hamburger */}
             <button
+              ref={hamburgerRef}
               className={`${styles.hamburger} ${mobileOpen ? styles.hamburgerOpen : ""}`}
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Toggle menu"
+              onClick={mobileOpen ? closeMobileMenu : openMobileMenu}
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-controls="mobile-navigation-drawer"
+              aria-expanded={mobileOpen}
               id="header-hamburger"
             >
               <span className={styles.hamburgerLine} />
@@ -269,13 +294,28 @@ export default function Header() {
       </header>
 
       {/* Mobile Drawer */}
-      {mobileOpen && (
+      {mobileMounted && (
         <>
           <div
-            className={styles.mobileBackdrop}
-            onClick={() => setMobileOpen(false)}
+            className={`${styles.mobileBackdrop} ${mobileOpen ? styles.mobileBackdropOpen : styles.mobileBackdropClosing}`}
+            onClick={closeMobileMenu}
+            aria-hidden="true"
           />
-          <aside className={styles.mobileDrawer} aria-label="Mobile navigation">
+          <aside
+            className={`${styles.mobileDrawer} ${mobileOpen ? styles.mobileDrawerOpen : styles.mobileDrawerClosing}`}
+            aria-label="Mobile navigation"
+            aria-hidden={!mobileOpen}
+            id="mobile-navigation-drawer"
+          >
+            <div className={styles.mobileDrawerHead}>
+              <span className={styles.mobileDrawerLabel}>Navigate</span>
+              <button className={styles.mobileClose} onClick={closeMobileMenu} aria-label="Close navigation">
+                <span>Close</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
             <nav className={styles.mobileNav}>
               <Link href="/" className={styles.mobileNavLink}>
                 Home

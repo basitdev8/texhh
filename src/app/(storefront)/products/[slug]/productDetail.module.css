@@ -423,9 +423,36 @@
 
 @media (max-width: 640px) {
   .price { font-size: var(--text-3xl); }
-  .actionRow { flex-direction: column; }
-  .qtyControl { width: 100%; justify-content: space-between; }
-  .addToCart { width: 100%; }
+  .actionRow {
+    display: grid;
+    grid-template-columns: 7.75rem minmax(0, 1fr);
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    padding: var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-paper);
+    box-shadow: var(--shadow-sm);
+  }
+  .qtyControl { width: 100%; justify-content: space-between; border-radius: var(--radius-md); }
+  .qtyBtn { width: 2.55rem; height: 52px; }
+  .qtyValue { min-width: auto; }
+  .addToCart {
+    width: 100%;
+    height: 52px;
+    min-width: 0;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    box-shadow: none;
+  }
   .specGrid { grid-template-columns: 1fr; }
   .relatedGrid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 360px) {
+  .actionRow { grid-template-columns: 6.85rem minmax(0, 1fr); }
+  .qtyBtn { width: 2.2rem; }
+  .addToCart { gap: var(--space-2); padding: 0 var(--space-2); letter-spacing: 0.08em; }
 }
