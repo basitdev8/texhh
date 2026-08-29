@@ -9,10 +9,12 @@ interface ImageUploaderProps {
   maxImages?: number;
 }
 
-export default function ImageUploader({ images, onChange, maxImages = 8 }: ImageUploaderProps) {
+export default function ImageUploader({ images, onChange, maxImages = 20 }: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageDragIndex = useRef<number | null>(null);
 
   const uploadFiles = useCallback(async (files: FileList | File[]) => {
     const fileArray = Array.from(files);
@@ -77,6 +79,29 @@ export default function ImageUploader({ images, onChange, maxImages = 8 }: Image
     onChange(images.filter((_, i) => i !== index));
   };
 
+  const moveImage = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex || toIndex < 0 || toIndex >= images.length) return;
+    const reordered = [...images];
+    const [image] = reordered.splice(fromIndex, 1);
+    reordered.splice(toIndex, 0, image);
+    onChange(reordered);
+  };
+
+  const handleImageDragStart = (event: React.DragEvent<HTMLDivElement>, index: number) => {
+    imageDragIndex.current = index;
+    setDraggedIndex(index);
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', String(index));
+  };
+
+  const handleImageDrop = (event: React.DragEvent<HTMLDivElement>, index: number) => {
+    event.preventDefault();
+    const fromIndex = imageDragIndex.current;
+    if (fromIndex !== null) moveImage(fromIndex, index);
+    imageDragIndex.current = null;
+    setDraggedIndex(null);
+  };
+
   return (
     <div className={styles.uploader}>
       <div
@@ -113,20 +138,64 @@ export default function ImageUploader({ images, onChange, maxImages = 8 }: Image
       )}
 
       {images.length > 0 && (
-        <div className={styles.previews}>
+        <>
+          <p className={styles.orderHint}>
+            Drag images to change their order. The first image is shown first on the product page.
+          </p>
+          <div className={styles.previews} role="list" aria-label="Product image order">
           {images.map((src, i) => (
-            <div key={i} className={styles.previewItem}>
+            <div
+              key={`${src}-${i}`}
+              className={`${styles.previewItem} ${draggedIndex === i ? styles.previewItemDragging : ''}`}
+              draggable
+              role="listitem"
+              aria-label={`Image ${i + 1} of ${images.length}`}
+              onDragStart={(event) => handleImageDragStart(event, i)}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => handleImageDrop(event, i)}
+              onDragEnd={() => {
+                imageDragIndex.current = null;
+                setDraggedIndex(null);
+              }}
+            >
               <img src={src} alt={`Preview ${i + 1}`} className={styles.previewImage} />
+              <span className={styles.positionBadge}>{i === 0 ? 'Primary' : i + 1}</span>
+              <span className={styles.dragHandle} aria-hidden="true">⠿</span>
+              <div className={styles.reorderControls}>
+                <button
+                  type="button"
+                  className={styles.reorderBtn}
+                  onClick={() => moveImage(i, i - 1)}
+                  disabled={i === 0}
+                  aria-label={`Move image ${i + 1} earlier`}
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  className={styles.reorderBtn}
+                  onClick={() => moveImage(i, i + 1)}
+                  disabled={i === images.length - 1}
+                  aria-label={`Move image ${i + 1} later`}
+                >
+                  →
+                </button>
+              </div>
               <button
                 type="button"
                 className={styles.removeBtn}
-                onClick={() => removeImage(i)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  removeImage(i);
+                }}
+                aria-label={`Remove image ${i + 1}`}
               >
                 ✕
               </button>
             </div>
           ))}
         </div>
+        </>
       )}
     </div>
   );
