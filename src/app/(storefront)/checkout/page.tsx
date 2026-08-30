@@ -7,6 +7,7 @@ import { useCartStore } from "@/store/cartStore";
 import { useCartValidation } from "@/hooks/useCartValidation";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/Toast";
+import LoadingState from "@/components/ui/LoadingState";
 import { formatPrice } from "@/lib/utils";
 import styles from "./page.module.css";
 
@@ -244,6 +245,13 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (paymentMethod === "cash_on_delivery" && total > settings.codMaxOrderAmount) {
+      setFormError(
+        `Cash on delivery is available for orders up to ${formatPrice(settings.codMaxOrderAmount)}. Please pay online instead.`
+      );
+      return;
+    }
+
     // A price that moved since the cart page has to be acknowledged before we take
     // money for a different number than the customer last saw.
     if (changes.length > 0 && !priceNoticeSeen) {
@@ -298,9 +306,7 @@ export default function CheckoutPage() {
   if (authLoading || items.length === 0) {
     return (
       <div className="container">
-        <div style={{ padding: "var(--space-16) 0", textAlign: "center" }}>
-          Loading…
-        </div>
+        <LoadingState label="Preparing checkout" detail="Checking your cart and account." />
       </div>
     );
   }
@@ -433,15 +439,15 @@ export default function CheckoutPage() {
                           {
                             value: "cash_on_delivery",
                             title: "Cash on Delivery",
-                            desc: "Pay when your order arrives at your doorstep.",
+                            desc: `Pay when your order arrives. Available up to ${formatPrice(settings.codMaxOrderAmount)}.`,
                           },
                         ]
                       : []),
-                    {
+                    ...(settings.bankTransferEnabled ? [{
                       value: "bank_transfer",
                       title: "Bank Transfer",
-                      desc: "We will share banking details for this order over email or phone.",
-                    },
+                      desc: "Bank details are shared after your order is received.",
+                    }] : []),
                   ].map((opt) => (
                     <label
                       key={opt.value}

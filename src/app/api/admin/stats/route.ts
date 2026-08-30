@@ -4,6 +4,7 @@ import Order from '@/models/Order';
 import Product from '@/models/Product';
 import User from '@/models/User';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
+import { expireStaleRazorpayOrders } from '@/lib/pendingOrders';
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,6 +28,9 @@ export async function GET(request: NextRequest) {
     }
 
     const LOW_STOCK_THRESHOLD = 5;
+    // The cron runs daily on Vercel's free plan; this keeps the dashboard clean
+    // sooner whenever an admin opens it.
+    await expireStaleRazorpayOrders();
 
     // Gather all stats in parallel
     const [
@@ -44,15 +48,16 @@ export async function GET(request: NextRequest) {
         { $match: { paymentStatus: 'paid' } },
         { $group: { _id: null, total: { $sum: '$totalAmount' } } },
       ]),
-      Order.countDocuments(),
+      Order.countDocuments({ paymentStatus: { $ne: 'abandoned' } }),
       Product.countDocuments({ isActive: true }),
       User.countDocuments({ role: 'customer' }),
-      Order.find()
+      Order.find({ paymentStatus: { $ne: 'abandoned' } })
         .populate('user', 'name email')
         .sort({ createdAt: -1 })
         .limit(10)
         .lean(),
       Order.aggregate([
+        { $match: { paymentStatus: { $ne: 'abandoned' } } },
         { $group: { _id: '$status', count: { $sum: 1 } } },
       ]),
       Order.countDocuments({ paymentStatus: 'pending' }),

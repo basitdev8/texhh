@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import SearchBar from "@/components/storefront/SearchBar";
 import ProductCard from "@/components/storefront/ProductCard";
+import LoadingState from "@/components/ui/LoadingState";
 import type { IProduct } from "@/types";
 import styles from "./page.module.css";
 
@@ -42,7 +43,7 @@ export default function SearchContent() {
         </div>
 
         {loading ? (
-          <div className={styles.loading}>Searching…</div>
+          <LoadingState label="Searching the edit" detail="Matching products and components." />
         ) : query && results.length === 0 ? (
           <div className={styles.empty}>
             No products match &ldquo;{query}&rdquo;. Try a different keyword.

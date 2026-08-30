@@ -83,6 +83,9 @@ export default function AdminOrderDetailPage({ params }: PageProps) {
     value: string
   ) => {
     if (!order) return;
+    if (value === "refunded" && !window.confirm("Issue a refund? Razorpay payments will be refunded to the original payment method.")) {
+      return;
+    }
     setUpdating(true);
     try {
       const res = await fetch(`/api/orders/${id}`, {

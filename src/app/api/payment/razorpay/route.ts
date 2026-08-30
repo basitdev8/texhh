@@ -4,6 +4,7 @@ import dbConnect from '@/lib/db';
 import Order from '@/models/Order';
 import razorpay from '@/lib/razorpay';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
+import { rateLimit } from '@/lib/rateLimit';
 import { generateOrderNumber } from '@/lib/utils';
 import { getSettings } from '@/lib/settings';
 import { computeTotals } from '@/lib/pricing';
@@ -50,6 +51,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Invalid or expired token' },
         { status: 401 }
+      );
+    }
+
+    const { allowed, retryAfter } = await rateLimit(
+      `razorpay-order:${payload.userId}`,
+      5,
+      15 * 60 * 1000
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many payment attempts. Please try again shortly.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
       );
     }
 

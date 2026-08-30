@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useCartStore } from "@/store/cartStore";
 import { useToast } from "@/components/ui/Toast";
+import LoadingState from "@/components/ui/LoadingState";
+import { evaluatePcCompatibility } from "@/lib/pcCompatibility";
 import { formatPrice } from "@/lib/utils";
 import type { IPCBuild, IPCComponent, PCComponentType } from "@/types";
 import styles from "./page.module.css";
@@ -62,6 +64,7 @@ export default function PCBuilderPage() {
     () => STEPS.reduce((sum, s) => sum + (build[s]?.price ?? 0), 0),
     [build]
   );
+  const compatibility = useMemo(() => evaluatePcCompatibility(build), [build]);
   const stepIndex = STEPS.indexOf(currentStep);
 
   useEffect(() => {
@@ -115,6 +118,10 @@ export default function PCBuilderPage() {
       showToast("Select at least one part first", "error");
       return;
     }
+    if (compatibility.status === "incompatible") {
+      showToast("Fix compatibility issues before adding this build", "error");
+      return;
+    }
     parts.forEach((part) => {
       addItem({
         productId: part._id,
@@ -134,7 +141,18 @@ export default function PCBuilderPage() {
 
   const meta = STEP_META[currentStep];
   const stepNum = String(stepIndex + 1).padStart(2, "0");
-  const compatible = filled === STEPS.length;
+  const compatibilityClass =
+    compatibility.status === "compatible"
+      ? styles.compatGood
+      : compatibility.status === "incompatible"
+        ? styles.compatBad
+        : styles.compatWarn;
+  const compatibilityLabel =
+    compatibility.status === "compatible"
+      ? "All checked rules pass · ready to ship"
+      : compatibility.status === "incompatible"
+        ? `${compatibility.errors.length} compatibility issue${compatibility.errors.length === 1 ? "" : "s"} need fixing`
+        : "Compatibility needs review";
 
   return (
     <div className={styles.page}>
@@ -256,7 +274,7 @@ export default function PCBuilderPage() {
             {/* Component grid */}
             {loading ? (
               <div className={styles.gridLoading}>
-                Loading {currentStep} options…
+                <LoadingState label={`Finding ${currentStep} options`} compact />
               </div>
             ) : sortedComponents.length === 0 ? (
               <div className={styles.gridEmpty}>
@@ -410,14 +428,20 @@ export default function PCBuilderPage() {
               </div>
 
               <div
-                className={`${styles.compat} ${compatible ? styles.compatGood : ""}`}
+                className={`${styles.compat} ${compatibilityClass}`}
+                aria-live="polite"
               >
                 <span className={styles.compatDot} />
-                {compatible
-                  ? "All parts compatible · ready to ship"
-                  : `${STEPS.length - filled} part${
-                      STEPS.length - filled === 1 ? "" : "s"
-                    } left to pick`}
+                <div>
+                  <span>{compatibilityLabel}</span>
+                  {compatibility.status !== "compatible" && compatibility.messages.length > 0 && (
+                    <ul className={styles.compatMessages}>
+                      {compatibility.messages.map((message) => (
+                        <li key={message}>{message}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
 
               <div className={styles.total}>
@@ -432,10 +456,12 @@ export default function PCBuilderPage() {
               <button
                 className={styles.cta}
                 onClick={handleAddToCart}
-                disabled={filled === 0}
+                disabled={filled === 0 || compatibility.status === "incompatible"}
               >
                 {filled === 0
                   ? "Pick a part to begin"
+                  : compatibility.status === "incompatible"
+                  ? "Fix compatibility issues"
                   : filled < STEPS.length
                   ? `Add ${filled} part${filled === 1 ? "" : "s"} to cart`
                   : "Send build to cart"}

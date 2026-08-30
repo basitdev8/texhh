@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 import Product from '@/models/Product';
 // Registers the Category model in this route's module graph. Without it, the first
 // `populate('category')` in a fresh serverless instance throws MissingSchemaError.
-import '@/models/Category';
+import Category from '@/models/Category';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
 import { generateSlug, escapeRegex } from '@/lib/utils';
 
@@ -44,7 +45,18 @@ export async function GET(request: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filter: Record<string, any> = {};
 
-    if (category) filter.category = category;
+    if (category) {
+      if (mongoose.isObjectIdOrHexString(category)) {
+        filter.category = category;
+      } else {
+        const categoryDocument = await Category.findOne({ slug: category, isActive: true })
+          .select('_id')
+          .lean<{ _id: mongoose.Types.ObjectId } | null>();
+        // Keep an unknown slug as an empty result rather than passing it to
+        // Mongoose as an invalid ObjectId and turning a filter into a 500.
+        filter.category = categoryDocument?._id || new mongoose.Types.ObjectId('000000000000000000000000');
+      }
+    }
     if (brand) filter.brand = { $regex: escapeRegex(brand), $options: 'i' };
     if (featured === 'true') filter.featured = true;
     if (isActive !== 'all') filter.isActive = isActive !== 'false';

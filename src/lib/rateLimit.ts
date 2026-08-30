@@ -1,11 +1,5 @@
-/**
- * Minimal in-memory fixed-window rate limiter.
- *
- * NOTE: state lives in the process, so on serverless/multi-instance hosts
- * (Vercel) each instance keeps its own counter. It meaningfully slows
- * brute-force from a single client, but for strong guarantees across
- * instances use a shared store (e.g. Upstash Redis / @upstash/ratelimit).
- */
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
 
 interface Bucket {
   count: number;
@@ -13,18 +7,23 @@ interface Bucket {
 }
 
 const buckets = new Map<string, Bucket>();
+const sharedLimiters = new Map<string, Ratelimit>();
 
-export function rateLimit(
+const hasUpstashConfig = Boolean(
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+);
+const redis = hasUpstashConfig ? Redis.fromEnv() : null;
+
+function localRateLimit(
   key: string,
   limit: number,
   windowMs: number
 ): { allowed: boolean; retryAfter: number } {
   const now = Date.now();
 
-  // Opportunistic cleanup so the map can't grow unbounded.
   if (buckets.size > 5000) {
-    for (const [k, b] of buckets) {
-      if (now > b.resetAt) buckets.delete(k);
+    for (const [bucketKey, bucket] of buckets) {
+      if (now > bucket.resetAt) buckets.delete(bucketKey);
     }
   }
 
@@ -40,6 +39,41 @@ export function rateLimit(
 
   bucket.count += 1;
   return { allowed: true, retryAfter: 0 };
+}
+
+/**
+ * Shared, serverless-safe rate limiting through Upstash Redis. Local memory is
+ * retained only for development when the two Upstash `.env` values are absent.
+ */
+export async function rateLimit(
+  key: string,
+  limit: number,
+  windowMs: number
+): Promise<{ allowed: boolean; retryAfter: number }> {
+  if (!redis) return localRateLimit(key, limit, windowMs);
+
+  const configKey = `${limit}:${windowMs}`;
+  let limiter = sharedLimiters.get(configKey);
+  if (!limiter) {
+    limiter = new Ratelimit({
+      redis,
+      prefix: `techchasers:${configKey}`,
+      limiter: Ratelimit.slidingWindow(limit, `${Math.ceil(windowMs / 1000)} s`),
+    });
+    sharedLimiters.set(configKey, limiter);
+  }
+
+  try {
+    const result = await limiter.limit(key);
+    return {
+      allowed: result.success,
+      retryAfter: result.success ? 0 : Math.max(1, Math.ceil((result.reset - Date.now()) / 1000)),
+    };
+  } catch (error) {
+    // Availability should not turn a Redis outage into a storefront outage.
+    console.error('Upstash rate limit failed; using temporary local fallback:', error);
+    return localRateLimit(key, limit, windowMs);
+  }
 }
 
 export function getClientIp(request: Request): string {

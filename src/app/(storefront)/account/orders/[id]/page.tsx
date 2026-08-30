@@ -4,7 +4,9 @@ import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Badge from "@/components/ui/Badge";
+import LoadingState from "@/components/ui/LoadingState";
 import { formatDateTime, formatPrice } from "@/lib/utils";
+import { isAllowedImageSource } from "@/lib/image";
 import type { IOrder } from "@/types";
 import styles from "./page.module.css";
 
@@ -34,6 +36,8 @@ export default function OrderDetailPage({ params }: PageProps) {
   const { id } = use(params);
   const [order, setOrder] = useState<IOrder | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelError, setCancelError] = useState("");
 
   useEffect(() => {
     fetch(`/api/orders/${id}`)
@@ -48,9 +52,7 @@ export default function OrderDetailPage({ params }: PageProps) {
   if (loading) {
     return (
       <div className="container">
-        <div style={{ padding: "var(--space-16) 0", textAlign: "center" }}>
-          Loading order…
-        </div>
+        <LoadingState label="Opening your order" detail="Fetching your order timeline and items." />
       </div>
     );
   }
@@ -87,6 +89,34 @@ export default function OrderDetailPage({ params }: PageProps) {
 
   const hasTracking =
     order.trackingNumber || order.carrier || order.estimatedDelivery;
+  const canCancel = order.status === "pending" || order.status === "processing";
+
+  const cancelOrder = async () => {
+    if (!window.confirm("Cancel this order? Any paid online amount will be refunded to the original payment method.")) {
+      return;
+    }
+
+    setCancelling(true);
+    setCancelError("");
+    try {
+      const response = await fetch(`/api/orders/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "cancel" }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        setCancelError(data.error || "Could not cancel this order. Please contact support.");
+        return;
+      }
+      setOrder(data.data);
+      if (data.warning) setCancelError(data.warning);
+    } catch {
+      setCancelError("Could not cancel this order. Please contact support.");
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   return (
     <div className={styles.page}>
@@ -197,7 +227,7 @@ export default function OrderDetailPage({ params }: PageProps) {
               {order.items.map((item, i) => (
                 <div key={i} className={styles.item}>
                   <div className={styles.itemImage}>
-                    {item.image && (
+                    {isAllowedImageSource(item.image) && (
                       <Image
                         src={item.image}
                         alt={item.name}
@@ -286,6 +316,19 @@ export default function OrderDetailPage({ params }: PageProps) {
                 </Badge>
               </div>
             </div>
+
+            {canCancel && (
+              <div className={styles.card}>
+                <h3 className={styles.cardTitle}>Need to cancel?</h3>
+                <p className={styles.cancelCopy}>
+                  This order has not been dispatched. Cancel now and any paid online amount will be refunded to the original payment method.
+                </p>
+                {cancelError && <p className={styles.cancelError}>{cancelError}</p>}
+                <button className={styles.cancelButton} onClick={cancelOrder} disabled={cancelling}>
+                  {cancelling ? "Cancelling…" : "Cancel order"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

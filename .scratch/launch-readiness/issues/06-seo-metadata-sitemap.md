@@ -1,6 +1,6 @@
 # Product pages cannot be indexed by search engines
 
-Status: ready-for-agent
+Status: resolved
 
 ## Problem
 
@@ -25,3 +25,10 @@ server-rendered.
 4. Same treatment for category and listing pages
 
 Deferred from launch week because step 2 touches the file the buy flow runs through.
+
+## Resolution
+
+Added dynamic sitemap and robots routes, product/category/listing metadata, Open Graph and
+Twitter cards, canonical product URLs, and Product JSON-LD with INR price and live availability.
+The interactive buy flow remains a client component; SEO is provided by the server product layout
+around it.

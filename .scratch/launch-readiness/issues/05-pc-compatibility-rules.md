@@ -1,6 +1,6 @@
 # PC builder claims compatibility it never checks
 
-Status: ready-for-agent
+Status: partially-resolved
 
 ## Problem
 
@@ -26,4 +26,17 @@ This needs consistent spec keys across every component, so it depends on the com
 catalogue being real and clean. The 16 seeded components carry `Socket`, `Wattage`, `Power`
 and `Form Factor` keys already, which is a start but not a guarantee.
 
-Interim state at launch: the badge still lies. That was flagged and accepted.
+## Resolution
+
+The builder now evaluates the selected parts live and never calls a complete build
+compatible merely because all eight slots are filled. It checks CPU/motherboard socket,
+RAM DDR generation, PSU headroom, motherboard/case form factor, and cooler/case clearance.
+Incompatible builds show the exact failures and cannot be added to cart. Missing supplier
+specifications produce a review warning, never a green compatibility claim.
+
+## Remaining catalogue work
+
+The current seed data omits some required facts (notably motherboard RAM support and case
+cooler clearance; some CPU power values are also absent). Add verified vendor values under
+the recognised specification keys to turn those legitimate warnings into final compatibility
+results for those component combinations.

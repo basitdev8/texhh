@@ -5,6 +5,7 @@ import Link from "next/link";
 import ProductGallery from "@/components/storefront/ProductGallery";
 import ProductCard from "@/components/storefront/ProductCard";
 import Badge from "@/components/ui/Badge";
+import LoadingState from "@/components/ui/LoadingState";
 import { useCartStore } from "@/store/cartStore";
 import { useToast } from "@/components/ui/Toast";
 import { formatPrice, getDiscountPercentage } from "@/lib/utils";
@@ -57,7 +58,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   if (loading) {
     return (
       <div className="container">
-        <div className={styles.loading}>Loading product…</div>
+        <LoadingState label="Preparing the product" detail="Gathering the details, price, and availability." />
       </div>
     );
   }

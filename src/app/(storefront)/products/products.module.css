@@ -330,24 +330,56 @@
   margin: 0 auto;
 }
 
-.loading {
-  padding: var(--space-24);
-  text-align: center;
-  color: var(--color-text-muted);
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: var(--text-xl);
+.loadingGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-10) var(--space-5);
+}
+
+.skeletonCard:nth-child(even) { margin-top: var(--space-12); }
+
+.skeletonImage,
+.skeletonLine {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-border) 42%, var(--color-surface));
+}
+
+.skeletonImage::after,
+.skeletonLine::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 28%, color-mix(in srgb, white 58%, transparent) 48%, transparent 68%);
+  content: "";
+  transform: translateX(-100%);
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonImage { aspect-ratio: 4 / 5; border: 1px solid var(--color-border); }
+.skeletonMeta { display: grid; gap: var(--space-3); padding-top: var(--space-4); }
+.skeletonLine { display: block; width: 84%; height: 0.7rem; }
+.skeletonLineShort { width: 53%; height: 0.55rem; }
+.skeletonPrice { width: 30%; height: 0.8rem; margin-top: var(--space-2); }
+
+@keyframes skeletonShimmer { to { transform: translateX(100%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeletonImage::after,
+  .skeletonLine::after { animation: none; }
 }
 
 /* ── Responsive ───────────────────────────────────────────── */
 @media (max-width: 1280px) {
   .grid { grid-template-columns: repeat(3, 1fr); }
+  .loadingGrid { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 1024px) {
   .header { grid-template-columns: 1fr; gap: var(--space-6); }
   .grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-10) var(--space-5); }
   .grid > article:nth-child(even) { margin-top: 0; }
+  .loadingGrid { grid-template-columns: repeat(2, 1fr); }
+  .skeletonCard:nth-child(even) { margin-top: 0; }
   .toolbar { top: 64px; }
   .priceDrawer { grid-template-columns: 1fr 1fr; }
   .priceDrawerLabel { grid-column: 1 / -1; }
@@ -355,9 +387,46 @@
 }
 
 @media (max-width: 640px) {
-  .grid { grid-template-columns: 1fr; }
+  .page { padding: var(--space-6) 0 var(--space-16); }
+  .header { gap: var(--space-4); margin-bottom: var(--space-6); padding-bottom: var(--space-6); }
+  .eyebrowRow { margin-bottom: var(--space-3); }
+  .eyebrowLine { width: 32px; }
+  .eyebrow { letter-spacing: 0.2em; }
+  .title { font-size: clamp(2.5rem, 13vw, 4rem); line-height: 0.96; overflow-wrap: anywhere; }
+  .subtitle { font-size: var(--text-sm); line-height: 1.55; }
+  .headerStats { font-size: var(--text-2xl); }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8) var(--space-3); }
+  .loadingGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8) var(--space-3); }
   .toolbarRight { gap: var(--space-2); }
-  .toolbar { gap: var(--space-3); flex-direction: column; align-items: stretch; padding: var(--space-3) var(--container-padding); }
-  .chipRow { width: 100%; padding-bottom: 4px; }
+  .toolbar {
+    top: 62px;
+    gap: var(--space-2);
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: var(--space-6);
+    padding: var(--space-2) var(--container-padding) var(--space-3);
+  }
+  .chipRow {
+    width: calc(100% + (var(--container-padding) * 2));
+    margin-inline: calc(var(--container-padding) * -1);
+    padding: var(--space-1) var(--container-padding) var(--space-2);
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: var(--container-padding);
+  }
+  .chip { scroll-snap-align: start; padding: 0.45rem 0.75rem; font-size: var(--text-xs); }
+  .chipNum { display: none; }
   .toolbarRight { width: 100%; justify-content: space-between; }
+  .priceToggle, .sortWrap { min-width: 0; flex: 1; }
+  .priceToggle { width: 100%; justify-content: center; overflow: hidden; white-space: nowrap; }
+  .sortSelect { width: 100%; }
+  .priceDrawer {
+    margin-bottom: var(--space-6);
+    padding: var(--space-4) var(--container-padding);
+    gap: var(--space-3);
+  }
+  .empty { padding: var(--space-16) var(--space-5); }
+}
+
+@media (max-width: 360px) {
+  .grid, .loadingGrid { grid-template-columns: 1fr; }
 }

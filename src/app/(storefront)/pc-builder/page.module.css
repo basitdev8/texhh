@@ -501,12 +501,8 @@
 }
 
 .gridLoading {
-  padding: var(--space-16);
-  text-align: center;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: var(--text-xl);
-  color: var(--color-text-muted);
+  grid-column: 1 / -1;
+  border: 1px dashed var(--color-border);
 }
 
 /* ── Step navigation ────────────────────────────────────────── */
@@ -717,6 +713,22 @@
 
 .compatGood .compatDot { background: var(--color-success); }
 .compatGood { color: var(--color-paper); }
+.compatWarn .compatDot { background: var(--color-warning); }
+.compatBad {
+  color: #ffd0c8;
+  background: rgba(214, 74, 53, 0.14);
+}
+.compatBad .compatDot { background: #f0715f; }
+
+.compatMessages {
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  color: rgba(251, 247, 238, 0.62);
+  line-height: 1.45;
+}
+
+.compatMessages li + li { margin-top: 0.2rem; }
 
 /* Total */
 .total {

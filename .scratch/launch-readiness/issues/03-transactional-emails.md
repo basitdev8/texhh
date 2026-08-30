@@ -1,6 +1,6 @@
 # No transactional email of any kind
 
-Status: ready-for-agent
+Status: resolved
 
 ## Problem
 
@@ -23,3 +23,9 @@ Ship in this order:
 The order status transitions that should trigger mail already exist in
 `src/app/api/orders/[id]/route.ts` (`statusHistory` is written on every change), so the hooks
 have somewhere obvious to live.
+
+## Resolution
+
+Implemented with Resend. The app now sends welcome, order-received, paid-order, admin new-order,
+shipment/tracking, delivery, and cancellation emails. Configuration is documented in
+`docs/resend-email.md`; only `.env` values are needed after the Resend sending domain is verified.

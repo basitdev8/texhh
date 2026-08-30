@@ -5,10 +5,12 @@ import Order from '@/models/Order';
 // Registers the User model so `populate('user')` cannot throw MissingSchemaError.
 import '@/models/User';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
+import { rateLimit } from '@/lib/rateLimit';
 import { generateOrderNumber } from '@/lib/utils';
 import { getSettings } from '@/lib/settings';
 import { computeTotals } from '@/lib/pricing';
-import { resolveOrderItems, decrementStock, restoreStock } from '@/lib/orderItems';
+import { resolveOrderItems } from '@/lib/orderItems';
+import { sendOrderReceivedEmails } from '@/lib/email';
 
 const orderItemSchema = z.object({
   product: z.string().min(1, 'Product ID is required'),
@@ -53,6 +55,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'Invalid or expired token' },
         { status: 401 }
+      );
+    }
+
+    const { allowed, retryAfter } = await rateLimit(
+      `order:${payload.userId}`,
+      5,
+      15 * 60 * 1000
+    );
+    if (!allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Too many order attempts. Please try again shortly.' },
+        { status: 429, headers: { 'Retry-After': String(retryAfter) } }
       );
     }
 
@@ -146,6 +160,12 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    if (paymentMethod === 'bank_transfer' && !settings.bankTransferEnabled) {
+      return NextResponse.json(
+        { success: false, error: 'Bank transfer is currently unavailable' },
+        { status: 400 }
+      );
+    }
 
     // Rebuild every line from the catalogue — client prices and names are never trusted.
     const resolution = await resolveOrderItems(items);
@@ -169,25 +189,21 @@ export async function POST(request: NextRequest) {
 
     const totals = computeTotals(resolution.subtotal, settings);
 
-    // Take stock first: if another order beat us to the last unit, no order is written.
-    const stockResult = await decrementStock(resolution.items);
-    if (!stockResult.ok) {
-      await restoreStock(stockResult.taken);
+    if (
+      paymentMethod === 'cash_on_delivery' &&
+      totals.totalAmount > settings.codMaxOrderAmount
+    ) {
       return NextResponse.json(
         {
           success: false,
-          error: `"${stockResult.failed[0].name}" sold out while you were checking out.`,
-          blockers: stockResult.failed.map((f) => ({
-            product: f.product,
-            name: f.name,
-            kind: 'stock' as const,
-            message: `"${f.name}" is no longer available in that quantity.`,
-          })),
+          error: `Cash on delivery is available for orders up to ₹${settings.codMaxOrderAmount.toLocaleString('en-IN')}. Please pay online instead.`,
         },
-        { status: 409 }
+        { status: 400 }
       );
     }
 
+    // Offline orders do not hold stock at checkout. The admin confirms the
+    // order first, then a guarded reservation takes stock exactly once.
     try {
       const order = await Order.create({
         orderNumber: generateOrderNumber(),
@@ -214,13 +230,15 @@ export async function POST(request: NextRequest) {
 
       await order.populate('user', 'name email');
 
+      // A Resend failure is contained inside this helper, so a valid order is
+      // never lost merely because mail delivery is temporarily unavailable.
+      await sendOrderReceivedEmails(order);
+
       return NextResponse.json(
         { success: true, data: order, changes: resolution.changes },
         { status: 201 }
       );
     } catch (createError) {
-      // The order never existed, so the stock we took has to go back.
-      await restoreStock(stockResult.taken);
       throw createError;
     }
   } catch (error) {

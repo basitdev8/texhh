@@ -66,10 +66,12 @@ export interface IOrder {
   tax: number;
   totalAmount: number;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded' | 'abandoned';
   paymentMethod: string;
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
+  razorpayRefundId?: string;
+  refundState?: 'none' | 'processing' | 'initiated' | 'offline';
   trackingNumber?: string;
   carrier?: string;
   estimatedDelivery?: Date | string;

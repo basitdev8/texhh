@@ -1,24 +1,21 @@
 # Replace the scraped catalogue with your own
 
-Status: ready-for-human
+Status: resolved
 
-## Problem
+## Completed
 
-`data/astbharat.json` is a scrape of `astbharat.com` — 200 products with names, brands,
-prices, and full descriptions copied verbatim, plus 1323 image URLs pointing at
-`astbharat.com/wp-content/uploads/...`.
+- The scraped catalogue and scraper/import scripts were deleted.
+- `data/products.xlsx` now imports 26 supplied products into the database.
+- All imported products have stock set to 1.
+- `astbharat.com` was removed from the Next image allowlist and stale order-image URLs were
+  cleared from the database.
+- 198 public OneDrive product images were downloaded, validated, uploaded to Cloudinary, and
+  mapped in order to the correct 26 product records.
+- Product image order is now controllable from admin product edit via drag and drop.
+- Product specifications are populated for all 26 products.
 
-The images are not being used (products import with none, behind a placeholder), but the
-copied text is live, and `next.config.ts` still whitelists `astbharat.com` as an image host.
+## Resolution
 
-Two exposures: copyright on the descriptions, and a catalogue that describes products you may
-not actually stock or price the same way.
-
-## Fix
-
-- Real product data: your own SKUs, prices, stock levels, and written descriptions
-- Your own photography, uploaded through the admin panel once issue 01 is resolved
-- Remove `astbharat.com` from `next.config.ts` image `remotePatterns`
-- Delete `data/astbharat.json` and `scripts/scrape-astbharat.mjs` once the catalogue is real
-
-Until then the storefront is trading on someone else's product copy.
+The supplied OneDrive folders were resolved as public image downloads and stored locally before
+the Cloudinary upload. Every product now has its mapped gallery rather than a storefront
+placeholder. The downloader and uploader remain available for future catalogue updates.

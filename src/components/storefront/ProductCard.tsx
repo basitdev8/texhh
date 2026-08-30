@@ -69,12 +69,13 @@ export default function ProductCard({ product, index }: ProductCardProps) {
         <Link
           href={`/products/${product.slug}`}
           aria-label={product.name}
+          className={styles.imageLink}
         >
           <Image
             src={product.images[0] || "/placeholder.svg"}
             alt={product.name}
             fill
-            sizes="(max-width: 480px) 100vw, (max-width: 768px) 50vw, 25vw"
+            sizes="(max-width: 360px) 100vw, (max-width: 1024px) 50vw, 25vw"
             className={styles.image}
           />
         </Link>

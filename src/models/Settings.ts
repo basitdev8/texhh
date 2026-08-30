@@ -6,6 +6,8 @@ export interface ISettingsDocument extends Document {
   flatShippingRate: number;
   gstRate: number;
   codEnabled: boolean;
+  codMaxOrderAmount: number;
+  bankTransferEnabled: boolean;
   shippingBannerText: string;
   createdAt: Date;
   updatedAt: Date;
@@ -19,6 +21,8 @@ const SettingsSchema = new Schema<ISettingsDocument>({
   // Percent. Prices are GST-inclusive, so this only back-computes the disclosure figure.
   gstRate: { type: Number, required: true, default: 18, min: 0, max: 100 },
   codEnabled: { type: Boolean, default: true },
+  codMaxOrderAmount: { type: Number, required: true, default: 10_000, min: 0 },
+  bankTransferEnabled: { type: Boolean, default: false },
   shippingBannerText: {
     type: String,
     default: 'Free shipping on orders above ₹5,000. Dispatched in 1–2 business days.',

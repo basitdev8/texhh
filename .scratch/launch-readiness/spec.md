@@ -23,7 +23,7 @@ additive — nothing wipes users or orders.
 | Tax | Prices are GST-inclusive. `tax` = `subtotal × 18/118`, a disclosure field, never added on |
 | Shipping | Free above ₹5,000, flat ₹99 below. Dispatch 1–2 business days, delivery 3–7 |
 | Settings | `Settings` singleton, editable at `/admin/settings`: shipping threshold, flat rate, GST rate, COD toggle, banner text |
-| Catalogue | 200 scraped products imported additively by slug; images left empty behind one static placeholder; 8 auto-featured; 16 PC components imported |
+| Catalogue | 26 supplied products imported from `data/products.xlsx`; each has stock 1; 8 auto-featured; 16 PC components remain separate; product images still need uploading |
 | PC builder | Order items carry `itemType: 'product' \| 'component'`; both collections resolved at order time |
 | Checkout | Account required, no guest checkout |
 | Payments | Razorpay, Cash on Delivery and Bank Transfer all remain live; risk controls deferred (see issue 02) |

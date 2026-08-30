@@ -62,3 +62,35 @@
   background: var(--color-accent);
   display: inline-block;
 }
+
+@keyframes marqueeX {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Keep the editorial crawl alive on touch screens, but make its type small
+   enough that each claim can pass through the viewport cleanly. */
+@media (max-width: 640px) {
+  .marquee {
+    overflow: hidden;
+  }
+
+  .track {
+    gap: var(--space-6);
+    padding-right: var(--space-6);
+    animation: marqueeX var(--duration, 40s) linear infinite;
+  }
+
+  .track + .track { display: flex; }
+
+  .item {
+    flex: none;
+    font-size: clamp(2rem, 8.5vw, 2.1rem);
+  }
+
+  .item .divider { margin-left: var(--space-6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track { animation: none; }
+}

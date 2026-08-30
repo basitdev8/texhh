@@ -33,11 +33,19 @@ export default function Header() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileMounted, setMobileMounted] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const [categories, setCategories] = useState<NavCategory[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
+  const closeTimer = useRef<number | null>(null);
   const itemCount = useCartStore((s) => s.getItemCount());
   const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -46,7 +54,7 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    setMobileOpen(false);
+    closeMobileMenu();
     setDropdownOpen(false);
   }, [pathname]);
 
@@ -61,9 +69,13 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    document.body.style.overflow = mobileMounted ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [mobileOpen]);
+  }, [mobileMounted]);
+
+  useEffect(() => () => {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+  }, []);
 
   useEffect(() => {
     fetch("/api/categories")
@@ -75,6 +87,21 @@ export default function Header() {
   }, []);
 
   const isActive = (path: string) => pathname === path;
+
+  function openMobileMenu() {
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    setMobileMounted(true);
+    setMobileOpen(true);
+  }
+
+  function closeMobileMenu() {
+    setMobileOpen(false);
+    if (closeTimer.current) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => {
+      setMobileMounted(false);
+      hamburgerRef.current?.focus();
+    }, 340);
+  }
 
   return (
     <>
@@ -245,16 +272,19 @@ export default function Header() {
                 <circle cx="8.5" cy="16.5" r="1.5" fill="currentColor" />
                 <circle cx="15.5" cy="16.5" r="1.5" fill="currentColor" />
               </svg>
-              {itemCount > 0 && (
+              {hasMounted && itemCount > 0 && (
                 <span className={styles.cartBadge}>{itemCount > 99 ? "99+" : itemCount}</span>
               )}
             </Link>
 
             {/* Hamburger */}
             <button
+              ref={hamburgerRef}
               className={`${styles.hamburger} ${mobileOpen ? styles.hamburgerOpen : ""}`}
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Toggle menu"
+              onClick={mobileOpen ? closeMobileMenu : openMobileMenu}
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-controls="mobile-navigation-drawer"
+              aria-expanded={mobileOpen}
               id="header-hamburger"
             >
               <span className={styles.hamburgerLine} />
@@ -264,35 +294,56 @@ export default function Header() {
       </header>
 
       {/* Mobile Drawer */}
-      {mobileOpen && (
+      {mobileMounted && (
         <>
           <div
-            className={styles.mobileBackdrop}
-            onClick={() => setMobileOpen(false)}
+            className={`${styles.mobileBackdrop} ${mobileOpen ? styles.mobileBackdropOpen : styles.mobileBackdropClosing}`}
+            onClick={closeMobileMenu}
+            aria-hidden="true"
           />
-          <aside className={styles.mobileDrawer} aria-label="Mobile navigation">
+          <aside
+            className={`${styles.mobileDrawer} ${mobileOpen ? styles.mobileDrawerOpen : styles.mobileDrawerClosing}`}
+            aria-label="Mobile navigation"
+            aria-hidden={!mobileOpen}
+            id="mobile-navigation-drawer"
+          >
+            <div className={styles.mobileDrawerHead}>
+              <span className={styles.mobileDrawerLabel}>Navigate</span>
+              <button className={styles.mobileClose} onClick={closeMobileMenu} aria-label="Close navigation">
+                <span>Close</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
             <nav className={styles.mobileNav}>
-              <Link href="/" className={styles.mobileNavLink}>
+              <Link href="/" className={styles.mobileNavLinkPrimary}>
                 Home
               </Link>
-              <Link href="/products" className={styles.mobileNavLink}>
+              <Link href="/products" className={styles.mobileNavLinkPrimary}>
                 Products
               </Link>
-              <Link href="/pc-builder" className={styles.mobileNavLink}>
+              <Link href="/pc-builder" className={styles.mobileNavLinkPrimary}>
                 PC Builder
               </Link>
-              {categories.map((cat) => (
-                <Link
-                  key={cat._id}
-                  href={`/products?category=${cat.slug}`}
-                  className={styles.mobileNavLink}
-                >
-                  {cat.name}
-                </Link>
-              ))}
+              <div className={styles.mobileCategories}>
+                <span className={styles.mobileCategoryLabel}>Shop by category</span>
+                <div className={styles.mobileCategoryGrid}>
+                  {categories.map((cat, index) => (
+                    <Link
+                      key={cat._id}
+                      href={`/products?category=${cat.slug}`}
+                      className={styles.mobileCategoryLink}
+                    >
+                      <span>№{String(index + 1).padStart(2, "0")}</span>
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
               <Link
                 href={isAuthenticated ? "/account" : "/auth/login"}
-                className={styles.mobileNavLink}
+                className={styles.mobileAccountLink}
               >
                 {isAuthenticated ? "My Account" : "Sign In"}
               </Link>

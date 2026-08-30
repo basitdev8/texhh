@@ -113,3 +113,10 @@
   color: var(--color-ink);
   font-size: var(--text-sm);
 }
+
+@media (max-width: 640px) {
+  .overlayInfo { inset: auto var(--space-4) var(--space-4); }
+  .name { max-width: 76%; font-size: var(--text-xl); }
+  .arrowCircle { width: 40px; height: 40px; }
+  .card:hover .image, .card:hover .arrowCircle { transform: none; }
+}

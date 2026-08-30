@@ -28,6 +28,8 @@ export async function getSettings(): Promise<StoreSettings> {
     flatShippingRate: doc?.flatShippingRate ?? DEFAULT_SETTINGS.flatShippingRate,
     gstRate: doc?.gstRate ?? DEFAULT_SETTINGS.gstRate,
     codEnabled: doc?.codEnabled ?? DEFAULT_SETTINGS.codEnabled,
+    codMaxOrderAmount: doc?.codMaxOrderAmount ?? DEFAULT_SETTINGS.codMaxOrderAmount,
+    bankTransferEnabled: doc?.bankTransferEnabled ?? DEFAULT_SETTINGS.bankTransferEnabled,
     shippingBannerText: doc?.shippingBannerText ?? DEFAULT_SETTINGS.shippingBannerText,
   };
 

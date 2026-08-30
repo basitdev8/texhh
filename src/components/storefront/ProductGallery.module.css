@@ -1,17 +1,27 @@
-.gallery {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
+.gallery { display: flex; flex-direction: column; gap: var(--space-4); }
 
 .mainImage {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: var(--color-bg-alt);
-  border-radius: var(--radius-lg);
   overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-alt);
 }
+
+.mainImageButton {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.mainImageButton:focus-visible { outline: 3px solid var(--color-accent); outline-offset: -3px; }
 
 .image {
   width: 100%;
@@ -20,50 +30,157 @@
   transition: transform var(--transition-slow);
 }
 
-.mainImage:hover .image {
-  transform: scale(1.04);
+@media (hover: hover) and (pointer: fine) {
+  .mainImageButton:hover .image { transform: scale(1.55); }
+  .mainImageButton:hover .zoomHint { opacity: 1; transform: translateY(0); }
 }
 
-.thumbs {
+.zoomHint,
+.counter {
+  position: absolute;
+  z-index: 2;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: var(--radius-full);
+  background: rgba(14, 14, 12, 0.76);
+  box-shadow: var(--shadow-sm);
+  color: white;
+  font-size: var(--text-xs);
+  line-height: 1;
+}
+
+.zoomHint {
+  right: var(--space-4);
+  bottom: var(--space-4);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.55rem 0.7rem;
+  opacity: 0;
+  transform: translateY(0.4rem);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.zoomHint svg { width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.counter { top: var(--space-4); right: var(--space-4); padding: 0.48rem 0.65rem; font-variant-numeric: tabular-nums; }
+
+.navButton {
+  position: absolute;
+  z-index: 3;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  width: 2.75rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 50%;
+  background: rgba(14, 14, 12, 0.76);
+  box-shadow: var(--shadow-sm);
+  color: white;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.navButton:hover { background: var(--color-accent); transform: scale(1.07); }
+.navButton:focus-visible, .lightboxActions button:focus-visible { outline: 3px solid var(--color-accent-light); outline-offset: 3px; }
+.navButton svg, .lightboxActions svg { width: 1.2rem; height: 1.2rem; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.navPrevious { top: 50%; left: var(--space-4); transform: translateY(-50%); }
+.navNext { top: 50%; right: var(--space-4); transform: translateY(-50%); }
+.navPrevious:hover { transform: translateY(-50%) scale(1.07); }
+.navNext:hover { transform: translateY(-50%) scale(1.07); }
+
+.thumbRail {
+  display: flex;
   gap: var(--space-3);
+  overflow-x: auto;
+  padding: 0.1rem 0 var(--space-2);
+  scroll-snap-type: x proximity;
+  scrollbar-color: var(--color-border) transparent;
 }
 
 .thumb {
   position: relative;
+  width: 5.25rem;
+  min-width: 5.25rem;
   aspect-ratio: 1 / 1;
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-md);
   overflow: hidden;
-  cursor: pointer;
+  scroll-snap-align: start;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   background: var(--color-bg-alt);
-  transition: all var(--transition-fast);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
-.thumb:hover {
-  border-color: var(--color-text-muted);
+.thumb:hover { border-color: var(--color-text-muted); transform: translateY(-2px); }
+.thumb:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+.thumbActive { border-color: var(--color-accent); box-shadow: 0 0 0 2px var(--color-accent-light); }
+.thumbImage { width: 100%; height: 100%; object-fit: contain; }
+
+.lightbox {
+  position: fixed;
+  z-index: var(--z-modal);
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  padding: var(--space-4);
+  background: rgba(7, 11, 11, 0.96);
+  color: white;
 }
 
-.thumbActive {
-  border-color: var(--color-accent);
-}
-
-.thumbImage {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.placeholder {
+.lightboxTopbar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--color-text-muted);
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 2.75rem;
+  color: rgba(255, 255, 255, 0.75);
   font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
 }
 
-@media (max-width: 480px) {
-  .thumbs { grid-template-columns: repeat(4, 1fr); }
+.lightboxActions { display: flex; gap: var(--space-2); }
+.lightboxActions button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: var(--radius-full);
+  padding: 0.55rem 0.8rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  font: inherit;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.lightboxActions button:hover { background: rgba(255, 255, 255, 0.18); }
+
+.lightboxStage {
+  position: relative;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+  margin: var(--space-3) 0;
+}
+
+.lightboxImage { width: 100%; height: 100%; object-fit: contain; transition: transform var(--transition-base); }
+.lightboxPrevious { top: 50%; left: var(--space-4); transform: translateY(-50%); }
+.lightboxNext { top: 50%; right: var(--space-4); transform: translateY(-50%); }
+.lightboxPrevious:hover, .lightboxNext:hover { transform: translateY(-50%) scale(1.07); }
+.lightboxHelp { padding-bottom: var(--space-1); color: rgba(255, 255, 255, 0.56); text-align: center; font-size: var(--text-xs); }
+
+@media (max-width: 640px) {
+  .gallery { gap: var(--space-3); }
+  .mainImage { border-radius: var(--radius-md); }
+  .thumb { width: 4.5rem; min-width: 4.5rem; }
+  .navButton { width: 2.5rem; }
+  .navPrevious { left: var(--space-3); }
+  .navNext { right: var(--space-3); }
+  .lightbox { padding: var(--space-3); }
+  .lightboxActions button span { display: none; }
+  .lightboxActions button { padding: 0.55rem; }
+  .lightboxHelp { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image, .zoomHint, .navButton, .thumb, .lightboxImage { transition: none; }
 }

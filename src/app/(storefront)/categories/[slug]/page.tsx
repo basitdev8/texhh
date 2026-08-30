@@ -1,10 +1,31 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import dbConnect from "@/lib/db";
 import Category from "@/models/Category";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  try {
+    await dbConnect();
+    const category = await Category.findOne({ slug, isActive: true }).select('name description').lean<{
+      name: string; description?: string;
+    } | null>();
+    if (category) {
+      return {
+        title: category.name,
+        description: category.description || `Shop ${category.name} at TechChasers.`,
+        alternates: { canonical: `/categories/${slug}` },
+      };
+    }
+  } catch {
+    // The page itself handles unavailable database data gracefully.
+  }
+  return { title: 'Category not found' };
 }
 
 export default async function CategoryRedirectPage({ params }: PageProps) {
