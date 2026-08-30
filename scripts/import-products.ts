@@ -249,6 +249,13 @@ async function main() {
   }
 
   await dbConnect();
+  // A workbook re-import replaces catalogue records. Keep specifications that
+  // were enriched from the workbook's linked product pages, then let any
+  // directly supplied workbook specs take precedence below.
+  const existingSpecificationsBySlug = new Map(
+    (await Product.find({}).select('slug specifications').lean<{ slug: string; specifications?: Record<string, string> }[]>())
+      .map((product) => [product.slug, product.specifications || {}])
+  );
   const oldCategoryIds = await Product.distinct('category');
   const deletedProducts = await Product.deleteMany({});
   const deletedCategories = oldCategoryIds.length
@@ -285,7 +292,7 @@ async function main() {
       category: categories.get(product.categoryName),
       brand: brandFor(product.name),
       images: [],
-      specifications: product.specifications,
+      specifications: { ...existingSpecificationsBySlug.get(slug), ...product.specifications },
       stock: DEFAULT_STOCK,
       featured: index < 8,
       isActive: true,
