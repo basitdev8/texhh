@@ -57,6 +57,14 @@
   line-height: 1.55;
 }
 
+.pageHeaderActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: flex-end;
+}
+
 /* ── Buttons ─────────────────────────────────────────────────── */
 .primaryBtn {
   display: inline-flex;
@@ -504,6 +512,8 @@
   .statsGrid { grid-template-columns: 1fr; }
   .opsGrid { grid-template-columns: 1fr; }
   .toolbar { gap: var(--space-2); }
+  .pageHeaderActions { justify-content: stretch; }
+  .pageHeaderActions > * { flex: 1; }
 }
 
 /* ── Loading state ──────────────────────────────────────────── */

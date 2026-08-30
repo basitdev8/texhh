@@ -177,9 +177,14 @@ export default function AdminProductsPage() {
             live the moment you save.
           </p>
         </div>
-        <Link href="/admin/products/new" className={styles.primaryBtn}>
-          New product
-        </Link>
+        <div className={styles.pageHeaderActions}>
+          <Link href="/admin/homepage" className={styles.secondaryBtn}>
+            Homepage curation
+          </Link>
+          <Link href="/admin/products/new" className={styles.primaryBtn}>
+            New product
+          </Link>
+        </div>
       </header>
 
       <div className={styles.toolbar}>
