@@ -585,8 +585,12 @@
     gap: var(--space-4);
     width: calc(100% + (var(--container-padding) * 2));
     margin-inline: calc(var(--container-padding) * -1);
-    padding: var(--space-1) var(--container-padding) var(--space-5);
+    padding: var(--space-1) var(--container-padding) var(--space-3);
     overflow-x: auto;
+    /* Without this, overflow-x:auto computes a second vertical scroll rail on
+       mobile and traps a normal downward swipe inside the product strip. */
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
     scroll-padding-inline: var(--container-padding);
     scrollbar-width: none;
