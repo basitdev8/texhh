@@ -9,6 +9,9 @@ export interface ISettingsDocument extends Document {
   codMaxOrderAmount: number;
   bankTransferEnabled: boolean;
   shippingBannerText: string;
+  heroProductId?: mongoose.Types.ObjectId;
+  homeFeaturedProductIds: mongoose.Types.ObjectId[];
+  homeFeatureSelectionConfigured: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +30,11 @@ const SettingsSchema = new Schema<ISettingsDocument>({
     type: String,
     default: 'Free shipping on orders above ₹5,000. Dispatched in 1–2 business days.',
   },
+  // Homepage placements are deliberately independent of the legacy Product.featured
+  // flag: one product belongs in the hero, while the edit can contain many.
+  heroProductId: { type: Schema.Types.ObjectId, ref: 'Product', default: undefined },
+  homeFeaturedProductIds: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
+  homeFeatureSelectionConfigured: { type: Boolean, default: false },
 }, { timestamps: true });
 
 const Settings =

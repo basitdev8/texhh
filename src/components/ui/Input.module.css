@@ -54,6 +54,10 @@
   padding-right: var(--space-10);
 }
 
+.hasPasswordToggle {
+  padding-right: 3rem;
+}
+
 .iconLeft {
   position: absolute;
   left: var(--space-3);
@@ -72,6 +76,25 @@
   color: var(--color-text-muted);
   display: flex;
 }
+
+.passwordToggle {
+  position: absolute;
+  right: var(--space-2);
+  top: 50%;
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  transform: translateY(-50%);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.passwordToggle:hover { background: var(--color-bg-alt); color: var(--color-ink); }
+.passwordToggle:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+.passwordToggle svg { width: 1.15rem; height: 1.15rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
 
 .errorMessage {
   font-size: var(--text-xs);

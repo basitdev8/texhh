@@ -31,6 +31,10 @@ export async function getSettings(): Promise<StoreSettings> {
     codMaxOrderAmount: doc?.codMaxOrderAmount ?? DEFAULT_SETTINGS.codMaxOrderAmount,
     bankTransferEnabled: doc?.bankTransferEnabled ?? DEFAULT_SETTINGS.bankTransferEnabled,
     shippingBannerText: doc?.shippingBannerText ?? DEFAULT_SETTINGS.shippingBannerText,
+    heroProductId: doc?.heroProductId ? String(doc.heroProductId) : null,
+    homeFeaturedProductIds: (doc?.homeFeaturedProductIds || []).map(String),
+    homeFeatureSelectionConfigured:
+      doc?.homeFeatureSelectionConfigured ?? DEFAULT_SETTINGS.homeFeatureSelectionConfigured,
   };
 
   cached = { value, at: Date.now() };

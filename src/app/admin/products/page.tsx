@@ -129,12 +129,6 @@ export default function AdminProductsPage() {
           ),
       },
       {
-        key: "featured",
-        name: "Featured",
-        render: (p) =>
-          p.featured ? <Badge variant="success">Yes</Badge> : "—",
-      },
-      {
         key: "actions",
         name: "Actions",
         sortable: false,
