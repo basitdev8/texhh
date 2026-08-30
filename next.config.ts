@@ -1,11 +1,13 @@
 import type { NextConfig } from "next";
 
+const isDevelopment = process.env.NODE_ENV === "development";
+
 // Content-Security-Policy tuned to the app's third parties (Razorpay checkout,
 // Cloudinary/Unsplash images, Google Fonts). Enforced — if a legitimate third party
 // is added later it has to be listed here or the browser will block it.
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com",
+  `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""} https://checkout.razorpay.com`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com",
   "img-src 'self' data: https://res.cloudinary.com https://images.unsplash.com https://cdn.pixabay.com",

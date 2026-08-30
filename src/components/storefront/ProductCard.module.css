@@ -28,6 +28,12 @@
   z-index: 0;
 }
 
+.imageLink {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
 .image {
   position: absolute;
   inset: 8%;
@@ -276,4 +282,27 @@
   }
 
   .card:hover .image { transform: none; }
+}
+
+@media (max-width: 640px) {
+  .imageWrap { border-radius: var(--radius-sm); }
+  .image { inset: 6%; width: 88%; height: 88%; }
+  .indexBadge { top: var(--space-2); left: var(--space-2); font-size: var(--text-xs); }
+  .tagBadge, .discount { top: var(--space-2); right: var(--space-2); padding: 3px 7px; font-size: 9px; }
+  .addToCart {
+    inset: auto var(--space-2) var(--space-2) var(--space-2);
+    gap: var(--space-1);
+    min-height: 2.35rem;
+    padding: var(--space-2);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+  }
+  .info { margin-top: var(--space-3); gap: var(--space-1); }
+  .brandRow { letter-spacing: 0.14em; }
+  .name { font-size: var(--text-base); }
+  .priceRow { align-items: flex-end; gap: var(--space-1); }
+  .priceMain { flex-wrap: wrap; gap: 0 var(--space-2); }
+  .price { font-size: var(--text-lg); }
+  .comparePrice { font-size: var(--text-xs); }
+  .viewLink { display: none; }
 }

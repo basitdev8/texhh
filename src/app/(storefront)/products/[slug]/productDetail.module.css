@@ -27,6 +27,8 @@
   align-items: start;
 }
 
+.layout > * { min-width: 0; }
+
 .galleryCol {
   position: sticky;
   top: var(--space-8);
@@ -85,6 +87,7 @@
   line-height: 1.04;
   letter-spacing: -0.03em;
   color: var(--color-ink);
+  overflow-wrap: anywhere;
 }
 
 /* ---------- Rating ---------- */
@@ -309,6 +312,7 @@
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--color-text);
+  overflow-wrap: anywhere;
 }
 
 /* ---------- Section eyebrow ---------- */
@@ -413,15 +417,44 @@
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 1024px) {
+@media (max-width: 1100px) and (min-width: 821px) {
+  .layout { grid-template-columns: minmax(0, 1.08fr) minmax(20rem, 0.92fr); gap: var(--space-8); }
+  .galleryCol { top: var(--space-5); }
+  .title { font-size: clamp(2rem, 4vw, 3rem); }
+  .shortDesc { font-size: var(--text-base); }
+  .specGrid { grid-template-columns: 1fr; }
+  .relatedGrid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 820px) {
   .layout { grid-template-columns: 1fr; gap: var(--space-10); }
-  .galleryCol { position: static; }
+  .galleryCol { position: static; width: 100%; max-width: 42rem; margin-inline: auto; }
   .description { grid-template-columns: 1fr; gap: var(--space-6); }
   .descriptionHead { position: static; }
   .relatedGrid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 640px) {
+  .page { padding: var(--space-4) 0 var(--space-16); }
+  .breadcrumbs {
+    flex-wrap: nowrap;
+    gap: var(--space-2);
+    margin: 0 calc(var(--container-padding) * -1) var(--space-6);
+    padding: 0 var(--container-padding) var(--space-2);
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+  }
+  .breadcrumbs::-webkit-scrollbar { display: none; }
+  .crumbCurrent { max-width: 12rem; overflow: hidden; text-overflow: ellipsis; }
+  .layout { gap: var(--space-8); }
+  .info { gap: var(--space-4); }
+  .eyebrowRow { flex-wrap: wrap; gap: var(--space-2); }
+  .eyebrowLine { width: 28px; }
+  .categoryChip { margin-left: 0; }
+  .title { font-size: clamp(2rem, 10vw, 2.75rem); line-height: 1.02; }
+  .shortDesc { font-size: var(--text-base); line-height: 1.55; }
+  .priceCard { padding-block: var(--space-4); gap: var(--space-3); }
   .price { font-size: var(--text-3xl); }
   .actionRow {
     display: grid;
@@ -448,11 +481,22 @@
     box-shadow: none;
   }
   .specGrid { grid-template-columns: 1fr; }
-  .relatedGrid { grid-template-columns: 1fr; }
+  .description { margin-top: var(--space-16); padding-top: var(--space-8); }
+  .descriptionTitle { font-size: var(--text-2xl); }
+  .descriptionText { font-size: var(--text-base); line-height: 1.7; }
+  .relatedSection { margin-top: var(--space-16); }
+  .relatedHead { margin-bottom: var(--space-5); }
+  .relatedTitle { font-size: var(--text-3xl); }
+  .relatedGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8) var(--space-3); }
+}
+
+@media (max-width: 480px) {
+  .actionRow { grid-template-columns: 1fr; }
+  .qtyControl { width: 8.5rem; }
+  .addToCart { font-size: var(--text-xs); }
+  .assurance { gap: var(--space-3); }
 }
 
 @media (max-width: 360px) {
-  .actionRow { grid-template-columns: 6.85rem minmax(0, 1fr); }
-  .qtyBtn { width: 2.2rem; }
-  .addToCart { gap: var(--space-2); padding: 0 var(--space-2); letter-spacing: 0.08em; }
+  .relatedGrid { grid-template-columns: 1fr; }
 }

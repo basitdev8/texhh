@@ -317,27 +317,33 @@ export default function Header() {
               </button>
             </div>
             <nav className={styles.mobileNav}>
-              <Link href="/" className={styles.mobileNavLink}>
+              <Link href="/" className={styles.mobileNavLinkPrimary}>
                 Home
               </Link>
-              <Link href="/products" className={styles.mobileNavLink}>
+              <Link href="/products" className={styles.mobileNavLinkPrimary}>
                 Products
               </Link>
-              <Link href="/pc-builder" className={styles.mobileNavLink}>
+              <Link href="/pc-builder" className={styles.mobileNavLinkPrimary}>
                 PC Builder
               </Link>
-              {categories.map((cat) => (
-                <Link
-                  key={cat._id}
-                  href={`/products?category=${cat.slug}`}
-                  className={styles.mobileNavLink}
-                >
-                  {cat.name}
-                </Link>
-              ))}
+              <div className={styles.mobileCategories}>
+                <span className={styles.mobileCategoryLabel}>Shop by category</span>
+                <div className={styles.mobileCategoryGrid}>
+                  {categories.map((cat, index) => (
+                    <Link
+                      key={cat._id}
+                      href={`/products?category=${cat.slug}`}
+                      className={styles.mobileCategoryLink}
+                    >
+                      <span>№{String(index + 1).padStart(2, "0")}</span>
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
               <Link
                 href={isAuthenticated ? "/account" : "/auth/login"}
-                className={styles.mobileNavLink}
+                className={styles.mobileAccountLink}
               >
                 {isAuthenticated ? "My Account" : "Sign In"}
               </Link>

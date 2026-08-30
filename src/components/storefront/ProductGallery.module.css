@@ -169,6 +169,8 @@
 .lightboxHelp { padding-bottom: var(--space-1); color: rgba(255, 255, 255, 0.56); text-align: center; font-size: var(--text-xs); }
 
 @media (max-width: 640px) {
+  .gallery { gap: var(--space-3); }
+  .mainImage { border-radius: var(--radius-md); }
   .thumb { width: 4.5rem; min-width: 4.5rem; }
   .navButton { width: 2.5rem; }
   .navPrevious { left: var(--space-3); }
@@ -176,6 +178,7 @@
   .lightbox { padding: var(--space-3); }
   .lightboxActions button span { display: none; }
   .lightboxActions button { padding: 0.55rem; }
+  .lightboxHelp { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {
