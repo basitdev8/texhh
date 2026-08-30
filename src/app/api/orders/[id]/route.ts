@@ -7,8 +7,10 @@ import Order from '@/models/Order';
 import '@/models/User';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
 import { sendOrderPaymentReceivedEmail, sendOrderStatusEmail } from '@/lib/email';
+import { cancelOrder, refundOrder, reserveOrderStock } from '@/lib/orderFulfillment';
 
 const updateOrderSchema = z.object({
+  action: z.enum(['cancel']).optional(),
   status: z.enum(['pending', 'processing', 'shipped', 'delivered', 'cancelled']).optional(),
   paymentStatus: z.enum(['pending', 'paid', 'failed', 'refunded']).optional(),
   trackingNumber: z.string().max(120).nullable().optional(),
@@ -107,7 +109,8 @@ export async function PUT(
   try {
     await dbConnect();
 
-    // Verify admin
+    // Verify the caller. Customers only get the narrow cancellation action;
+    // every operational edit below remains admin-only.
     const token = getTokenFromRequest(request);
     if (!token) {
       return NextResponse.json(
@@ -117,10 +120,10 @@ export async function PUT(
     }
 
     const payload = verifyToken(token);
-    if (!payload || payload.role !== 'admin') {
+    if (!payload) {
       return NextResponse.json(
-        { success: false, error: 'Admin access required' },
-        { status: 403 }
+        { success: false, error: 'Invalid or expired token' },
+        { status: 401 }
       );
     }
 
@@ -143,6 +146,7 @@ export async function PUT(
     }
 
     const {
+      action,
       status,
       paymentStatus,
       trackingNumber,
@@ -151,12 +155,103 @@ export async function PUT(
       statusNote,
     } = validation.data;
 
-    const order = await Order.findById(id);
+    let order = await Order.findById(id);
     if (!order) {
       return NextResponse.json(
         { success: false, error: 'Order not found' },
         { status: 404 }
       );
+    }
+
+    const isAdmin = payload.role === 'admin';
+    if (!isAdmin && action !== 'cancel') {
+      return NextResponse.json(
+        { success: false, error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
+
+    if (!isAdmin && String(order.user) !== payload.userId) {
+      return NextResponse.json(
+        { success: false, error: 'Not authorized to update this order' },
+        { status: 403 }
+      );
+    }
+
+    if (action === 'cancel' || status === 'cancelled') {
+      if (!isAdmin && !['pending', 'processing'].includes(order.status)) {
+        return NextResponse.json(
+          { success: false, error: 'Only orders awaiting dispatch can be cancelled' },
+          { status: 409 }
+        );
+      }
+
+      const cancelled = await cancelOrder({
+        orderId: id,
+        note: statusNote?.trim() || (isAdmin ? 'Cancelled by admin' : 'Cancelled by customer'),
+      });
+      if (!cancelled.order) {
+        return NextResponse.json(
+          { success: false, error: 'Order not found' },
+          { status: 404 }
+        );
+      }
+
+      let warning = cancelled.releaseError;
+      if (cancelled.order.paymentStatus === 'paid') {
+        const refund = await refundOrder(id);
+        if (!refund.ok) warning = warning || refund.error;
+        if (refund.order) order = refund.order;
+      } else {
+        order = cancelled.order;
+      }
+
+      await order.populate('user', 'name email');
+      await sendOrderStatusEmail(order, 'cancelled');
+      return NextResponse.json({ success: true, data: order, ...(warning ? { warning } : {}) });
+    }
+
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
+
+    if (paymentStatus === 'refunded') {
+      const refund = await refundOrder(id);
+      if (!refund.order) {
+        return NextResponse.json(
+          { success: false, error: 'Order not found' },
+          { status: 404 }
+        );
+      }
+      if (!refund.ok) {
+        return NextResponse.json(
+          { success: false, error: refund.error || 'Could not start refund' },
+          { status: 409 }
+        );
+      }
+      await refund.order.populate('user', 'name email');
+      return NextResponse.json({ success: true, data: refund.order });
+    }
+
+    // A COD/bank-transfer order only takes stock after an admin moves it out
+    // of pending, or explicitly records payment. This closes the fake-order
+    // inventory drain without reserving goods indefinitely at checkout.
+    const needsReservation =
+      order.stockReservationState === 'unreserved' &&
+      order.paymentMethod !== 'razorpay' &&
+      ((status !== undefined && !['pending', 'cancelled'].includes(status)) || paymentStatus === 'paid');
+    if (needsReservation) {
+      const reservation = await reserveOrderStock(id);
+      if (!reservation.ok) {
+        return NextResponse.json(
+          { success: false, error: reservation.error || 'Could not reserve stock' },
+          { status: 409 }
+        );
+      }
+      if (reservation.order) order = reservation.order;
     }
 
     const previousStatus = order.status;

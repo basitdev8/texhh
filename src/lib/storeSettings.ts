@@ -8,6 +8,8 @@ export interface StoreSettings {
   flatShippingRate: number;
   gstRate: number;
   codEnabled: boolean;
+  codMaxOrderAmount: number;
+  bankTransferEnabled: boolean;
   shippingBannerText: string;
 }
 
@@ -16,6 +18,10 @@ export const DEFAULT_SETTINGS: StoreSettings = {
   flatShippingRate: 99,
   gstRate: 18,
   codEnabled: true,
+  codMaxOrderAmount: 10_000,
+  // There are no verified bank details or reconciliation process yet, so this
+  // stays off until the business explicitly enables it in admin settings.
+  bankTransferEnabled: false,
   shippingBannerText:
     'Free shipping on orders above ₹5,000. Dispatched in 1–2 business days.',
 };

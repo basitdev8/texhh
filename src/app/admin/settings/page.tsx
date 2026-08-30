@@ -10,6 +10,8 @@ interface StoreSettingsForm {
   flatShippingRate: number | "";
   gstRate: number | "";
   codEnabled: boolean;
+  codMaxOrderAmount: number | "";
+  bankTransferEnabled: boolean;
   shippingBannerText: string;
 }
 
@@ -18,6 +20,8 @@ const EMPTY: StoreSettingsForm = {
   flatShippingRate: "",
   gstRate: "",
   codEnabled: true,
+  codMaxOrderAmount: 10000,
+  bankTransferEnabled: false,
   shippingBannerText: "",
 };
 
@@ -39,7 +43,7 @@ export default function AdminSettingsPage() {
   }, []);
 
   const handleNumber = (
-    field: "freeShippingThreshold" | "flatShippingRate" | "gstRate"
+    field: "freeShippingThreshold" | "flatShippingRate" | "gstRate" | "codMaxOrderAmount"
   ) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setForm((prev) => ({ ...prev, [field]: value === "" ? "" : Number(value) }));
@@ -49,8 +53,8 @@ export default function AdminSettingsPage() {
     e.preventDefault();
     setError("");
 
-    if (form.freeShippingThreshold === "" || form.flatShippingRate === "" || form.gstRate === "") {
-      setError("Shipping threshold, shipping rate and GST rate are all required.");
+    if (form.freeShippingThreshold === "" || form.flatShippingRate === "" || form.gstRate === "" || form.codMaxOrderAmount === "") {
+      setError("Shipping, tax and COD limits are all required.");
       return;
     }
 
@@ -64,6 +68,8 @@ export default function AdminSettingsPage() {
           flatShippingRate: Number(form.flatShippingRate),
           gstRate: Number(form.gstRate),
           codEnabled: form.codEnabled,
+          codMaxOrderAmount: Number(form.codMaxOrderAmount),
+          bankTransferEnabled: form.bankTransferEnabled,
           shippingBannerText: form.shippingBannerText,
         }),
       });
@@ -222,6 +228,37 @@ export default function AdminSettingsPage() {
                 <span className={styles.settingsHelp}>
                   Turning this off hides COD at checkout and rejects any COD order sent
                   directly to the API.
+                </span>
+              </span>
+            </label>
+            <div className={styles.settingsGrid} style={{ marginTop: "var(--space-5)" }}>
+              <label className={styles.settingsField}>
+                <span className={styles.settingsLabel}>Maximum COD order value (₹)</span>
+                <input
+                  type="number"
+                  min={0}
+                  step="1"
+                  className={styles.settingsInput}
+                  value={form.codMaxOrderAmount}
+                  onChange={handleNumber("codMaxOrderAmount")}
+                />
+                <span className={styles.settingsHelp}>
+                  COD orders above this total are rejected. Set to 0 to disable COD by limit.
+                </span>
+              </label>
+            </div>
+            <label className={styles.settingsToggleRow} style={{ marginTop: "var(--space-5)" }}>
+              <input
+                type="checkbox"
+                checked={form.bankTransferEnabled}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, bankTransferEnabled: e.target.checked }))
+                }
+              />
+              <span>
+                <span className={styles.settingsLabel}>Offer Bank Transfer</span>
+                <span className={styles.settingsHelp}>
+                  Keep this disabled until bank details and payment reconciliation are ready.
                 </span>
               </span>
             </label>

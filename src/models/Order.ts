@@ -25,10 +25,15 @@ export interface IOrderDocument extends Document {
   tax: number;
   totalAmount: number;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+  paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded' | 'abandoned';
   paymentMethod: string;
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
+  razorpayRefundId?: string;
+  refundState?: 'none' | 'processing' | 'initiated' | 'offline';
+  stockReservationState?: 'unreserved' | 'reserving' | 'reserved' | 'releasing' | 'released';
+  stockReservedAt?: Date;
+  stockReleasedAt?: Date;
   trackingNumber?: string;
   carrier?: string;
   estimatedDelivery?: Date;
@@ -85,12 +90,28 @@ const OrderSchema = new Schema<IOrderDocument>({
   },
   paymentStatus: { 
     type: String, 
-    enum: ['pending', 'paid', 'failed', 'refunded'],
+    enum: ['pending', 'paid', 'failed', 'refunded', 'abandoned'],
     default: 'pending'
   },
   paymentMethod: { type: String, default: 'cash_on_delivery' },
   razorpayOrderId: { type: String },
   razorpayPaymentId: { type: String },
+  razorpayRefundId: { type: String },
+  refundState: {
+    type: String,
+    enum: ['none', 'processing', 'initiated', 'offline'],
+    default: 'none',
+  },
+  // COD and bank-transfer orders are deliberately not reserved at checkout.
+  // An admin reserves stock when confirming the order; cancellation can then
+  // release it exactly once.
+  stockReservationState: {
+    type: String,
+    enum: ['unreserved', 'reserving', 'reserved', 'releasing', 'released'],
+    default: 'unreserved',
+  },
+  stockReservedAt: { type: Date },
+  stockReleasedAt: { type: Date },
   trackingNumber: { type: String },
   carrier: { type: String },
   estimatedDelivery: { type: Date },

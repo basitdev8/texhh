@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, Inter, Fraunces } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
 import { ToastProvider } from "@/components/ui/Toast";
+import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -27,7 +28,11 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "TechChasers — Curated Premium Electronics",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "TechChasers — Curated Premium Electronics",
+    template: "%s | TechChasers",
+  },
   description:
     "An editorial gallery of premium electronics, custom PC builds, and considered tech objects. Curated, photographed, and shipped with care.",
   keywords: ["electronics", "PC builder", "premium tech", "gaming", "components", "design"],
@@ -36,6 +41,7 @@ export const metadata: Metadata = {
     description:
       "An editorial gallery of premium electronics, custom PC builds, and considered tech objects.",
     type: "website",
+    url: SITE_URL,
   },
 };
 

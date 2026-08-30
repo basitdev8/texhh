@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   try {
     // Throttle credential guessing: 8 attempts per 15 min per IP.
     const ip = getClientIp(request);
-    const { allowed, retryAfter } = rateLimit(`login:${ip}`, 8, 15 * 60 * 1000);
+    const { allowed, retryAfter } = await rateLimit(`login:${ip}`, 8, 15 * 60 * 1000);
     if (!allowed) {
       return NextResponse.json(
         { success: false, error: 'Too many attempts. Please try again later.' },

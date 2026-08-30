@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   try {
     // Limit account-creation spam: 5 per hour per IP.
     const ip = getClientIp(request);
-    const { allowed, retryAfter } = rateLimit(`register:${ip}`, 5, 60 * 60 * 1000);
+    const { allowed, retryAfter } = await rateLimit(`register:${ip}`, 5, 60 * 60 * 1000);
     if (!allowed) {
       return NextResponse.json(
         { success: false, error: 'Too many attempts. Please try again later.' },

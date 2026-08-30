@@ -10,6 +10,8 @@ const updateSchema = z.object({
   flatShippingRate: z.number().min(0).max(100_000).optional(),
   gstRate: z.number().min(0).max(100).optional(),
   codEnabled: z.boolean().optional(),
+  codMaxOrderAmount: z.number().min(0).max(1_000_000).optional(),
+  bankTransferEnabled: z.boolean().optional(),
   shippingBannerText: z.string().max(300).optional(),
 });
 

@@ -1,6 +1,6 @@
 # Rate limiting is per-instance and does not cover payment routes
 
-Status: ready-for-agent
+Status: ready-for-human
 
 ## Problem
 
@@ -18,3 +18,14 @@ orders and Razorpay order objects.
   than IP
 - Move the store to Upstash Redis (`@upstash/ratelimit`) so counters are shared across
   instances; free tier is sufficient at this volume
+
+## Resolution
+
+Upstash Redis rate limiting is now integrated for registration, login, offline-order creation,
+and Razorpay order creation. Limits are shared across Vercel instances when
+`UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` are set in `.env` / Vercel.
+
+## Launch check
+
+Create the Upstash Redis database and add those two values to Vercel. Local in-memory limiting
+remains only as a development fallback when the variables are absent.
