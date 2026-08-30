@@ -4,6 +4,7 @@ import dbConnect from '@/lib/db';
 import User from '@/models/User';
 import { hashPassword, createToken, createTokenCookie } from '@/lib/auth';
 import { rateLimit, getClientIp } from '@/lib/rateLimit';
+import { sendWelcomeEmail } from '@/lib/email';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').trim(),
@@ -52,6 +53,9 @@ export async function POST(request: NextRequest) {
     // Hash password and create user
     const passwordHash = await hashPassword(password);
     const user = await User.create({ name, email, passwordHash });
+
+    // Email is transactional but never allowed to prevent account creation.
+    await sendWelcomeEmail(user);
 
     // Generate JWT token
     const token = createToken({

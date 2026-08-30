@@ -9,6 +9,7 @@ import { generateOrderNumber } from '@/lib/utils';
 import { getSettings } from '@/lib/settings';
 import { computeTotals } from '@/lib/pricing';
 import { resolveOrderItems, decrementStock, restoreStock } from '@/lib/orderItems';
+import { sendOrderReceivedEmails } from '@/lib/email';
 
 const orderItemSchema = z.object({
   product: z.string().min(1, 'Product ID is required'),
@@ -213,6 +214,10 @@ export async function POST(request: NextRequest) {
       });
 
       await order.populate('user', 'name email');
+
+      // A Resend failure is contained inside this helper, so a valid order is
+      // never lost merely because mail delivery is temporarily unavailable.
+      await sendOrderReceivedEmails(order);
 
       return NextResponse.json(
         { success: true, data: order, changes: resolution.changes },

@@ -6,6 +6,7 @@ import Order from '@/models/Order';
 // Registers the User model so `populate('user')` cannot throw MissingSchemaError.
 import '@/models/User';
 import { getTokenFromRequest, verifyToken } from '@/lib/auth';
+import { sendOrderPaymentReceivedEmail, sendOrderStatusEmail } from '@/lib/email';
 
 const updateOrderSchema = z.object({
   status: z.enum(['pending', 'processing', 'shipped', 'delivered', 'cancelled']).optional(),
@@ -158,6 +159,12 @@ export async function PUT(
       );
     }
 
+    const previousStatus = order.status;
+    const previousPaymentStatus = order.paymentStatus;
+    const previousTrackingNumber = order.trackingNumber || '';
+    const previousCarrier = order.carrier || '';
+    const previousEstimatedDelivery = order.estimatedDelivery?.toISOString() || '';
+
     // Record a timestamped history entry whenever the delivery status changes,
     // so the customer can see a real tracking timeline.
     if (status && status !== order.status) {
@@ -187,6 +194,23 @@ export async function PUT(
 
     await order.save();
     await order.populate('user', 'name email');
+
+    const statusChanged = order.status !== previousStatus;
+    const shipmentDetailsChanged =
+      order.trackingNumber !== previousTrackingNumber ||
+      order.carrier !== previousCarrier ||
+      (order.estimatedDelivery?.toISOString() || '') !== previousEstimatedDelivery;
+
+    if (order.paymentStatus === 'paid' && previousPaymentStatus !== 'paid') {
+      await sendOrderPaymentReceivedEmail(order);
+    }
+
+    if (
+      statusChanged ||
+      (order.status === 'shipped' && shipmentDetailsChanged)
+    ) {
+      await sendOrderStatusEmail(order, order.status);
+    }
 
     return NextResponse.json({ success: true, data: order });
   } catch (error) {

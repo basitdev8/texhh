@@ -1,6 +1,7 @@
 import Order from '@/models/Order';
 import { decrementStock } from '@/lib/orderItems';
 import type { IOrderDocument } from '@/models/Order';
+import { sendPaidOrderEmails } from '@/lib/email';
 
 /**
  * Atomically transition a Razorpay order to `paid` and decrement stock.
@@ -72,6 +73,11 @@ export async function fulfillPaidOrder(params: {
     });
     await order.save();
   }
+
+  // This function is called by both the browser verification flow and the
+  // authoritative Razorpay webhook. Only the caller that won the paid-state
+  // transition reaches here, so the customer gets one confirmation email.
+  await sendPaidOrderEmails(order);
 
   return { transitioned: true, order };
 }

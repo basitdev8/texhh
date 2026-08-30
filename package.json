@@ -9,7 +9,8 @@
     "lint": "eslint",
     "import-products": "tsx --env-file=.env scripts/import-products.ts",
     "download-product-images": "tsx scripts/download-product-images.ts",
-    "upload-product-images": "tsx --env-file=.env scripts/upload-product-images.ts"
+    "upload-product-images": "tsx --env-file=.env scripts/upload-product-images.ts",
+    "test-email": "tsx --env-file=.env scripts/test-email.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -22,6 +23,7 @@
     "razorpay": "^2.9.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "resend": "^6.25.0",
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
   },
