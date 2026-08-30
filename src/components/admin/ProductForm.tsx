@@ -15,7 +15,6 @@ export interface ProductFormData {
   brand: string;
   category: string;
   stock: number | '';
-  featured: boolean;
   tags: string[];
   images: string[];
   specifications: { key: string; value: string }[];
@@ -44,7 +43,6 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
     brand: '',
     category: '',
     stock: '',
-    featured: false,
     tags: [],
     images: [],
     specifications: [{ key: '', value: '' }],
@@ -86,10 +84,6 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value === '' ? '' : Number(value) }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
-  };
-
-  const handleToggle = () => {
-    setForm((prev) => ({ ...prev, featured: !prev.featured }));
   };
 
   // Tags
@@ -321,20 +315,6 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting = fals
           </div>
         </div>
 
-        <div style={{ marginTop: 'var(--space-5)' }}>
-          <div className={styles.toggleWrap}>
-            <label className={styles.toggle}>
-              <input
-                type="checkbox"
-                className={styles.toggleInput}
-                checked={form.featured}
-                onChange={handleToggle}
-              />
-              <span className={styles.toggleSlider} />
-            </label>
-            <span className={styles.toggleLabel}>Featured Product</span>
-          </div>
-        </div>
       </div>
 
       {/* Images */}

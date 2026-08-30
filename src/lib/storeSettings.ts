@@ -11,6 +11,9 @@ export interface StoreSettings {
   codMaxOrderAmount: number;
   bankTransferEnabled: boolean;
   shippingBannerText: string;
+  heroProductId: string | null;
+  homeFeaturedProductIds: string[];
+  homeFeatureSelectionConfigured: boolean;
 }
 
 export const DEFAULT_SETTINGS: StoreSettings = {
@@ -24,4 +27,7 @@ export const DEFAULT_SETTINGS: StoreSettings = {
   bankTransferEnabled: false,
   shippingBannerText:
     'Free shipping on orders above ₹5,000. Dispatched in 1–2 business days.',
+  heroProductId: null,
+  homeFeaturedProductIds: [],
+  homeFeatureSelectionConfigured: false,
 };

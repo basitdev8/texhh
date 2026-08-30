@@ -14,6 +14,7 @@ const SECTION_LABEL: Record<string, string> = {
   '/admin/categories': 'Categories',
   '/admin/pc-components': 'PC components',
   '/admin/customers': 'Customers',
+  '/admin/homepage': 'Homepage',
   '/admin/settings': 'Settings',
 };
 

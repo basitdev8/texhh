@@ -92,7 +92,6 @@ export default function EditProductPage({ params }: PageProps) {
     brand: product.brand,
     category: categoryId || "",
     stock: product.stock,
-    featured: product.featured,
     tags: product.tags || [],
     images: product.images || [],
     specifications: Object.entries(product.specifications || {}).map(

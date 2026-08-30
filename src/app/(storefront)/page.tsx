@@ -8,6 +8,7 @@ import Reveal from "@/components/ui/Reveal";
 import dbConnect from "@/lib/db";
 import Product from "@/models/Product";
 import Category from "@/models/Category";
+import { getSettings } from "@/lib/settings";
 import type { IProduct, ICategory } from "@/types";
 import styles from "./page.module.css";
 
@@ -38,12 +39,26 @@ const BUILD_STEPS = [
 async function getHomeData() {
   try {
     await dbConnect();
-    const [featuredRaw, categoriesRaw, productCount, brands] = await Promise.all([
-      Product.find({ isActive: true, featured: true })
+    const settings = await getSettings();
+    const selectionIds = [
+      ...(settings.heroProductId ? [settings.heroProductId] : []),
+      ...settings.homeFeaturedProductIds,
+    ];
+    const [selectedRaw, legacyFeaturedRaw, categoriesRaw, productCount, brands] = await Promise.all([
+      selectionIds.length > 0
+        ? Product.find({ _id: { $in: selectionIds }, isActive: true })
+            .populate("category", "name slug")
+            .lean()
+        : Promise.resolve([]),
+      // Existing stores retain their old choices until the admin first saves the
+      // new dedicated curation controls. Afterwards Product.featured is ignored.
+      !settings.homeFeatureSelectionConfigured
+        ? Product.find({ isActive: true, featured: true })
         .populate("category", "name slug")
         .sort({ createdAt: -1 })
         .limit(8)
-        .lean(),
+        .lean()
+        : Promise.resolve([]),
       Category.find({ isActive: true }).limit(8).lean(),
       Product.countDocuments({ isActive: true }),
       Product.distinct("brand", { isActive: true }),
@@ -60,8 +75,23 @@ async function getHomeData() {
       productCount: counts[i],
     }));
 
+    const selected = JSON.parse(JSON.stringify(selectedRaw)) as IProduct[];
+    const selectedById = new Map(selected.map((product) => [product._id, product]));
+    const heroProduct = settings.heroProductId
+      ? selectedById.get(settings.heroProductId) ?? null
+      : null;
+    const editProducts = settings.homeFeaturedProductIds
+      .map((id) => selectedById.get(id))
+      .filter((product): product is IProduct => Boolean(product));
+    const legacyFeatured = JSON.parse(JSON.stringify(legacyFeaturedRaw)) as IProduct[];
+
     return {
-      featured: JSON.parse(JSON.stringify(featuredRaw)) as IProduct[],
+      heroProduct: settings.homeFeatureSelectionConfigured
+        ? heroProduct
+        : legacyFeatured[0] ?? null,
+      editProducts: settings.homeFeatureSelectionConfigured
+        ? editProducts
+        : legacyFeatured.slice(1, 7),
       categories: JSON.parse(JSON.stringify(categories)) as (ICategory & {
         productCount: number;
       })[],
@@ -69,17 +99,12 @@ async function getHomeData() {
       brandCount: brands.filter(Boolean).length,
     };
   } catch {
-    return { featured: [], categories: [], productCount: 0, brandCount: 0 };
+    return { heroProduct: null, editProducts: [], categories: [], productCount: 0, brandCount: 0 };
   }
 }
 
 export default async function HomePage() {
-  const { featured, categories, productCount, brandCount } = await getHomeData();
-
-  /* The hero already carries the first piece, so the edit starts at the
-     second one rather than showing the same product twice. */
-  const heroProduct = featured[0] ?? null;
-  const editProducts = featured.length > 1 ? featured.slice(1, 7) : featured;
+  const { heroProduct, editProducts, categories, productCount, brandCount } = await getHomeData();
 
   /* Category covers are shot as scenes, so one of them carries the
      statement band better than a product cutout would. */

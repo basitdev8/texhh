@@ -41,6 +41,7 @@ const NAV: NavSection[] = [
   {
     section: 'Store',
     links: [
+      { href: '/admin/homepage', label: 'Homepage' },
       { href: '/admin/settings', label: 'Settings' },
     ],
   },
