@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import styles from './ImageUploader.module.css';
 
 interface ImageUploaderProps {
@@ -158,7 +159,14 @@ export default function ImageUploader({ images, onChange, maxImages = 20 }: Imag
                 setDraggedIndex(null);
               }}
             >
-              <img src={src} alt={`Preview ${i + 1}`} className={styles.previewImage} />
+              <Image
+                src={src}
+                alt={`Preview ${i + 1}`}
+                width={120}
+                height={120}
+                unoptimized
+                className={styles.previewImage}
+              />
               <span className={styles.positionBadge}>{i === 0 ? 'Primary' : i + 1}</span>
               <span className={styles.dragHandle} aria-hidden="true">⠿</span>
               <div className={styles.reorderControls}>

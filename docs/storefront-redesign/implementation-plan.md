@@ -4,6 +4,12 @@ This is an execution plan, not a request to reinterpret the visual direction. Im
 
 Preserve existing business behavior unless a step explicitly says otherwise. Keep CSS Modules and current UI primitives; the supplied reference components are design evidence, not copy-paste dependencies.
 
+## Current status — 2026-08-31
+
+The foundations, storefront shell, hero, in-place header search, and the shared admin system have been implemented. The admin styling regression caused by missing shared CSS-module classes has been repaired, including tables, forms, settings, detail views, responsive controls, and shrink-safe inventory alerts.
+
+This plan remains the completion contract, not proof that every state is complete. The next work should prioritize authenticated visual inspection at 375, 768, 1024, and 1440px and explicit retryable error states for admin fetch paths that currently swallow failures. See [`CURRENT-CONTEXT.md`](../../CURRENT-CONTEXT.md) for exact current evidence and constraints.
+
 ## Definition of done
 
 The redesign is complete only when:
@@ -43,7 +49,7 @@ Primary files:
 
 Work:
 
-1. Remove Fraunces loading and the body grain overlay. Retain Outfit and Inter via `next/font`; remove the redundant CSS `@import`.
+1. Remove Fraunces/Outfit loading and the body grain overlay. Load Manrope and Inter via `next/font`; remove redundant font imports.
 2. Map global color, type, spacing, radius, shadow, focus, transition, container, and sticky-offset tokens to the master contract. Keep temporary aliases for old names only while dependent pages migrate.
 3. Normalize focus-visible, disabled, loading, error, and minimum target behavior across UI primitives.
 4. Add or reshape shared `StatusNotice`, shape-matched skeleton patterns, and drawer/modal behavior only where existing primitives cannot express the contract cleanly.
@@ -70,7 +76,7 @@ Primary files:
 Work:
 
 1. Rebuild the header/navigation to the master contract using real categories. Keep Search, Account, and Cart behavior; enlarge and label targets.
-2. Make search a first-class desktop/mobile surface with query, loading, no-results, error, and keyboard behavior.
+2. Keep search continuously visible in the desktop and mobile header. Suggestions stay in a compact anchored dropdown with loading/no-results states and keyboard navigation; submit into the filtered `/products` catalog rather than opening a modal or dedicated search surface.
 3. Replace the narrative footer with the compact IA from `storefront-spec.md`; source claims/settings rather than hard-coding them.
 4. Rebuild Product Card in the canonical reading order. Add a pure mapping from category/specification data to an optional Signal Rail; do not fabricate missing specs.
 5. Normalize Category Card to a simple image/title link without editorial numbers or corner ornaments.
@@ -107,7 +113,7 @@ Work:
 1. Replace the homepage hierarchy with the exact module order in `home.md`. Remove marquee, manifesto, metrics without a decision purpose, and ornamental editorial treatments.
 2. Build catalog filters/sort/result count/active chips with URL-backed state. Replace swallowed fetch failures with explicit error/retry state. Avoid per-category count waterfalls or split that optimization into a separately reviewed API task.
 3. Ensure category routing retains visible category context and a useful not-found path.
-4. Rebuild search results on the catalog grammar; query and result count stay visible.
+4. Keep the legacy direct `/search` route coherent if retained, but the header must use the persistent `SearchBar` and submit to `/products?search=…`.
 5. Recompose product detail into gallery + sticky purchase column, then details/specifications/related content. Add the mobile purchase bar without obscuring content.
 6. Use real product images/specs and current add-to-cart behavior throughout.
 
@@ -186,6 +192,8 @@ Verify:
 ## Phase 6 — Admin migration
 
 Goal: align operational UI with the foundation while preserving task density and safety.
+
+Status: shared shell, navigation, table/form vocabulary, settings, detail surfaces, direct admin labels, mobile target sizes, and low-stock overflow protection are implemented. The remaining acceptance work is authenticated visual inspection and complete explicit failure/retry states.
 
 Read `pages/admin.md`.
 

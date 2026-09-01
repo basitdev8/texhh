@@ -5,139 +5,103 @@ export default function Footer() {
   return (
     <footer className={styles.footer} id="main-footer">
       <div className={styles.inner}>
-        <div className={styles.topMeta}>
-          <span className={styles.topMetaLabel}>
-            TechChasers · Edition 04 · 2026
-          </span>
-          <span className={styles.topMetaItalic}>
-            <em>Stay close.</em> Subscribe below.
-          </span>
-        </div>
-
         <div className={styles.grid}>
+          {/* Column 1: Brand & Assurance */}
           <div className={styles.column}>
-            <span className={styles.colTitle}>The Atelier</span>
-            <p className={styles.aboutText}>
-              TechChasers is a small studio obsessed with how technology{" "}
-              <em>feels</em>. We photograph it, vet it, and ship it like
-              an object should be — with quiet care, never on the cheap.
+            <span className={styles.brandTitle}>TechChasers</span>
+            <p className={styles.brandText}>
+              Precision electronics, smartphones, computers, and custom PC components.
+              Assembled and delivered with care.
             </p>
-            <div className={styles.socials}>
-              <a
-                href="#"
-                className={styles.socialIcon}
-                aria-label="Facebook"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
+            <div className={styles.assuranceList}>
+              <div className={styles.assuranceItem}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="1" y="3" width="15" height="13" />
+                  <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                  <circle cx="5.5" cy="18.5" r="2.5" />
+                  <circle cx="18.5" cy="18.5" r="2.5" />
                 </svg>
-              </a>
-              <a
-                href="#"
-                className={styles.socialIcon}
-                aria-label="Twitter"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
+                <span>Free express shipping on eligible orders</span>
+              </div>
+              <div className={styles.assuranceItem}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
-              </a>
-              <a
-                href="#"
-                className={styles.socialIcon}
-                aria-label="Instagram"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="2" y="2" width="20" height="20" rx="5" />
-                  <circle cx="12" cy="12" r="5" />
-                  <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
-                </svg>
-              </a>
+                <span>Verified secure checkout &amp; payment</span>
+              </div>
             </div>
           </div>
 
+          {/* Column 2: Shop */}
           <div className={styles.column}>
-            <span className={styles.colTitle}>Shop</span>
-            <nav className={styles.links}>
+            <h3 className={styles.colTitle}>Shop</h3>
+            <nav className={styles.links} aria-label="Shop links">
               <Link href="/products" className={styles.link}>
                 All Products
               </Link>
-              <Link
-                href="/products?category=tws-bluetooth"
-                className={styles.link}
-              >
-                Earbuds
+              <Link href="/products?category=smartphones" className={styles.link}>
+                Smartphones
               </Link>
-              <Link
-                href="/products?category=wireless-headphones"
-                className={styles.link}
-              >
-                Headphones
-              </Link>
-              <Link
-                href="/products?category=smartwatches"
-                className={styles.link}
-              >
-                Smartwatches
+              <Link href="/products?category=laptops" className={styles.link}>
+                Laptops &amp; Computers
               </Link>
               <Link href="/pc-builder" className={styles.link}>
                 PC Builder
               </Link>
+              <Link href="/products?category=accessories" className={styles.link}>
+                Accessories
+              </Link>
             </nav>
           </div>
 
+          {/* Column 3: Orders & Support */}
           <div className={styles.column}>
-            <span className={styles.colTitle}>Studio</span>
-            <nav className={styles.links}>
-              <Link href="/policies/contact" className={styles.link}>Contact</Link>
-              <Link href="/policies/shipping" className={styles.link}>Shipping</Link>
-              <Link href="/policies/refunds" className={styles.link}>Returns &amp; Refunds</Link>
-              <Link href="/policies/terms" className={styles.link}>Terms</Link>
-              <Link href="/policies/privacy" className={styles.link}>Privacy</Link>
-            </nav>
-          </div>
-
-          <div className={styles.column}>
-            <span className={styles.colTitle}>Help</span>
-            <p className={styles.aboutText}>
-              Questions about an order, a return, or which parts fit together? Talk to a
-              person — we answer with your order number in hand.
-            </p>
-            <nav className={styles.links}>
-              <Link href="/policies/contact" className={styles.link}>
-                Contact support
+            <h3 className={styles.colTitle}>Orders &amp; Support</h3>
+            <nav className={styles.links} aria-label="Support links">
+              <Link href="/account" className={styles.link}>
+                My Account
               </Link>
               <Link href="/account" className={styles.link}>
-                Track an order
+                Track Orders
               </Link>
-              <Link href="/pc-builder" className={styles.link}>
-                Build a PC
+              <Link href="/policies/shipping" className={styles.link}>
+                Shipping Policy
+              </Link>
+              <Link href="/policies/refunds" className={styles.link}>
+                Returns &amp; Refunds
+              </Link>
+              <Link href="/policies/contact" className={styles.link}>
+                Contact Support
               </Link>
             </nav>
           </div>
-        </div>
 
-        {/* Huge wordmark — the editorial signature */}
-        <div className={styles.wordmark} aria-hidden="true">
-          Tech<em>Chasers</em>
+          {/* Column 4: Company & Legal */}
+          <div className={styles.column}>
+            <h3 className={styles.colTitle}>Company &amp; Legal</h3>
+            <nav className={styles.links} aria-label="Legal links">
+              <Link href="/policies/terms" className={styles.link}>
+                Terms of Service
+              </Link>
+              <Link href="/policies/privacy" className={styles.link}>
+                Privacy Policy
+              </Link>
+              <Link href="/policies/contact" className={styles.link}>
+                Help &amp; FAQ
+              </Link>
+            </nav>
+          </div>
         </div>
 
         <div className={styles.bottom}>
           <p className={styles.copyright}>
-            © {new Date().getFullYear()} TechChasers — Curated tech for the
-            considered.
+            © {new Date().getFullYear()} TechChasers. All rights reserved.
           </p>
           <div className={styles.bottomLinks}>
             <Link href="/policies/privacy" className={styles.bottomLink}>Privacy</Link>
             <Link href="/policies/terms" className={styles.bottomLink}>Terms</Link>
+            <Link href="/policies/shipping" className={styles.bottomLink}>Shipping</Link>
             <Link href="/policies/refunds" className={styles.bottomLink}>Refunds</Link>
           </div>
         </div>

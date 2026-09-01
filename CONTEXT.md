@@ -28,6 +28,10 @@ _Avoid_: Rig, bundle
 The result of evaluating whether selected PC Components can operate together, including blocking issues and non-blocking warnings.
 _Avoid_: Fit when referring to the complete evaluation
 
+**Signal Rail**:
+A short, factual line of two or three useful Product specifications shown near a product name. It is derived from real data and omitted when reliable data is unavailable.
+_Avoid_: Badge cloud, invented specification
+
 ## Shopping
 
 **Customer**:
@@ -46,7 +50,15 @@ _Avoid_: Item when its source type matters
 The delivery, payment, and review flow that validates a Cart and places an Order.
 _Avoid_: Payment when referring to the complete flow
 
-## Orders
+## Homepage merchandising
+
+**Hero Spotlight**:
+The single Product selected for the homepage campaign. It must not also appear in the Popular Products Rail.
+
+**Popular Products Rail**:
+The ordered set of Products selected for the homepage’s popular-products module. It is independently curated once its selection is configured.
+
+## Orders and inventory
 
 **Order**:
 The recorded purchase created from validated Cart Lines for one Customer, delivery address, and payment method.
@@ -67,6 +79,9 @@ _Avoid_: Cancellation
 **Stock Reservation**:
 The claim on inventory associated with an Order, tracked independently from fulfillment and payment.
 _Avoid_: Stock status
+
+**Inventory Alert**:
+An operational warning for an active Product with five or fewer units in stock. An out-of-stock Product is a more severe inventory condition, not merely a visual variant of a low-stock alert.
 
 ## Surfaces
 

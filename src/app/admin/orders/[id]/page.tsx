@@ -167,8 +167,7 @@ export default function AdminOrderDetailPage({ params }: PageProps) {
             <Badge variant={STATUS_VARIANT[order.status]}>{order.status}</Badge>
           </h1>
           <p className={styles.pageSubtitle}>
-            Placed {formatDateTime(order.createdAt)} · Update the order and
-            payment status from the sidebar.
+            Placed {formatDateTime(order.createdAt)} · Review fulfillment, payment, and delivery details.
           </p>
         </div>
       </header>

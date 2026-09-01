@@ -61,9 +61,7 @@ export default function NewProductPage() {
               ← Catalogue / Products
             </Link>
           </div>
-          <h1 className={styles.pageTitle}>
-            New <span className={styles.pageTitleItalic}>piece</span>.
-          </h1>
+          <h1 className={styles.pageTitle}>New product</h1>
           <p className={styles.pageSubtitle}>
             Add a product to the storefront. Photos, copy, specs, stock —
             everything goes live the moment you save.

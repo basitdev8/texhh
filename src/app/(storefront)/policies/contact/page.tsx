@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PolicyLayout, { Todo, policyStyles as styles } from "../PolicyLayout";
 
 export const metadata: Metadata = {
-  title: "Contact — TechChasers",
+  title: "Contact",
   description:
     "Reach the TechChasers team about an order, a return, or a product question.",
 };

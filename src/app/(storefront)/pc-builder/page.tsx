@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useCartStore } from "@/store/cartStore";
@@ -13,10 +13,10 @@ import styles from "./page.module.css";
 
 const STEPS: PCComponentType[] = [
   "CPU",
-  "GPU",
-  "RAM",
-  "Storage",
   "Motherboard",
+  "RAM",
+  "GPU",
+  "Storage",
   "PSU",
   "Case",
   "Cooler",
@@ -33,15 +33,15 @@ const EMPTY_BUILD: IPCBuild = {
   Cooler: null,
 };
 
-const STEP_META: Record<PCComponentType, { title: string; sub: string }> = {
-  CPU: { title: "The silent engine.", sub: "Pick a processor that matches the workload — work, play, render." },
-  GPU: { title: "Where pixels are born.", sub: "Graphics for gaming, creative work, and the occasional render." },
-  RAM: { title: "Multitasking, room to breathe.", sub: "Memory determines how fluidly the machine handles your day." },
-  Storage: { title: "Where everything lives.", sub: "NVMe SSDs for speed, paired with capacity for your library." },
-  Motherboard: { title: "The foundation.", sub: "Socket, chipset, and form factor — match the rest of your parts." },
-  PSU: { title: "Quiet, reliable power.", sub: "Headroom for upgrades, efficiency for your bill, silence for your ears." },
-  Case: { title: "The shell.", sub: "Choose airflow, form factor, and the material that defines the build." },
-  Cooler: { title: "Thermal calm.", sub: "Air for simplicity, liquid for the absolute lowest temperatures." },
+const STEP_INFO: Record<PCComponentType, { label: string; desc: string }> = {
+  CPU: { label: "Processor (CPU)", desc: "Select an Intel or AMD processor to define your platform and socket type." },
+  Motherboard: { label: "Motherboard", desc: "Choose a compatible motherboard matching your CPU socket and case form factor." },
+  RAM: { label: "System Memory (RAM)", desc: "Choose memory generation (DDR4 / DDR5) and capacity for your system." },
+  GPU: { label: "Graphics Card (GPU)", desc: "Select dedicated graphics tailored for gaming, 3D rendering, or creation." },
+  Storage: { label: "Storage (SSD / NVMe)", desc: "High-speed NVMe PCIe storage for OS, games, and large project files." },
+  PSU: { label: "Power Supply (PSU)", desc: "Reliable power delivery with sufficient wattage headroom for all components." },
+  Case: { label: "Computer Case", desc: "Form factor chassis with appropriate airflow, motherboard fit, and GPU clearance." },
+  Cooler: { label: "CPU Cooler", desc: "Air or liquid AIO cooling solution compatible with your CPU socket." },
 };
 
 export default function PCBuilderPage() {
@@ -50,16 +50,21 @@ export default function PCBuilderPage() {
   const [components, setComponents] = useState<IPCComponent[]>([]);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState<"price-asc" | "price-desc" | "name">("price-asc");
+  // Phones get a bottom summary bar that opens the full build sheet; the
+  // desktop aside is hidden at that width so nothing is duplicated.
+  const [buildSheetOpen, setBuildSheetOpen] = useState(false);
+  const buildSheetTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const buildSheetRef = useRef<HTMLDivElement | null>(null);
 
   const addItem = useCartStore((s) => s.addItem);
   const { showToast } = useToast();
   const router = useRouter();
 
-  const filled = useMemo(
+  const filledCount = useMemo(
     () => STEPS.filter((s) => build[s] !== null).length,
     [build]
   );
-  const progress = (filled / STEPS.length) * 100;
+  const progressPercent = (filledCount / STEPS.length) * 100;
   const subtotal = useMemo(
     () => STEPS.reduce((sum, s) => sum + (build[s]?.price ?? 0), 0),
     [build]
@@ -77,7 +82,9 @@ export default function PCBuilderPage() {
         setComponents(data.data || []);
       })
       .catch(() => {})
-      .finally(() => mounted && setLoading(false));
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
     return () => {
       mounted = false;
     };
@@ -99,7 +106,6 @@ export default function PCBuilderPage() {
 
   const goToStep = (s: PCComponentType) => {
     setCurrentStep(s);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleNext = () => {
@@ -115,18 +121,16 @@ export default function PCBuilderPage() {
       Boolean
     ) as IPCComponent[];
     if (parts.length === 0) {
-      showToast("Select at least one part first", "error");
+      showToast("Select at least one component to proceed", "error");
       return;
     }
     if (compatibility.status === "incompatible") {
-      showToast("Fix compatibility issues before adding this build", "error");
+      showToast("Please resolve compatibility errors before adding to cart", "error");
       return;
     }
     parts.forEach((part) => {
       addItem({
         productId: part._id,
-        // Build parts live in their own collection, so the line has to say so or the
-        // order API cannot resolve, price, or restock it.
         itemType: "component",
         name: `${part.type}: ${part.name}`,
         price: part.price,
@@ -135,224 +139,258 @@ export default function PCBuilderPage() {
         maxStock: Math.max(1, part.stock),
       });
     });
-    showToast(`${parts.length} build parts added to cart`, "success");
+    showToast(`${parts.length} custom PC parts added to cart`, "success");
     router.push("/cart");
   };
 
-  const meta = STEP_META[currentStep];
-  const stepNum = String(stepIndex + 1).padStart(2, "0");
-  const compatibilityClass =
-    compatibility.status === "compatible"
-      ? styles.compatGood
-      : compatibility.status === "incompatible"
-        ? styles.compatBad
-        : styles.compatWarn;
-  const compatibilityLabel =
-    compatibility.status === "compatible"
-      ? "All checked rules pass · ready to ship"
-      : compatibility.status === "incompatible"
-        ? `${compatibility.errors.length} compatibility issue${compatibility.errors.length === 1 ? "" : "s"} need fixing`
-        : "Compatibility needs review";
+  // The build sheet is a modal surface: Escape closes it, the background does
+  // not scroll behind it, and focus returns to the trigger on close.
+  useEffect(() => {
+    if (!buildSheetOpen) return;
+    const trigger = buildSheetTriggerRef.current;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setBuildSheetOpen(false);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    buildSheetRef.current?.focus();
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+      trigger?.focus();
+    };
+  }, [buildSheetOpen]);
+
+  const currentInfo = STEP_INFO[currentStep];
+
+  const renderBuildSummary = (idSuffix: string) => (
+    <div className={styles.summaryCard}>
+      <div className={styles.summaryHeader}>
+        <h3 className={styles.summaryTitle}>Current Build</h3>
+        <span className={styles.summaryCount}>
+          {filledCount} / {STEPS.length} Parts
+        </span>
+      </div>
+
+      {/* 8-Part Slot List */}
+      <div className={styles.slotList}>
+        {STEPS.map((s) => {
+          const part = build[s];
+          const isActive = s === currentStep;
+          return (
+            <button
+              key={s}
+              type="button"
+              onClick={() => {
+                goToStep(s);
+                setBuildSheetOpen(false);
+              }}
+              className={`${styles.slotRow} ${part ? styles.slotRowFilled : ""} ${isActive ? styles.slotRowActive : ""}`}
+              aria-current={isActive ? "step" : undefined}
+            >
+              <span className={styles.slotMain}>
+                <span className={styles.slotType}>{s}</span>
+                <span className={styles.slotPartName}>
+                  {part ? part.name : "Not selected"}
+                </span>
+              </span>
+              <span className={styles.slotPrice}>
+                {part ? formatPrice(part.price) : "\u2014"}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Real-time Compatibility Banner */}
+      <div
+        className={`${styles.compatBanner} ${
+          compatibility.status === "compatible"
+            ? styles.compatSuccess
+            : compatibility.status === "incompatible"
+            ? styles.compatError
+            : styles.compatWarning
+        }`}
+        role="status"
+        aria-live="polite"
+      >
+        <div className={styles.compatTitleRow}>
+          <span className={styles.compatStatusText}>
+            {compatibility.status === "compatible"
+              ? "\u2713 All selected parts compatible"
+              : compatibility.status === "incompatible"
+              ? "\u2715 Compatibility conflict detected"
+              : "\u26a0 Compatibility notice"}
+          </span>
+        </div>
+
+        {compatibility.messages.length > 0 && (
+          <ul className={styles.compatList}>
+            {compatibility.messages.map((msg, i) => (
+              <li key={i}>{msg}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Total & Action */}
+      <div className={styles.totalRow}>
+        <span className={styles.totalLabel}>Build Total</span>
+        <span className={styles.totalAmount}>{formatPrice(subtotal)}</span>
+      </div>
+
+      <button
+        type="button"
+        className={styles.addBuildBtn}
+        onClick={handleAddToCart}
+        disabled={filledCount === 0 || compatibility.status === "incompatible"}
+        id={`builder-add-to-cart${idSuffix}`}
+      >
+        {filledCount === 0
+          ? "Select parts to begin"
+          : compatibility.status === "incompatible"
+          ? "Resolve conflicts to add"
+          : `Add Build to Cart (${filledCount} parts)`}
+      </button>
+    </div>
+  );
 
   return (
     <div className={styles.page}>
       <div className="container">
-        {/* Editorial header */}
+        {/* Page Header */}
         <header className={styles.header}>
-          <div>
-            <div className={styles.eyebrowRow}>
-              <span className={styles.eyebrowLine} />
-              <span className={styles.eyebrow}>Atelier / PC Builder</span>
-            </div>
-            <h1 className={styles.title}>
-              Compose your <span className={styles.titleItalic}>rig</span>.
-            </h1>
-          </div>
-          <div className={styles.headerRight}>
-            <p className={styles.headerSubtitle}>
-              A guided build session. Pick each part, watch the total breathe,
-              check compatibility live — then send the whole thing to your cart
-              like a single object.
+          <div className={styles.headerMain}>
+            <span className={styles.eyebrow}>PC Configurator</span>
+            <h1 className={styles.title}>Custom PC Builder</h1>
+            <p className={styles.subtitle}>
+              Configure your ideal setup with real-time socket, form factor, and wattage validation.
             </p>
-            <div className={styles.headerProgress}>
-              <div className={styles.headerProgressTop}>
-                <span className={styles.headerProgressLabel}>Progress</span>
-                <span className={styles.headerProgressVal}>
-                  {filled}
-                  <span style={{ color: "var(--color-text-muted)", fontStyle: "normal", fontFamily: "var(--font-body)", fontSize: "var(--text-base)" }}>
-                    {" "}/ {STEPS.length}
-                  </span>
-                </span>
-              </div>
-              <div className={styles.headerProgressBar}>
-                <div
-                  className={styles.headerProgressFill}
-                  style={{ transform: `scaleX(${progress / 100})` }}
-                />
-              </div>
+          </div>
+
+          <div className={styles.progressCard}>
+            <div className={styles.progressRow}>
+              <span className={styles.progressLabel}>Configuration Progress</span>
+              <span className={styles.progressVal}>
+                {filledCount} of {STEPS.length} Selected
+              </span>
+            </div>
+            <div className={styles.progressBar}>
+              <div
+                className={styles.progressFill}
+                style={{ width: `${progressPercent}%` }}
+              />
             </div>
           </div>
         </header>
 
-        {/* Sticky step rail */}
-        <div className={styles.stepRail}>
-          <div className={styles.stepRailInner}>
-            {STEPS.map((s, i) => {
-              const done = build[s] !== null;
-              const active = s === currentStep;
-              return (
-                <button
-                  key={s}
-                  className={`${styles.stepBtn} ${
-                    active ? styles.stepActive : done ? styles.stepDone : ""
-                  }`}
-                  onClick={() => goToStep(s)}
-                >
-                  <span className={styles.stepDot}>
-                    {done && !active ? "✓" : String(i + 1).padStart(2, "0")}
-                  </span>
-                  {s}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        {/* Step Navigation Rail */}
+        <nav className={styles.stepRail} aria-label="Build Steps">
+          {STEPS.map((s, i) => {
+            const isSelected = build[s] !== null;
+            const isActive = s === currentStep;
+            return (
+              <button
+                key={s}
+                type="button"
+                className={`${styles.stepTab} ${isActive ? styles.stepTabActive : isSelected ? styles.stepTabDone : ""}`}
+                onClick={() => goToStep(s)}
+                id={`builder-step-${s.toLowerCase()}`}
+              >
+                <span className={styles.stepIndex}>
+                  {isSelected ? "✓" : i + 1}
+                </span>
+                <span className={styles.stepName}>{s}</span>
+              </button>
+            );
+          })}
+        </nav>
 
-        {/* Main layout */}
+        {/* 2-Column Main Builder Layout */}
         <div className={styles.layout}>
-          <section>
-            {/* Step header */}
+          {/* Left Column: Component Picker */}
+          <section className={styles.pickerCol} aria-labelledby="picker-heading">
             <div className={styles.stepHeader}>
               <div>
-                <div className={styles.stepName}>
-                  <span className={styles.stepNum}>№{stepNum}</span>
-                  <span>{currentStep}</span>
-                </div>
-                <h2
-                  className={styles.stepDescription}
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontStyle: "italic",
-                    fontWeight: 400,
-                    fontSize: "var(--text-2xl)",
-                    color: "var(--color-ink)",
-                    letterSpacing: "-0.02em",
-                    margin: "var(--space-3) 0 var(--space-2)",
-                    maxWidth: "32rem",
-                  }}
-                >
-                  {meta.title}
+                <h2 id="picker-heading" className={styles.stepTitle}>
+                  {currentInfo.label}
                 </h2>
-                <p className={styles.stepDescription}>{meta.sub}</p>
+                <p className={styles.stepDesc}>{currentInfo.desc}</p>
               </div>
-              <div className={styles.stepHeaderRight}>
-                <span className={styles.stepCount}>
-                  {loading ? "…" : sortedComponents.length}
-                </span>
-                <span className={styles.stepCountLabel}>options</span>
+
+              <div className={styles.sortWrapper}>
+                <select
+                  className={styles.sortSelect}
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as typeof sort)}
+                  aria-label={`Sort ${currentStep} components`}
+                >
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                  <option value="name">Name: A to Z</option>
+                </select>
               </div>
             </div>
 
-            {/* Sort row */}
-            <div className={styles.sortRow}>
-              <span className={styles.sortLabel}>
-                {build[currentStep]
-                  ? `Selected · ${build[currentStep]?.name}`
-                  : "None selected yet"}
-              </span>
-              <select
-                className={styles.sortSelect}
-                value={sort}
-                onChange={(e) => setSort(e.target.value as typeof sort)}
-              >
-                <option value="price-asc">Sort: Price ↑</option>
-                <option value="price-desc">Sort: Price ↓</option>
-                <option value="name">Sort: A → Z</option>
-              </select>
-            </div>
-
-            {/* Component grid */}
+            {/* Component Grid */}
             {loading ? (
-              <div className={styles.gridLoading}>
-                <LoadingState label={`Finding ${currentStep} options`} compact />
+              <div className={styles.loadingWrap}>
+                <LoadingState label={`Loading ${currentStep} options`} compact />
               </div>
             ) : sortedComponents.length === 0 ? (
-              <div className={styles.gridEmpty}>
-                No {currentStep} options in the catalogue yet.
+              <div className={styles.emptyWrap}>
+                <p>No components currently listed for {currentStep}.</p>
               </div>
             ) : (
-              <div className={styles.grid}>
-                {sortedComponents.map((c, i) => {
-                  const selected = build[currentStep]?._id === c._id;
+              <div className={styles.componentGrid}>
+                {sortedComponents.map((c) => {
+                  const isSelected = build[currentStep]?._id === c._id;
                   const specEntries = Object.entries(c.specifications || {}).slice(0, 3);
+                  const isOutOfStock = c.stock <= 0;
+
                   return (
                     <article
                       key={c._id}
-                      className={`${styles.card} ${selected ? styles.cardSelected : ""} ${
-                        c.stock === 0 ? styles.outOfStock : ""
-                      }`}
-                      onClick={() =>
-                        c.stock > 0 && handleSelect(selected ? null : c)
-                      }
-                      role="button"
-                      tabIndex={0}
+                      className={`${styles.card} ${isSelected ? styles.cardSelected : ""} ${isOutOfStock ? styles.cardOutOfStock : ""}`}
                     >
-                      <div className={styles.cardImage}>
-                        {selected && (
-                          <span className={styles.cardBadge}>
-                            <svg
-                              width="10"
-                              height="10"
-                              viewBox="0 0 10 10"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <path d="M2 5l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                            Selected
-                          </span>
+                      <div className={styles.cardImageWrap}>
+                        {isSelected && (
+                          <span className={styles.selectedBadge}>Selected</span>
                         )}
-                        <span className={styles.cardNum}>
-                          №{String(i + 1).padStart(2, "0")}
-                        </span>
-                        {c.image && (
-                          <Image
-                            src={c.image}
-                            alt={c.name}
-                            fill
-                            sizes="(max-width: 1024px) 100vw, 400px"
-                            className={styles.cardImageInner}
-                            style={{ objectFit: "contain" }}
-                          />
-                        )}
+                        <Image
+                          src={c.image || "/placeholder.svg"}
+                          alt={c.name}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 300px"
+                          className={styles.cardImage}
+                        />
                       </div>
-                      <div className={styles.cardBody}>
-                        <span className={styles.cardBrand}>{c.brand}</span>
+
+                      <div className={styles.cardContent}>
+                        {c.brand && <span className={styles.cardBrand}>{c.brand}</span>}
                         <h3 className={styles.cardName}>{c.name}</h3>
+
                         {specEntries.length > 0 && (
-                          <div className={styles.cardSpecs}>
-                            {specEntries.map(([k, v]) => (
-                              <span key={k} className={styles.cardSpec}>
-                                <span className={styles.cardSpecKey}>
-                                  {k}:
-                                </span>{" "}
-                                {v}
-                              </span>
-                            ))}
+                          <div className={styles.cardSignalRail}>
+                            {specEntries.map(([k, v]) => `${k}: ${v}`).join(" · ")}
                           </div>
                         )}
+
                         <div className={styles.cardFooter}>
-                          <span className={styles.cardPrice}>
-                            {formatPrice(c.price)}
-                          </span>
-                          <span className={styles.cardAction}>
-                            {c.stock === 0
-                              ? "Sold out"
-                              : selected
+                          <span className={styles.cardPrice}>{formatPrice(c.price)}</span>
+                          <button
+                            type="button"
+                            className={`${styles.selectBtn} ${isSelected ? styles.selectBtnActive : ""}`}
+                            onClick={() => !isOutOfStock && handleSelect(isSelected ? null : c)}
+                            disabled={isOutOfStock}
+                            aria-label={`${isSelected ? "Remove" : "Select"} ${c.name}`}
+                          >
+                            {isOutOfStock
+                              ? "Out of stock"
+                              : isSelected
                               ? "Remove"
-                              : "Select"}
-                          </span>
+                              : "Select Part"}
+                          </button>
                         </div>
                       </div>
                     </article>
@@ -361,115 +399,88 @@ export default function PCBuilderPage() {
               </div>
             )}
 
-            {/* Step nav */}
-            <div className={styles.stepNav}>
+            {/* Stepper Footer Buttons */}
+            <div className={styles.stepNavigation}>
               <button
-                className={styles.stepNavBtn}
+                type="button"
+                className={styles.navBtn}
                 onClick={handlePrev}
                 disabled={stepIndex === 0}
               >
-                ← {stepIndex > 0 ? STEPS[stepIndex - 1] : "Start"}
+                ← Previous Step
               </button>
               <button
-                className={`${styles.stepNavBtn} ${styles.stepNavNext}`}
+                type="button"
+                className={`${styles.navBtn} ${styles.navBtnNext}`}
                 onClick={handleNext}
                 disabled={stepIndex >= STEPS.length - 1}
               >
-                {stepIndex < STEPS.length - 1 ? STEPS[stepIndex + 1] : "Done"} →
+                Next Step →
               </button>
             </div>
           </section>
 
-          {/* Build sheet */}
-          <aside className={styles.sheet} aria-label="Build sheet">
-            <div className={styles.sheetInner}>
-              <div className={styles.sheetHead}>
-                <span className={styles.sheetEyebrow}>Build sheet</span>
-                <span className={styles.sheetCount}>
-                  {filled} / {STEPS.length}
-                </span>
-              </div>
-
-              <div className={styles.slots}>
-                {STEPS.map((s, i) => {
-                  const part = build[s];
-                  const active = s === currentStep;
-                  return (
-                    <div
-                      key={s}
-                      onClick={() => goToStep(s)}
-                      className={`${styles.slot} ${part ? styles.slotFilled : ""} ${
-                        active ? styles.slotActive : ""
-                      }`}
-                      role="button"
-                      tabIndex={0}
-                    >
-                      <span className={styles.slotNum}>
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <div className={styles.slotInfo}>
-                        <span className={styles.slotType}>{s}</span>
-                        {part ? (
-                          <span className={styles.slotName}>{part.name}</span>
-                        ) : (
-                          <span className={styles.slotEmpty}>not selected</span>
-                        )}
-                      </div>
-                      {part ? (
-                        <span className={styles.slotPrice}>
-                          {formatPrice(part.price)}
-                        </span>
-                      ) : (
-                        <span className={styles.slotPlaceholder}>—</span>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div
-                className={`${styles.compat} ${compatibilityClass}`}
-                aria-live="polite"
-              >
-                <span className={styles.compatDot} />
-                <div>
-                  <span>{compatibilityLabel}</span>
-                  {compatibility.status !== "compatible" && compatibility.messages.length > 0 && (
-                    <ul className={styles.compatMessages}>
-                      {compatibility.messages.map((message) => (
-                        <li key={message}>{message}</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.total}>
-                <span className={styles.totalLabel}>Total</span>
-                <span className={styles.totalValue}>
-                  <span className={styles.totalValueAccent}>
-                    {formatPrice(subtotal)}
-                  </span>
-                </span>
-              </div>
-
-              <button
-                className={styles.cta}
-                onClick={handleAddToCart}
-                disabled={filled === 0 || compatibility.status === "incompatible"}
-              >
-                {filled === 0
-                  ? "Pick a part to begin"
-                  : compatibility.status === "incompatible"
-                  ? "Fix compatibility issues"
-                  : filled < STEPS.length
-                  ? `Add ${filled} part${filled === 1 ? "" : "s"} to cart`
-                  : "Send build to cart"}
-              </button>
-            </div>
+          {/* Right Column: Sticky Build Summary */}
+          <aside className={styles.summaryCol} aria-label="Build Summary">
+            {renderBuildSummary("")}
           </aside>
         </div>
       </div>
+
+      {/* Mobile build bar — keeps parts, total, and the final action reachable
+          without scrolling past the whole component list. */}
+      <div className={styles.mobileBuildBar} data-mobile-action-bar="compact">
+        <div className={styles.mobileBuildInner}>
+          <span className={styles.mobileBuildMeta}>
+            <span className={styles.mobileBuildCount}>
+              {filledCount} of {STEPS.length} parts
+            </span>
+            <span className={styles.mobileBuildTotal}>{formatPrice(subtotal)}</span>
+          </span>
+          <button
+            type="button"
+            ref={buildSheetTriggerRef}
+            className={styles.mobileBuildBtn}
+            onClick={() => setBuildSheetOpen(true)}
+            aria-expanded={buildSheetOpen}
+          >
+            View build
+          </button>
+        </div>
+      </div>
+
+      {buildSheetOpen && (
+        <div
+          className={styles.sheetBackdrop}
+          onClick={() => setBuildSheetOpen(false)}
+          role="presentation"
+        >
+          <div
+            ref={buildSheetRef}
+            className={styles.sheet}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Build summary"
+            tabIndex={-1}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={styles.sheetHead}>
+              <span className={styles.sheetHandle} aria-hidden="true" />
+              <button
+                type="button"
+                className={styles.sheetClose}
+                onClick={() => setBuildSheetOpen(false)}
+                aria-label="Close build summary"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="m5 5 10 10M15 5 5 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <div className={styles.sheetBody}>{renderBuildSummary("-sheet")}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

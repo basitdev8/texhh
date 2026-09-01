@@ -115,9 +115,7 @@ export default function AdminCustomersPage() {
               People / {total} customer{total !== 1 ? "s" : ""}
             </span>
           </div>
-          <h1 className={styles.pageTitle}>
-            The <span className={styles.pageTitleItalic}>people</span>.
-          </h1>
+          <h1 className={styles.pageTitle}>Customers</h1>
           <p className={styles.pageSubtitle}>
             Registered accounts, total orders placed, and lifetime spend
             across the storefront.

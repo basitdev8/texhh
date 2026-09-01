@@ -1,49 +1,52 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,300;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,700&display=swap');
-
 /* ========================================
-   DESIGN SYSTEM — TechChasers (Editorial Luxe v2)
+   DESIGN SYSTEM — TechChasers (Precision Showroom)
+   Source of truth: design-system/techchasers/MASTER.md
    ======================================== */
 
 :root {
-  /* Colors — refined editorial palette */
-  --color-bg: #F4EFE4;            /* warm cream */
-  --color-bg-soft: #EDE6D4;       /* deeper warm */
-  --color-bg-alt: #E8DFCB;        /* sandy accent */
-  --color-paper: #FBF7EE;          /* paper white */
+  /* Colors — Precision Showroom tokens */
+  --color-bg: #FFFFFF;
+  --color-bg-soft: #F5F6F8;
+  --color-bg-alt: #ECEFF3;
   --color-surface: #FFFFFF;
-  --color-surface-hover: #FCFAF4;
+  --color-surface-hover: #F5F6F8;
+  --color-paper: #FFFFFF; /* compatibility alias */
 
-  --color-ink: #0E0E0C;            /* deep ink */
-  --color-ink-soft: #1A1A17;
-  --color-text: #1A1A17;
-  --color-text-secondary: #56544D;
-  --color-text-muted: #8C887E;
+  --color-ink: #101114;
+  --color-ink-soft: #24272D;
+  --color-text: #101114;
+  --color-text-secondary: #4B5563;
+  --color-text-muted: #667085;
+  --color-dark: #101114;
+  --color-dark-soft: #20232A;
+  --color-on-ink: #FFFFFF;
 
-  --color-border: #D7CFBD;
-  --color-border-light: #E7E0CE;
+  --color-border: #D8DCE3;
+  --color-border-light: #E9EBEF;
 
-  --color-accent: #0E7C7B;         /* petrol teal */
-  --color-accent-hover: #0A5D5C;
-  --color-accent-light: #BFE0DE;
-  --color-accent-subtle: #DFF0EE;
-  --color-accent-deep: #103230;     /* deep teal */
+  /* Action blue — reserved for interaction, selection, and focus */
+  --color-accent: #1428A0;
+  --color-accent-hover: #0E1E7A;
+  --color-accent-light: #C9D2FF;
+  --color-accent-subtle: #F0F3FF;
+  --color-accent-deep: #0A1764;
+  --color-on-accent: #FFFFFF;
 
-  --color-dark: #0E0E0C;
-  --color-dark-soft: #1B1B17;
-
-  --color-success: #486B43;
-  --color-success-light: #E0EBDA;
-  --color-error: #B0413E;
-  --color-error-light: #F2D9D7;
-  --color-warning: #B58B2E;
-  --color-warning-light: #F2E5C6;
-  --color-info: #34597E;
-  --color-info-light: #DCE6F0;
+  /* Status Colors */
+  --color-success: #18794E;
+  --color-success-light: #ECFDF3;
+  --color-warning: #A15C00;
+  --color-warning-light: #FFF7E6;
+  --color-error: #C4320A;
+  --color-error-light: #FFF1ED;
+  --color-info: #1428A0;
+  --color-info-light: #F0F3FF;
+  --color-on-error: #FFFFFF;
 
   /* Typography */
-  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: var(--font-manrope), 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-body: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: var(--font-heading); /* compatibility alias */
 
   /* Font Sizes */
   --text-xs: 0.75rem;
@@ -53,11 +56,9 @@
   --text-xl: 1.25rem;
   --text-2xl: 1.5rem;
   --text-3xl: 1.875rem;
-  --text-4xl: 2.5rem;
-  --text-5xl: 3.5rem;
-  --text-6xl: 5rem;
-  --text-7xl: 7rem;
-  --text-8xl: 9rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 4rem;
 
   /* Spacing */
   --space-1: 0.25rem;
@@ -73,35 +74,27 @@
   --space-20: 5rem;
   --space-24: 6rem;
   --space-32: 8rem;
-  --space-40: 10rem;
 
   /* Border Radius */
   --radius-xs: 4px;
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 18px;
-  --radius-xl: 28px;
-  --radius-2xl: 40px;
-  --radius-full: 9999px;
+  --radius-md: 8px;     /* Buttons, inputs, chips */
+  --radius-lg: 12px;    /* Cards, panels */
+  --radius-xl: 16px;    /* Hero, stages */
+  --radius-full: 9999px; /* Status pills, search bars */
 
-  /* Shadows */
-  --shadow-xs: 0 1px 2px rgba(20, 14, 5, 0.04);
-  --shadow-sm: 0 2px 12px rgba(20, 14, 5, 0.06);
-  --shadow-md: 0 8px 28px rgba(20, 14, 5, 0.08);
-  --shadow-lg: 0 18px 52px rgba(20, 14, 5, 0.12);
-  --shadow-xl: 0 28px 72px rgba(20, 14, 5, 0.16);
-  --shadow-accent: 0 12px 36px rgba(14, 124, 123, 0.28);
-
-  /* Easings */
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Shadows (reserved for floating UI, modals, menus, sticky summaries) */
+  --shadow-xs: 0 1px 2px rgba(17, 17, 20, 0.04);
+  --shadow-sm: 0 2px 8px rgba(17, 17, 20, 0.06);
+  --shadow-md: 0 8px 24px rgba(17, 17, 20, 0.08);
+  --shadow-lg: 0 16px 40px rgba(17, 17, 20, 0.10);
+  --shadow-xl: 0 24px 56px rgba(17, 17, 20, 0.12);
+  --shadow-accent: 0 8px 24px rgba(20, 40, 160, 0.22);
 
   /* Transitions */
-  --transition-fast: 200ms var(--ease-out-quart);
-  --transition-base: 320ms var(--ease-out-quart);
-  --transition-slow: 600ms var(--ease-out-expo);
-  --transition-spring: 700ms var(--ease-spring);
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Z-index layers */
   --z-base: 1;
@@ -110,10 +103,12 @@
   --z-modal-backdrop: 300;
   --z-modal: 400;
   --z-toast: 500;
-  --z-cursor: 9999;
 
   /* Container */
   --container-max: 1440px;
+  --container-reading: 720px;
+  --header-height: 108px;
+  --sticky-offset: calc(var(--header-height) + var(--space-4));
   --container-padding: var(--space-8);
   --container-padding-tight: var(--space-6);
 }
@@ -131,16 +126,19 @@
 html {
   font-size: 16px;
   scroll-behavior: smooth;
+  /* Keep anchored and keyboard-focused content clear of the sticky header */
+  scroll-padding-top: calc(var(--header-height) + var(--space-4));
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   font-family: var(--font-body);
   font-size: var(--text-base);
   font-weight: 400;
-  line-height: 1.6;
+  line-height: 1.55;
   color: var(--color-text);
   background-color: var(--color-bg);
   min-height: 100vh;
@@ -148,48 +146,28 @@ body {
   overflow-x: hidden;
 }
 
-/* Subtle film grain overlay for editorial feel */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.035;
-  z-index: 1;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.7 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-  mix-blend-mode: multiply;
-}
-
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
   font-weight: 600;
-  line-height: 1.04;
-  letter-spacing: -0.025em;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
   color: var(--color-text);
 }
 
-h1 { font-size: var(--text-6xl); font-weight: 700; }
-h2 { font-size: var(--text-5xl); font-weight: 700; }
-h3 { font-size: var(--text-3xl); }
-h4 { font-size: var(--text-2xl); }
-h5 { font-size: var(--text-xl); }
-h6 { font-size: var(--text-lg); }
-
-.display-serif {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.04em;
-  line-height: 0.95;
-}
+h1 { font-size: clamp(2rem, 3.5vw, 3.25rem); font-weight: 700; letter-spacing: -0.03em; }
+h2 { font-size: clamp(1.5rem, 2.5vw, 2.25rem); font-weight: 700; letter-spacing: -0.025em; }
+h3 { font-size: 1.25rem; font-weight: 600; }
+h4 { font-size: 1.125rem; font-weight: 600; }
+h5 { font-size: 1rem; font-weight: 600; }
+h6 { font-size: 0.875rem; font-weight: 600; }
 
 .eyebrow {
   font-family: var(--font-body);
   font-size: var(--text-xs);
   text-transform: uppercase;
-  letter-spacing: 0.22em;
-  font-weight: 500;
-  color: var(--color-text-muted);
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  color: var(--color-text-secondary);
 }
 
 a {
@@ -198,7 +176,15 @@ a {
   transition: color var(--transition-fast);
 }
 
-a:hover { color: var(--color-accent); }
+a:not([class]) {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+}
+
+a:not([class]):hover {
+  color: var(--color-accent-hover);
+}
 
 img {
   max-width: 100%;
@@ -215,17 +201,34 @@ button {
   color: inherit;
 }
 
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 input, textarea, select {
   font-family: var(--font-body);
   font-size: var(--text-base);
   color: var(--color-text);
 }
 
-ul, ol { list-style: none; }
+ul, ol {
+  list-style: none;
+}
 
 ::selection {
-  background: var(--color-accent);
-  color: white;
+  background: var(--color-accent-subtle);
+  color: var(--color-accent-deep);
+}
+
+/* Tabular numerals for prices, specs, tables */
+.tabular-nums,
+[data-tabular] {
+  font-variant-numeric: tabular-nums;
 }
 
 /* ========================================
@@ -246,18 +249,21 @@ ul, ol { list-style: none; }
   padding-right: var(--container-padding);
 }
 
+.container-reading {
+  max-width: var(--container-reading);
+  margin: 0 auto;
+  padding-left: var(--container-padding);
+  padding-right: var(--container-padding);
+}
+
 .container-wide {
   max-width: 100%;
   padding-left: var(--space-6);
   padding-right: var(--space-6);
 }
 
-/* The storefront header is fixed and starts out transparent so it can
-   float over the hero. Every other page needs its own clearance, or its
-   first line of content sits behind the nav. The hero cancels this with
-   a matching negative margin. */
 .storefront-main {
-  padding-top: var(--space-20);
+  min-height: calc(100vh - 72px - 320px);
 }
 
 /* ========================================
@@ -280,140 +286,25 @@ ul, ol { list-style: none; }
 .text-right { text-align: right; }
 
 /* ========================================
-   ANIMATIONS
-   ======================================== */
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(30px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-30px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes wordReveal {
-  from { opacity: 0; transform: translateY(70%) skewY(8deg); }
-  to { opacity: 1; transform: translateY(0) skewY(0); }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.55; }
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes marqueeX {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
-
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-.animate-fade-in { animation: fadeIn var(--transition-base) ease forwards; }
-.animate-fade-in-up { animation: fadeInUp var(--transition-slow) var(--ease-out-expo) forwards; }
-.animate-slide-in-right { animation: slideInRight var(--transition-slow) var(--ease-out-expo) forwards; }
-.animate-scale-in { animation: scaleIn var(--transition-base) ease forwards; }
-
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
-.delay-4 { animation-delay: 0.4s; }
-.delay-5 { animation-delay: 0.5s; }
-.delay-6 { animation-delay: 0.6s; }
-
-/* ========================================
-   SCROLL REVEAL
-   ======================================== */
-
-[data-reveal] {
-  opacity: 0;
-  transform: translateY(48px);
-  transition: opacity 1100ms var(--ease-out-expo), transform 1100ms var(--ease-out-expo);
-  will-change: opacity, transform;
-}
-
-[data-reveal].is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-[data-reveal="fade"] { transform: none; }
-[data-reveal="left"] { transform: translateX(-48px); }
-[data-reveal="left"].is-visible { transform: translateX(0); }
-[data-reveal="right"] { transform: translateX(48px); }
-[data-reveal="right"].is-visible { transform: translateX(0); }
-[data-reveal="scale"] { transform: scale(0.94); }
-[data-reveal="scale"].is-visible { transform: scale(1); }
-
-[data-reveal-delay="100"] { transition-delay: 100ms; }
-[data-reveal-delay="200"] { transition-delay: 200ms; }
-[data-reveal-delay="300"] { transition-delay: 300ms; }
-[data-reveal-delay="400"] { transition-delay: 400ms; }
-[data-reveal-delay="500"] { transition-delay: 500ms; }
-[data-reveal-delay="600"] { transition-delay: 600ms; }
-[data-reveal-delay="700"] { transition-delay: 700ms; }
-[data-reveal-delay="800"] { transition-delay: 800ms; }
-
-/* ========================================
    SCROLLBAR
    ======================================== */
 
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg);
+  background: var(--color-bg-soft);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
   border-radius: var(--radius-full);
-  border: 2px solid var(--color-bg);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
+  background: var(--color-text-muted);
 }
 
 /* ========================================
@@ -422,66 +313,66 @@ ul, ol { list-style: none; }
 
 @media (max-width: 1024px) {
   :root {
-    --text-6xl: 4rem;
-    --text-7xl: 5rem;
-    --text-8xl: 6rem;
     --container-padding: var(--space-6);
+  }
+}
+
+@media (max-width: 1000px) {
+  :root {
+    --header-height: 68px;
+  }
+}
+
+/* A fixed mobile action bar would otherwise sit on top of the last footer row.
+   The bar declares its own breakpoint via data-mobile-action-bar, and the shared
+   footer reserves exactly that much room only while the bar is rendered. */
+@media (max-width: 900px) {
+  body:has([data-mobile-action-bar="compact"]) > footer {
+    padding-bottom: calc(var(--space-8) + 76px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (max-width: 1024px) {
+  body:has([data-mobile-action-bar="wide"]) > footer {
+    padding-bottom: calc(var(--space-8) + 76px + env(safe-area-inset-bottom, 0px));
   }
 }
 
 @media (max-width: 768px) {
   :root {
-    --text-5xl: 2.5rem;
-    --text-6xl: 3rem;
-    --text-7xl: 3.75rem;
-    --text-8xl: 4.5rem;
     --container-padding: var(--space-4);
   }
 
-  h1 { font-size: var(--text-5xl); }
-  h2 { font-size: var(--text-4xl); }
-  h3 { font-size: var(--text-2xl); }
+  /* Text inputs below 16px make iOS Safari zoom the viewport on focus */
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  :root {
+    --header-height: 116px;
+  }
 }
 
 @media (max-width: 640px) {
-  /* Mobile browsers use overlay scrollbars. Hiding the desktop-style custom
-     rail here prevents a pale 10px strip on the right of narrow viewports. */
   html { scrollbar-width: none; }
   ::-webkit-scrollbar { width: 0; height: 0; }
 }
 
-@media (max-width: 480px) {
-  :root {
-    --container-padding: var(--space-4);
-  }
-
-  h1 { font-size: var(--text-4xl); }
-  h2 { font-size: var(--text-3xl); }
-}
-
 /* ========================================
    REDUCED MOTION
-   Scroll reveals resolve instantly and looping
-   animations hold still when the visitor asks
-   the OS for less motion.
    ======================================== */
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 
   [data-reveal] {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-
-  .animate-fade-in,
-  .animate-fade-in-up,
-  .animate-slide-in-right,
-  .animate-scale-in {
-    animation: none;
-    opacity: 1;
-    transform: none;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 
   *, *::before, *::after {

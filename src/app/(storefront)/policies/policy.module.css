@@ -1,66 +1,81 @@
 .page {
-  padding: var(--space-16) 0 var(--space-20);
+  padding: var(--space-8) 0 var(--space-20);
 }
 
 .eyebrowRow {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  margin-bottom: var(--space-4);
-}
-
-.eyebrowLine {
-  width: 40px;
-  height: 1px;
-  background: var(--color-accent);
+  margin-bottom: var(--space-3);
 }
 
 .eyebrow {
   font-size: var(--text-xs);
-  letter-spacing: 0.22em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  font-weight: 600;
+  color: var(--color-accent);
 }
 
 .title {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 5vw, 3.25rem);
-  line-height: 1.05;
-  margin: 0 0 var(--space-4);
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 3.5vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--color-ink);
+  letter-spacing: -0.025em;
+  margin: 0 0 var(--space-2);
 }
 
 .updated {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: var(--color-text-muted);
-  margin: 0 0 var(--space-10);
+  margin: 0 0 var(--space-8);
 }
 
 .body {
-  max-width: 70ch;
+  max-width: 72ch;
 }
 
 .body h2 {
   font-family: var(--font-heading);
   font-size: var(--text-xl);
-  margin: var(--space-10) 0 var(--space-3);
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: var(--space-8) 0 var(--space-3);
 }
 
 .body h3 {
   font-family: var(--font-heading);
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text);
   margin: var(--space-6) 0 var(--space-2);
 }
 
 .body p,
 .body li {
   color: var(--color-text-secondary);
-  line-height: 1.75;
+  font-size: var(--text-base);
+  line-height: 1.7;
   margin: 0 0 var(--space-4);
 }
 
+/* The global reset removes list markers; policy prose needs them back */
 .body ul {
+  list-style: disc;
   padding-left: var(--space-5);
   margin: 0 0 var(--space-4);
+}
+
+.body ol {
+  list-style: decimal;
+  padding-left: var(--space-5);
+  margin: 0 0 var(--space-4);
+}
+
+.body li {
+  margin-bottom: var(--space-2);
 }
 
 .body strong {
@@ -69,10 +84,9 @@
 
 .body a {
   color: var(--color-accent);
+  text-decoration: underline;
 }
 
-/* Values the business still has to supply. Visible on purpose — a placeholder that
-   looks like finished copy is how a wrong address reaches a customer. */
 .todo {
   display: inline-block;
   padding: 0 var(--space-2);
@@ -87,28 +101,43 @@
 .contactGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-5);
+  gap: var(--space-4);
   margin: var(--space-6) 0 var(--space-10);
 }
 
 .contactCard {
   padding: var(--space-5);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  background-color: var(--color-bg-soft);
+  border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
 }
 
 .contactLabel {
   display: block;
   font-size: var(--text-xs);
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  font-weight: 600;
+  color: var(--color-accent);
   margin-bottom: var(--space-2);
 }
 
 .contactValue {
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   color: var(--color-text);
   line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: var(--space-6) 0 var(--space-16);
+  }
+
+  .body h2 {
+    margin-top: var(--space-6);
+  }
+
+  .contactGrid {
+    grid-template-columns: 1fr;
+  }
 }

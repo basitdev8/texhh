@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, use } from "react";
+import React, { useEffect, useRef, useState, use } from "react";
 import Link from "next/link";
 import ProductGallery from "@/components/storefront/ProductGallery";
 import ProductCard from "@/components/storefront/ProductCard";
@@ -8,7 +8,7 @@ import Badge from "@/components/ui/Badge";
 import LoadingState from "@/components/ui/LoadingState";
 import { useCartStore } from "@/store/cartStore";
 import { useToast } from "@/components/ui/Toast";
-import { formatPrice, getDiscountPercentage } from "@/lib/utils";
+import { formatPrice, getDiscountPercentage, getProductSignalRail } from "@/lib/utils";
 import type { IProduct, ICategory } from "@/types";
 import styles from "./productDetail.module.css";
 
@@ -22,6 +22,10 @@ export default function ProductDetailPage({ params }: PageProps) {
   const [related, setRelated] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [isAdding, setIsAdding] = useState(false);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  const [showAllSpecifications, setShowAllSpecifications] = useState(false);
+  const primaryActionRef = useRef<HTMLButtonElement | null>(null);
 
   const addItem = useCartStore((s) => s.addItem);
   const { showToast } = useToast();
@@ -33,6 +37,7 @@ export default function ProductDetailPage({ params }: PageProps) {
       .then((data) => {
         if (data.success && data.data) {
           setProduct(data.data);
+          setShowAllSpecifications(false);
           const categoryId =
             typeof data.data.category === "string"
               ? data.data.category
@@ -42,9 +47,7 @@ export default function ProductDetailPage({ params }: PageProps) {
               .then((r) => r.json())
               .then((rel) => {
                 setRelated(
-                  (rel.data || []).filter(
-                    (p: IProduct) => p._id !== data.data._id
-                  )
+                  (rel.data || []).filter((p: IProduct) => p._id !== data.data._id)
                 );
               })
               .catch(() => {});
@@ -55,47 +58,70 @@ export default function ProductDetailPage({ params }: PageProps) {
       .finally(() => setLoading(false));
   }, [slug]);
 
+  // The mobile purchase bar only appears once the in-page action scrolls away,
+  // so it never duplicates or covers a visible control.
+  useEffect(() => {
+    const target = primaryActionRef.current;
+    if (!target) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyBar(!entry.isIntersecting),
+      { rootMargin: "-72px 0px 0px 0px" }
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [product]);
+
   if (loading) {
     return (
-      <div className="container">
-        <LoadingState label="Preparing the product" detail="Gathering the details, price, and availability." />
+      <div className="container" style={{ padding: "var(--space-12) 0" }}>
+        <LoadingState
+          label="Loading product details"
+          detail="Fetching specifications, availability, and pricing."
+        />
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="container">
+      <div className="container" style={{ padding: "var(--space-16) 0", textAlign: "center" }}>
         <div className={styles.notFound}>
           <h1 className={styles.notFoundTitle}>Product not found</h1>
-          <p>This product no longer exists or has been removed.</p>
-          <Link
-            href="/products"
-            style={{
-              display: "inline-block",
-              marginTop: "var(--space-5)",
-              color: "var(--color-accent)",
-            }}
-          >
-            ← Back to products
-          </Link>
+          <p className={styles.notFoundText}>
+            The product you are looking for may have been retired or renamed.
+          </p>
+          <div className={styles.notFoundActions}>
+            <Link href="/products" className={styles.notFoundBtn}>
+              ← Browse all products
+            </Link>
+            <Link href="/search" className={styles.notFoundSecondaryBtn}>
+              Search catalog
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   const category =
-    typeof product.category === "object"
-      ? (product.category as ICategory)
-      : null;
-  const isOnSale =
-    product.comparePrice && product.comparePrice > product.price;
+    typeof product.category === "object" ? (product.category as ICategory) : null;
+  const isOnSale = Boolean(product.comparePrice && product.comparePrice > product.price);
   const discount = isOnSale
     ? getDiscountPercentage(product.price, product.comparePrice!)
     : 0;
+  const isOutOfStock = product.stock <= 0;
+  const isLowStock = product.stock > 0 && product.stock <= 5;
+  const signalRail = getProductSignalRail(product.specifications);
   const specEntries = Object.entries(product.specifications || {});
+  const defaultSpecCount = 6;
+  const visibleSpecEntries = showAllSpecifications
+    ? specEntries
+    : specEntries.slice(0, defaultSpecCount);
+  const hiddenSpecCount = Math.max(0, specEntries.length - defaultSpecCount);
 
   const handleAddToCart = () => {
+    if (isOutOfStock || isAdding) return;
+    setIsAdding(true);
     addItem({
       productId: product._id,
       itemType: "product",
@@ -105,239 +131,263 @@ export default function ProductDetailPage({ params }: PageProps) {
       image: product.images[0] || "/placeholder.svg",
       maxStock: product.stock,
     });
-    showToast(`${product.name} added to cart`, "success");
+    showToast(`${quantity} × ${product.name} added to cart`, "success");
+    setTimeout(() => setIsAdding(false), 800);
   };
 
   return (
     <div className={styles.page}>
       <div className="container">
-        <nav className={styles.breadcrumbs}>
+        {/* Breadcrumbs — collapse to a single back link on phones */}
+        <Link
+          href={category ? `/products?category=${category.slug}` : "/products"}
+          className={styles.backLink}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M10 3 5 8l5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Back to {category ? category.name : "Products"}
+        </Link>
+
+        <nav className={styles.breadcrumbs} aria-label="Breadcrumbs">
           <Link href="/">Home</Link>
-          <span className={styles.crumbSep}>/</span>
+          <span className={styles.crumbSep} aria-hidden="true">/</span>
           <Link href="/products">Products</Link>
           {category && (
             <>
-              <span className={styles.crumbSep}>/</span>
-              <Link href={`/products?category=${category.slug}`}>
-                {category.name}
-              </Link>
+              <span className={styles.crumbSep} aria-hidden="true">/</span>
+              <Link href={`/products?category=${category.slug}`}>{category.name}</Link>
             </>
           )}
-          <span className={styles.crumbSep}>/</span>
-          <span className={styles.crumbCurrent}>{product.name}</span>
+          <span className={styles.crumbSep} aria-hidden="true">/</span>
+          <span className={styles.crumbCurrent} aria-current="page">{product.name}</span>
         </nav>
 
-        <div className={styles.layout}>
+        {/* 2-Column Main Stage */}
+        <div className={styles.stage}>
+          {/* Left Column: Gallery */}
           <div className={styles.galleryCol}>
             <ProductGallery images={product.images} alt={product.name} />
           </div>
 
-          <div className={styles.info}>
-            <div className={styles.eyebrowRow}>
-              <span className={styles.eyebrowLine} />
-              <span className={styles.brand}>{product.brand}</span>
-              {category && (
-                <Link
-                  href={`/products?category=${category.slug}`}
-                  className={styles.categoryChip}
+          {/* Right Column: Sticky Purchase Details */}
+          <div className={styles.purchaseCol}>
+            <div className={styles.purchaseInner}>
+              {product.brand && (
+                <span className={styles.brand}>{product.brand}</span>
+              )}
+
+              <h1 className={styles.title}>{product.name}</h1>
+
+              {/* Signal Rail */}
+              {signalRail && (
+                <div className={styles.signalRail}>
+                  <span>{signalRail}</span>
+                </div>
+              )}
+
+              {/* Pricing & Stock Card */}
+              <div className={styles.priceCard}>
+                <div className={styles.priceRow}>
+                  <span className={styles.price}>{formatPrice(product.price)}</span>
+                  {isOnSale && product.comparePrice && (
+                    <>
+                      <span className={styles.comparePrice}>
+                        {formatPrice(product.comparePrice)}
+                      </span>
+                      <span className={styles.discountBadge}>−{discount}%</span>
+                    </>
+                  )}
+                </div>
+
+                <div className={styles.stockRow}>
+                  {isOutOfStock ? (
+                    <Badge variant="error">Out of Stock</Badge>
+                  ) : (
+                    <Badge variant="success">In Stock</Badge>
+                  )}
+                  {isLowStock && (
+                    <span className={styles.lowStock}>
+                      Only {product.stock} items remaining
+                    </span>
+                  )}
+                  {isOnSale && product.comparePrice && (
+                    <span className={styles.savingsText}>
+                      Save {formatPrice(product.comparePrice - product.price)}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Short Description */}
+              {product.shortDescription && (
+                <p className={styles.shortDesc}>{product.shortDescription}</p>
+              )}
+
+              {/* Quantity & Add to Cart Controls */}
+              <div className={styles.actionSection}>
+                <div className={styles.quantityControls}>
+                  <label htmlFor="product-qty" className="sr-only">
+                    Quantity
+                  </label>
+                  <div className={styles.qtyStepper}>
+                    <button
+                      type="button"
+                      className={styles.qtyBtn}
+                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                      disabled={quantity <= 1 || isOutOfStock}
+                      aria-label="Decrease quantity"
+                    >
+                      −
+                    </button>
+                    <span id="product-qty" className={styles.qtyValue} aria-live="polite">
+                      {quantity}
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.qtyBtn}
+                      onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
+                      disabled={quantity >= product.stock || isOutOfStock}
+                      aria-label="Increase quantity"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  ref={primaryActionRef}
+                  className={styles.addToCartBtn}
+                  onClick={handleAddToCart}
+                  disabled={isOutOfStock || isAdding}
+                  id={`pdp-add-to-cart-${product._id}`}
                 >
-                  {category.name}
+                  {isOutOfStock
+                    ? "Out of stock"
+                    : isAdding
+                    ? "Added to cart"
+                    : "Add to cart"}
+                </button>
+              </div>
+
+              {/* Reassurance List */}
+              <div className={styles.assurances}>
+                <div className={styles.assuranceItem}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="1" y="3" width="15" height="13" />
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                    <circle cx="5.5" cy="18.5" r="2.5" />
+                    <circle cx="18.5" cy="18.5" r="2.5" />
+                  </svg>
+                  <div>
+                    <span className={styles.assuranceTitle}>Express Delivery</span>
+                    <span className={styles.assuranceSub}>Dispatched within 24–48 hours</span>
+                  </div>
+                </div>
+
+                <div className={styles.assuranceItem}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                  <div>
+                    <span className={styles.assuranceTitle}>Manufacturer Warranty</span>
+                    <span className={styles.assuranceSub}>100% genuine guaranteed product</span>
+                  </div>
+                </div>
+
+                <div className={styles.assuranceItem}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="23 4 23 10 17 10" />
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                  </svg>
+                  <div>
+                    <span className={styles.assuranceTitle}>Hassle-free Returns</span>
+                    <span className={styles.assuranceSub}>Eligible for return per store policy</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Specifications & Overview Section */}
+        <section className={styles.detailsSection} id="product-specifications">
+          <div className={styles.detailsGrid}>
+            {/* Overview */}
+            <div className={styles.overviewCol}>
+              <h2 className={styles.sectionHeading}>Product Overview</h2>
+              <div className={styles.descriptionText}>
+                <p>{product.description}</p>
+              </div>
+
+              {product.tags && product.tags.length > 0 && (
+                <div className={styles.tagList}>
+                  {product.tags.map((tag) => (
+                    <span key={tag} className={styles.tag}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Specifications */}
+            {specEntries.length > 0 && (
+              <div className={styles.specsCol}>
+                <h2 className={styles.sectionHeading}>Technical Specifications</h2>
+                <div className={styles.specsTable} id="product-specification-list">
+                  {visibleSpecEntries.map(([key, val]) => (
+                    <div key={key} className={styles.specRow}>
+                      <span className={styles.specKey}>{key}</span>
+                      <span className={styles.specVal}>{val}</span>
+                    </div>
+                  ))}
+                </div>
+                {hiddenSpecCount > 0 && (
+                  <button
+                    type="button"
+                    className={styles.showMoreSpecs}
+                    onClick={() => setShowAllSpecifications((showing) => !showing)}
+                    aria-expanded={showAllSpecifications}
+                    aria-controls="product-specification-list"
+                  >
+                    <span>
+                      {showAllSpecifications
+                        ? "Show fewer specifications"
+                        : `Show ${hiddenSpecCount} more specification${hiddenSpecCount === 1 ? "" : "s"}`}
+                    </span>
+                    <svg
+                      className={showAllSpecifications ? styles.showMoreIconOpen : undefined}
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Related Products */}
+        {related.length > 0 && (
+          <section className={styles.relatedSection} aria-labelledby="related-heading">
+            <div className={styles.relatedHeader}>
+              <h2 id="related-heading" className={styles.sectionHeading}>
+                Related Products
+              </h2>
+              {category && (
+                <Link href={`/products?category=${category.slug}`} className={styles.relatedLink}>
+                  View all in {category.name} →
                 </Link>
               )}
             </div>
 
-            <h1 className={styles.title}>{product.name}</h1>
-
-            {/* Ratings stay hidden until there is a review system to fill them —
-                "0.0 · 0 reviews" on every product reads as "nobody bought this". */}
-            {product.reviewCount > 0 && (
-              <div className={styles.ratingRow}>
-                <span className={styles.stars}>
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <svg
-                      key={i}
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill={i < Math.round(product.rating) ? "currentColor" : "none"}
-                      className={
-                        i >= Math.round(product.rating) ? styles.starEmpty : ""
-                      }
-                    >
-                      <path
-                        d="M8 1.5l2 4 4.5.65L11.25 9.4 12 14l-4-2.1L4 14l.75-4.6L1.5 6.15 6 5.5l2-4z"
-                        stroke="currentColor"
-                        strokeWidth="0.5"
-                      />
-                    </svg>
-                  ))}
-                </span>
-                <span className={styles.reviewCount}>
-                  {product.rating.toFixed(1)} · {product.reviewCount} review
-                  {product.reviewCount !== 1 ? "s" : ""}
-                </span>
-              </div>
-            )}
-
-            <p className={styles.shortDesc}>{product.shortDescription}</p>
-
-            <div className={styles.priceCard}>
-              <div className={styles.priceRow}>
-                <span className={styles.price}>
-                  {formatPrice(product.price)}
-                </span>
-                {isOnSale && (
-                  <>
-                    <span className={styles.comparePrice}>
-                      {formatPrice(product.comparePrice!)}
-                    </span>
-                    <span className={styles.discount}>−{discount}%</span>
-                  </>
-                )}
-              </div>
-              <div className={styles.stockRow}>
-                {product.stock > 0 ? (
-                  <Badge variant="success">In Stock</Badge>
-                ) : (
-                  <Badge variant="error">Out of Stock</Badge>
-                )}
-                {product.stock > 0 && product.stock <= 5 && (
-                  <span className={styles.lowStock}>
-                    Only {product.stock} left
-                  </span>
-                )}
-                {isOnSale && (
-                  <span className={styles.savings}>
-                    You save{" "}
-                    {formatPrice(product.comparePrice! - product.price)}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className={styles.actionRow}>
-              <div className={styles.qtyControl}>
-                <button
-                  className={styles.qtyBtn}
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  disabled={quantity <= 1}
-                  aria-label="Decrease quantity"
-                >
-                  −
-                </button>
-                <span className={styles.qtyValue}>{quantity}</span>
-                <button
-                  className={styles.qtyBtn}
-                  onClick={() =>
-                    setQuantity((q) => Math.min(product.stock, q + 1))
-                  }
-                  disabled={quantity >= product.stock}
-                  aria-label="Increase quantity"
-                >
-                  +
-                </button>
-              </div>
-              <button
-                className={styles.addToCart}
-                onClick={handleAddToCart}
-                disabled={product.stock === 0}
-              >
-                {product.stock === 0 ? "Out of stock" : "Add to Cart"}
-                {product.stock > 0 && (
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path
-                      d="M2 7h10M8 3l4 4-4 4"
-                      stroke="currentColor"
-                      strokeWidth="1.6"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
-              </button>
-            </div>
-
-            <ul className={styles.assurances}>
-              {[
-                {
-                  title: "Free 48h shipping",
-                  sub: "Express, on orders over ₹5,000",
-                  path: "M2 6h11l3 4v4h-2M2 6v8h2m10 0H8m-4 0a2 2 0 1 0 4 0m6 0a2 2 0 1 0 4 0",
-                },
-                {
-                  title: "2-year warranty",
-                  sub: "Backed by our atelier, no asterisk",
-                  path: "M10 1.8l6 2.6v4.2c0 4-2.6 6.8-6 7.6-3.4-.8-6-3.6-6-7.6V4.4l6-2.6zM7.2 9.6l1.8 1.8 3.8-3.8",
-                },
-                {
-                  title: "30-day returns",
-                  sub: "Changed your mind? Send it back",
-                  path: "M3 8a7 7 0 1 1 .9 3.4M3 8V4M3 8h4",
-                },
-              ].map((a) => (
-                <li key={a.title} className={styles.assurance}>
-                  <svg
-                    className={styles.assuranceIcon}
-                    viewBox="0 0 20 20"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.4"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d={a.path} />
-                  </svg>
-                  <div>
-                    <span className={styles.assuranceTitle}>{a.title}</span>
-                    <span className={styles.assuranceSub}>{a.sub}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            {specEntries.length > 0 && (
-              <div className={styles.specs}>
-                <h3 className={styles.specsTitle}>Key specifications</h3>
-                <div className={styles.specGrid}>
-                  {specEntries.map(([k, v]) => (
-                    <div key={k} className={styles.specItem}>
-                      <span className={styles.specKey}>{k}</span>
-                      <span className={styles.specValue}>{v}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className={styles.description}>
-          <div className={styles.descriptionHead}>
-            <span className={styles.sectionEyebrow}>Details / The Story</span>
-            <h2 className={styles.descriptionTitle}>About this piece</h2>
-          </div>
-          <div className={styles.descriptionBody}>
-            <p className={styles.descriptionText}>{product.description}</p>
-            {product.tags?.length > 0 && (
-              <div className={styles.tags}>
-                {product.tags.map((tag) => (
-                  <span key={tag} className={styles.tag}>
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {related.length > 0 && (
-          <section className={styles.relatedSection}>
-            <div className={styles.relatedHead}>
-              <span className={styles.sectionEyebrow}>More / You may like</span>
-              <h2 className={styles.relatedTitle}>
-                Pairs <em className={styles.italic}>well</em> with
-              </h2>
-            </div>
             <div className={styles.relatedGrid}>
               {related.slice(0, 4).map((p) => (
                 <ProductCard key={p._id} product={p} />
@@ -346,6 +396,26 @@ export default function ProductDetailPage({ params }: PageProps) {
           </section>
         )}
       </div>
+
+      {/* Mobile Sticky Action Bar */}
+      {showStickyBar && (
+      <div className={styles.mobileStickyBar} data-mobile-action-bar="wide">
+        <div className={styles.mobileStickyInner}>
+          <div className={styles.mobileStickyPrice}>
+            <span className={styles.mobilePriceLabel}>Total</span>
+            <span className={styles.mobilePriceValue}>{formatPrice(product.price * quantity)}</span>
+          </div>
+          <button
+            type="button"
+            className={styles.mobileAddToCartBtn}
+            onClick={handleAddToCart}
+            disabled={isOutOfStock || isAdding}
+          >
+            {isOutOfStock ? "Out of stock" : isAdding ? "Added" : "Add to cart"}
+          </button>
+        </div>
+      </div>
+      )}
     </div>
   );
 }

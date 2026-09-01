@@ -1,9 +1,12 @@
 .page { padding: var(--space-8) 0 var(--space-16); }
 
 .back {
-  display: inline-block;
-  margin-bottom: var(--space-5);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-bottom: var(--space-3);
   font-size: var(--text-sm);
+  font-weight: 600;
   color: var(--color-text-secondary);
 }
 
@@ -31,7 +34,7 @@
 
 .layout {
   display: grid;
-  grid-template-columns: 1.5fr 1fr;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
   gap: var(--space-8);
   align-items: start;
 }
@@ -162,7 +165,7 @@
 .cancelButton {
   margin-top: var(--space-4);
   width: 100%;
-  min-height: 42px;
+  min-height: 48px;
   border: 1px solid var(--color-error);
   background: transparent;
   color: var(--color-error);
@@ -177,4 +180,27 @@
 
 @media (max-width: 1024px) {
   .layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .page { padding-top: var(--space-6); }
+
+  .title {
+    font-size: var(--text-2xl);
+    flex-wrap: wrap;
+  }
+
+  .card { padding: var(--space-5) var(--space-4); }
+
+  /* Order lines stack the price under the name rather than squeezing three
+     columns into a phone width. */
+  .item {
+    grid-template-columns: 60px 1fr;
+    row-gap: var(--space-2);
+  }
+
+  .itemTotal {
+    grid-column: 2;
+    justify-self: start;
+  }
 }

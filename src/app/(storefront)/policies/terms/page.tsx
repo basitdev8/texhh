@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PolicyLayout, { Todo } from "../PolicyLayout";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — TechChasers",
+  title: "Terms of Service",
   description:
     "The terms that govern buying from TechChasers: orders, pricing, payment, delivery, and liability.",
 };

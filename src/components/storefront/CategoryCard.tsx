@@ -6,8 +6,7 @@ interface CategoryCardProps {
   name: string;
   slug: string;
   image: string;
-  productCount: number;
-  index?: number;
+  productCount?: number;
 }
 
 export default function CategoryCard({
@@ -15,46 +14,29 @@ export default function CategoryCard({
   slug,
   image,
   productCount,
-  index,
 }: CategoryCardProps) {
-  const indexLabel =
-    typeof index === "number" ? String(index + 1).padStart(2, "0") : "";
-
   return (
     <Link
       href={`/products?category=${slug}`}
       className={styles.card}
-      aria-label={`Browse ${name}`}
+      aria-label={`Browse ${name} category`}
     >
       <div className={styles.imageWrap}>
         <Image
-          src={image}
+          src={image || "/placeholder.svg"}
           alt={name}
           fill
-          sizes="(max-width: 480px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
           className={styles.image}
         />
-        {indexLabel && <span className={styles.number}>№ {indexLabel}</span>}
-        <div className={styles.overlayInfo}>
-          <h3 className={styles.name}>{name}</h3>
-          <span className={styles.arrowCircle} aria-hidden="true">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path
-                d="M3 11L11 3M11 3H5M11 3V9"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
-        </div>
       </div>
-      <div className={styles.bottomMeta}>
-        <span>Category</span>
-        <span className={styles.count}>
-          {productCount} {productCount === 1 ? "piece" : "pieces"}
-        </span>
+      <div className={styles.info}>
+        <h3 className={styles.name}>{name}</h3>
+        {typeof productCount === "number" && (
+          <span className={styles.count}>
+            {productCount} {productCount === 1 ? "product" : "products"}
+          </span>
+        )}
       </div>
     </Link>
   );

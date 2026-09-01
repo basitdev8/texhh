@@ -1,45 +1,37 @@
 import type { Metadata } from "next";
-import { Outfit, Inter, Fraunces } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
 import { ToastProvider } from "@/components/ui/Toast";
 import { SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
-const outfit = Outfit({
-  variable: "--font-heading",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["600", "700", "800"],
   display: "swap",
 });
 
 const inter = Inter({
-  variable: "--font-body",
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-});
-
-const fraunces = Fraunces({
-  variable: "--font-display",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "TechChasers — Curated Premium Electronics",
+    default: "TechChasers — Precision Electronics & PC Parts",
     template: "%s | TechChasers",
   },
   description:
-    "An editorial gallery of premium electronics, custom PC builds, and considered tech objects. Curated, photographed, and shipped with care.",
-  keywords: ["electronics", "PC builder", "premium tech", "gaming", "components", "design"],
+    "Shop premium electronics, flagship smartphones, laptops, custom PC components, and build compatible systems with confidence.",
+  keywords: ["electronics", "smartphones", "laptops", "PC builder", "PC components", "TechChasers"],
   openGraph: {
-    title: "TechChasers — Curated Premium Electronics",
+    title: "TechChasers — Precision Electronics & PC Parts",
     description:
-      "An editorial gallery of premium electronics, custom PC builds, and considered tech objects.",
+      "Shop premium electronics, flagship smartphones, laptops, custom PC components, and build compatible systems with confidence.",
     type: "website",
     url: SITE_URL,
   },
@@ -54,7 +46,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${outfit.variable} ${inter.variable} ${fraunces.variable}`}
+      className={`${manrope.variable} ${inter.variable}`}
     >
       <body>
         <AuthProvider>

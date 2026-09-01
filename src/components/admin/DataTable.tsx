@@ -16,6 +16,8 @@ interface DataTableProps<T> {
   onRowClick?: (item: T) => void;
   emptyMessage?: string;
   emptyDescription?: string;
+  /** Names the horizontally scrollable region for assistive technology. */
+  label?: string;
 }
 
 export default function DataTable<T extends { _id?: string | unknown }>({
@@ -24,6 +26,7 @@ export default function DataTable<T extends { _id?: string | unknown }>({
   onRowClick,
   emptyMessage = 'No data found',
   emptyDescription = 'There are no records to display.',
+  label = 'Data table',
 }: DataTableProps<T>) {
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -72,21 +75,42 @@ export default function DataTable<T extends { _id?: string | unknown }>({
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.scrollContainer}>
+      {/* The table scrolls sideways on narrow screens, so the region needs a
+          name and its own tab stop for keyboard and screen-reader users. */}
+      <div
+        className={styles.scrollContainer}
+        role="region"
+        aria-label={label}
+        tabIndex={0}
+      >
         <table className={styles.table}>
           <thead>
             <tr>
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  onClick={() => handleSort(col.key, col.sortable)}
-                  style={col.sortable === false ? { cursor: 'default' } : undefined}
+                  scope="col"
+                  aria-sort={
+                    col.sortable === false || sortKey !== col.key
+                      ? "none"
+                      : sortDir === "asc"
+                        ? "ascending"
+                        : "descending"
+                  }
                 >
-                  {col.name}
-                  {col.sortable !== false && (
-                    <span className={`${styles.sortIndicator} ${sortKey === col.key ? styles.sortActive : ''}`}>
-                      {sortKey === col.key ? (sortDir === 'asc' ? '▲' : '▼') : '▲'}
-                    </span>
+                  {col.sortable === false ? (
+                    col.name
+                  ) : (
+                    <button
+                      type="button"
+                      className={styles.sortButton}
+                      onClick={() => handleSort(col.key, col.sortable)}
+                    >
+                      {col.name}
+                      <span className={`${styles.sortIndicator} ${sortKey === col.key ? styles.sortActive : ''}`} aria-hidden="true">
+                        {sortKey === col.key ? (sortDir === 'asc' ? '▲' : '▼') : '↕'}
+                      </span>
+                    </button>
                   )}
                 </th>
               ))}
@@ -97,6 +121,18 @@ export default function DataTable<T extends { _id?: string | unknown }>({
               <tr
                 key={(item._id as string) || idx}
                 onClick={() => onRowClick?.(item)}
+                onKeyDown={
+                  onRowClick
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onRowClick(item);
+                        }
+                      }
+                    : undefined
+                }
+                tabIndex={onRowClick ? 0 : undefined}
+                role={onRowClick ? 'button' : undefined}
                 className={onRowClick ? styles.clickableRow : undefined}
               >
                 {columns.map((col) => (

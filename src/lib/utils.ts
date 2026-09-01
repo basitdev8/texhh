@@ -57,3 +57,46 @@ export function cn(...classes: (string | undefined | null | false)[]): string {
 export function escapeRegex(input: string): string {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
+export function getProductSignalRail(specifications?: Record<string, string>): string | null {
+  if (!specifications || typeof specifications !== "object") return null;
+  const entries = Object.entries(specifications).filter(
+    ([, v]) => Boolean(v) && typeof v === "string" && v.trim().length > 0
+  );
+  if (entries.length === 0) return null;
+
+  const priorityGroups = [
+    ["display", "screen", "panel"],
+    ["processor", "cpu", "chip", "chipset", "gpu"],
+    ["ram", "memory"],
+    ["storage", "ssd", "capacity", "size"],
+    ["connectivity", "wireless", "network", "5g", "bluetooth"],
+    ["battery", "power", "wattage", "psu"],
+    ["socket", "form factor", "formfactor"],
+  ];
+
+  const matchedValues: string[] = [];
+  const usedKeys = new Set<string>();
+
+  for (const group of priorityGroups) {
+    for (const [k, v] of entries) {
+      const lowerKey = k.toLowerCase();
+      if (!usedKeys.has(lowerKey) && group.some((term) => lowerKey.includes(term))) {
+        matchedValues.push(v.trim());
+        usedKeys.add(lowerKey);
+        break;
+      }
+    }
+    if (matchedValues.length >= 3) break;
+  }
+
+  if (matchedValues.length === 0) {
+    for (const [, v] of entries.slice(0, 3)) {
+      matchedValues.push(v.trim());
+    }
+  }
+
+  if (matchedValues.length === 0) return null;
+  return matchedValues.slice(0, 3).join(" · ");
+}
+

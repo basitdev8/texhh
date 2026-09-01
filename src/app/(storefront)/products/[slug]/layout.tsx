@@ -39,7 +39,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const product = await getProduct(slug);
   if (!product) return { title: 'Product not found' };
 
-  const title = `${product.name} | TechChasers`;
+  // The root layout applies the "%s | TechChasers" template, so the page title
+  // must not repeat the suffix. Social cards get the full form explicitly.
+  const title = product.name;
+  const socialTitle = `${product.name} | TechChasers`;
   const description = product.shortDescription || product.description || `${product.name} at TechChasers.`;
   const image = product.images?.[0];
 
@@ -48,7 +51,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description,
     alternates: { canonical: absoluteUrl(`/products/${product.slug}`) },
     openGraph: {
-      title,
+      title: socialTitle,
       description,
       url: absoluteUrl(`/products/${product.slug}`),
       type: 'website',
@@ -56,7 +59,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: image ? 'summary_large_image' : 'summary',
-      title,
+      title: socialTitle,
       description,
       ...(image ? { images: [image] } : {}),
     },

@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import ProductCard from "@/components/storefront/ProductCard";
 import Pagination from "@/components/ui/Pagination";
+import StatusNotice from "@/components/ui/StatusNotice";
 import type { IProduct, ICategory } from "@/types";
 import styles from "./products.module.css";
 
@@ -15,7 +17,7 @@ interface PaginationData {
 
 export function ProductGridLoading() {
   return (
-    <div className={styles.loadingGrid} aria-busy="true">
+    <div className={styles.grid} aria-busy="true">
       <span className="sr-only">Loading products</span>
       {Array.from({ length: 8 }, (_, index) => (
         <div className={styles.skeletonCard} key={index} aria-hidden="true">
@@ -37,63 +39,42 @@ export default function ProductsContent() {
 
   const categoryParam = searchParams.get("category") || "";
   const sortParam = searchParams.get("sort") || "-createdAt";
-  const pageParam = parseInt(searchParams.get("page") || "1");
+  const pageParam = parseInt(searchParams.get("page") || "1", 10);
   const minPriceParam = searchParams.get("minPrice") || "";
   const maxPriceParam = searchParams.get("maxPrice") || "";
+  const searchParam = searchParams.get("search") || "";
+  const inStockOnly = searchParams.get("inStock") === "true";
 
   const [products, setProducts] = useState<IProduct[]>([]);
   const [categories, setCategories] = useState<ICategory[]>([]);
-  const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const [pagination, setPagination] = useState<PaginationData>({
     page: 1,
     totalPages: 1,
     total: 0,
   });
+
   const [minPrice, setMinPrice] = useState(minPriceParam);
   const [maxPrice, setMaxPrice] = useState(maxPriceParam);
-  const [priceOpen, setPriceOpen] = useState(!!(minPriceParam || maxPriceParam));
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/categories")
       .then((res) => res.json())
       .then((data) => {
-        if (data.data) setCategories(data.data);
+        if (Array.isArray(data?.data)) setCategories(data.data);
       })
       .catch(() => {});
   }, []);
 
-  // Approximate per-category counts (best-effort; not blocking)
-  useEffect(() => {
-    if (categories.length === 0) return;
-    let cancelled = false;
-    (async () => {
-      const entries: [string, number][] = [];
-      for (const c of categories) {
-        try {
-          const res = await fetch(
-            `/api/products?category=${c._id}&limit=1`
-          );
-          const json = await res.json();
-          entries.push([c.slug, json.pagination?.total ?? 0]);
-        } catch {
-          entries.push([c.slug, 0]);
-        }
-      }
-      if (!cancelled) {
-        setCategoryCounts(Object.fromEntries(entries));
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [categories]);
-
-  useEffect(() => {
+  const fetchProducts = useCallback(() => {
     const params = new URLSearchParams();
     params.set("page", String(pageParam));
     params.set("limit", "12");
     params.set("sort", sortParam);
+
     if (categoryParam) {
       const cat = categories.find(
         (c) => c.slug === categoryParam || c._id === categoryParam
@@ -102,26 +83,36 @@ export default function ProductsContent() {
     }
     if (minPriceParam) params.set("minPrice", minPriceParam);
     if (maxPriceParam) params.set("maxPrice", maxPriceParam);
+    if (searchParam) params.set("search", searchParam);
+    if (inStockOnly) params.set("inStock", "true");
 
     setLoading(true);
+    setHasError(false);
+
     fetch(`/api/products?${params.toString()}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setProducts(data.data || []);
-        setPagination(
-          data.pagination || { page: 1, totalPages: 1, total: 0 }
-        );
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load");
+        return res.json();
       })
-      .catch(() => {})
+      .then((data) => {
+        if (data.success) {
+          setProducts(data.data || []);
+          setPagination(
+            data.pagination || { page: 1, totalPages: 1, total: (data.data || []).length }
+          );
+        } else {
+          setHasError(true);
+        }
+      })
+      .catch(() => {
+        setHasError(true);
+      })
       .finally(() => setLoading(false));
-  }, [
-    categoryParam,
-    sortParam,
-    pageParam,
-    minPriceParam,
-    maxPriceParam,
-    categories,
-  ]);
+  }, [categoryParam, sortParam, pageParam, minPriceParam, maxPriceParam, searchParam, inStockOnly, categories]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const updateParams = (updates: Record<string, string | null>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -133,144 +124,150 @@ export default function ProductsContent() {
     router.push(`/products?${params.toString()}`);
   };
 
-  const applyPrice = () => {
+  const applyPriceFilter = () => {
     updateParams({
       minPrice: minPrice || null,
       maxPrice: maxPrice || null,
     });
+    setMobileFilterOpen(false);
   };
 
-  const clearAll = () => {
+  const clearAllFilters = () => {
     setMinPrice("");
     setMaxPrice("");
+    setMobileFilterOpen(false);
     router.push("/products");
   };
 
-  const hasPriceFilter = !!(minPriceParam || maxPriceParam);
   const activeCategory = categories.find((c) => c.slug === categoryParam);
-  const categoryTitleWords = activeCategory?.name.trim().split(/\s+/) || [];
+  const hasActiveFilters = Boolean(
+    categoryParam || minPriceParam || maxPriceParam || searchParam || inStockOnly
+  );
 
   return (
     <div className={styles.page}>
       <div className="container">
-        {/* Editorial header */}
+        {/* Page Header */}
         <header className={styles.header}>
-          <div>
-            <div className={styles.eyebrowRow}>
-              <span className={styles.eyebrowLine} />
-              <span className={styles.eyebrow}>
-                {activeCategory ? `Category / ${activeCategory.name}` : "The Edit / All Pieces"}
-              </span>
-            </div>
+          <div className={styles.headerTitleWrap}>
             <h1 className={styles.title}>
-              {activeCategory ? (
-                categoryTitleWords.length > 1 ? (
-                  <>
-                    {categoryTitleWords.slice(0, -1).join(" ")}{" "}
-                    <span className={styles.titleItalic}>
-                      {categoryTitleWords[categoryTitleWords.length - 1]}
-                    </span>
-                  </>
-                ) : (
-                  activeCategory.name
-                )
-              ) : (
-                <>
-                  The whole <span className={styles.titleItalic}>catalogue</span>.
-                </>
-              )}
+              {searchParam
+                ? `Results for “${searchParam}”`
+                : activeCategory
+                  ? activeCategory.name
+                  : "All Products"}
             </h1>
-          </div>
-          <div className={styles.headerRight}>
             <p className={styles.subtitle}>
-              {activeCategory
-                ? activeCategory.description
-                : "Every piece in the TechChasers edit — sortable, filterable, and photographed like an object should be."}
+              {searchParam
+                ? "Search across phones, computers, components, and accessories."
+                : activeCategory?.description ||
+                  "Browse our curated catalog of flagship electronics, computer parts, and accessories."}
             </p>
-            <div className={styles.headerStats}>
-              <span className={styles.headerStatsLabel}>Showing</span>
+          </div>
+
+          <div className={styles.headerStats} aria-live="polite">
+            <span className={styles.statsCount}>
               {loading ? "…" : pagination.total}
-              <span className={styles.headerStatsLabel}>
-                {pagination.total === 1 ? "piece" : "pieces"}
-              </span>
-            </div>
+            </span>{" "}
+            {pagination.total === 1 ? "product" : "products"}
           </div>
         </header>
 
-        {/* Sticky filter toolbar */}
+        {/* Toolbar */}
         <div className={styles.toolbar}>
-          <div className={styles.chipRow} role="tablist" aria-label="Categories">
+          {/* Category Pills (Desktop) */}
+          <div className={styles.categoryPills} role="tablist" aria-label="Product categories">
             <button
-              className={`${styles.chip} ${!categoryParam ? styles.chipActive : ""}`}
+              type="button"
+              className={`${styles.pill} ${!categoryParam ? styles.pillActive : ""}`}
               onClick={() => updateParams({ category: null })}
             >
               All
             </button>
-            {categories.map((cat, i) => (
+            {categories.map((cat) => (
               <button
                 key={cat._id}
-                className={`${styles.chip} ${categoryParam === cat.slug ? styles.chipActive : ""}`}
+                type="button"
+                className={`${styles.pill} ${categoryParam === cat.slug ? styles.pillActive : ""}`}
                 onClick={() => updateParams({ category: cat.slug })}
               >
-                <span className={styles.chipNum}>
-                  №{String(i + 1).padStart(2, "0")}
-                </span>
                 {cat.name}
-                {categoryCounts[cat.slug] != null && (
-                  <span style={{ opacity: 0.55 }}>
-                    ({categoryCounts[cat.slug]})
-                  </span>
-                )}
               </button>
             ))}
           </div>
 
-          <div className={styles.toolbarRight}>
+          {/* Controls Right */}
+          <div className={styles.toolbarControls}>
+            {/* Mobile Filter Button */}
             <button
-              className={`${styles.priceToggle} ${hasPriceFilter || priceOpen ? styles.priceToggleActive : ""}`}
-              onClick={() => setPriceOpen((v) => !v)}
-              aria-expanded={priceOpen}
+              type="button"
+              className={styles.filterToggleBtn}
+              onClick={() => setMobileFilterOpen(true)}
+              aria-label="Open filter menu"
             >
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 13 13"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <path d="M2 6.5h9M2 3.5h5M2 9.5h7" strokeLinecap="round" />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
               </svg>
-              Price
-              {hasPriceFilter && (
-                <span style={{ marginLeft: 4 }}>
-                  · {minPriceParam || "0"}–{maxPriceParam || "∞"}
-                </span>
-              )}
+              <span>Filters</span>
+              {hasActiveFilters && <span className={styles.activeFilterDot} />}
             </button>
 
-            <div className={styles.sortWrap}>
+            {/* Price Filter (Desktop) */}
+            <div className={styles.desktopPriceGroup}>
+              <input
+                type="number"
+                placeholder="Min ₹"
+                className={styles.priceInput}
+                value={minPrice}
+                onChange={(e) => setMinPrice(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && applyPriceFilter()}
+                min={0}
+                aria-label="Minimum price in Rupees"
+              />
+              <span className={styles.priceDivider}>–</span>
+              <input
+                type="number"
+                placeholder="Max ₹"
+                className={styles.priceInput}
+                value={maxPrice}
+                onChange={(e) => setMaxPrice(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && applyPriceFilter()}
+                min={0}
+                aria-label="Maximum price in Rupees"
+              />
+              <button
+                type="button"
+                className={styles.applyBtn}
+                onClick={applyPriceFilter}
+              >
+                Apply
+              </button>
+            </div>
+
+            {/* Sort Select */}
+            <div className={styles.sortWrapper}>
               <select
                 className={styles.sortSelect}
                 value={sortParam}
                 onChange={(e) => updateParams({ sort: e.target.value })}
+                aria-label="Sort products"
               >
-                <option value="-createdAt">Sort: Newest</option>
-                <option value="createdAt">Sort: Oldest</option>
-                <option value="price">Sort: Price ↑</option>
-                <option value="-price">Sort: Price ↓</option>
-                <option value="-rating">Sort: Top rated</option>
-                <option value="name">Sort: A → Z</option>
+                <option value="-createdAt">Newest arrivals</option>
+                <option value="createdAt">Oldest</option>
+                <option value="price">Price: Low to High</option>
+                <option value="-price">Price: High to Low</option>
+                <option value="name">Name: A to Z</option>
               </select>
               <svg
                 className={styles.sortChevron}
-                width="10"
-                height="10"
-                viewBox="0 0 10 10"
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
                 fill="none"
+                aria-hidden="true"
               >
                 <path
-                  d="M2 4l3 3 3-3"
+                  d="M3 4.5l3 3 3-3"
                   stroke="currentColor"
                   strokeWidth="1.5"
                   strokeLinecap="round"
@@ -281,59 +278,104 @@ export default function ProductsContent() {
           </div>
         </div>
 
-        {/* Price drawer */}
-        {priceOpen && (
-          <div className={styles.priceDrawer}>
-            <span className={styles.priceDrawerLabel}>Price range (₹)</span>
-            <input
-              type="number"
-              placeholder="Min"
-              className={styles.priceInput}
-              value={minPrice}
-              onChange={(e) => setMinPrice(e.target.value)}
-              min={0}
-            />
-            <input
-              type="number"
-              placeholder="Max"
-              className={styles.priceInput}
-              value={maxPrice}
-              onChange={(e) => setMaxPrice(e.target.value)}
-              min={0}
-            />
+        {/* Active Filter Chips */}
+        {hasActiveFilters && (
+          <div className={styles.activeChipsRow}>
+            <span className={styles.chipsLabel}>Active filters:</span>
+            {searchParam && (
+              <span className={styles.chip}>
+                Search: {searchParam}
+                <button
+                  type="button"
+                  onClick={() => updateParams({ search: null })}
+                  aria-label="Clear search"
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {categoryParam && activeCategory && (
+              <span className={styles.chip}>
+                Category: {activeCategory.name}
+                <button
+                  type="button"
+                  onClick={() => updateParams({ category: null })}
+                  aria-label={`Remove ${activeCategory.name} filter`}
+                >
+                  ×
+                </button>
+              </span>
+            )}
+            {(minPriceParam || maxPriceParam) && (
+              <span className={styles.chip}>
+                Price: ₹{minPriceParam || "0"} – ₹{maxPriceParam || "∞"}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMinPrice("");
+                    setMaxPrice("");
+                    updateParams({ minPrice: null, maxPrice: null });
+                  }}
+                  aria-label="Remove price filter"
+                >
+                  ×
+                </button>
+              </span>
+            )}
             <button
-              className={styles.applyBtn}
-              onClick={applyPrice}
-            >
-              Apply
-            </button>
-            <button
-              className={styles.clearBtn}
-              onClick={clearAll}
+              type="button"
+              className={styles.clearAllBtn}
+              onClick={clearAllFilters}
             >
               Clear all
             </button>
           </div>
         )}
 
-        {/* Grid */}
+        {/* Product Grid / States */}
         {loading ? (
           <ProductGridLoading />
+        ) : hasError ? (
+          <div className={styles.errorContainer}>
+            <StatusNotice
+              variant="error"
+              title="Products couldn’t be loaded"
+              action={{ label: "Try again", onClick: fetchProducts }}
+            >
+              An unexpected network error occurred while fetching products. Check your connection
+              and try again.
+            </StatusNotice>
+          </div>
         ) : products.length === 0 ? (
-          <div className={styles.empty}>
-            <p className={styles.emptyTitle}>Nothing matches just yet.</p>
+          <div className={styles.emptyState}>
+            <h2 className={styles.emptyTitle}>No matching products found</h2>
             <p className={styles.emptyText}>
-              Try widening your filters or clearing them. The TechChasers edit is
-              tight on purpose — but never this tight.
+              {hasActiveFilters
+                ? "No items match your active filter criteria. Try expanding the price range or clearing filters."
+                : "No products are currently listed in this category."}
             </p>
+            {hasActiveFilters ? (
+              <button
+                type="button"
+                className={styles.emptyActionBtn}
+                onClick={clearAllFilters}
+              >
+                Clear all filters
+              </button>
+            ) : (
+              <Link href="/" className={styles.emptyActionBtn}>
+                Return to home
+              </Link>
+            )}
           </div>
         ) : (
           <>
             <div className={styles.grid}>
-              {products.map((product, i) => (
-                <ProductCard key={product._id} product={product} index={i} />
+              {products.map((product) => (
+                <ProductCard key={product._id} product={product} />
               ))}
             </div>
+
             <Pagination
               page={pagination.page}
               totalPages={pagination.totalPages}
@@ -342,6 +384,105 @@ export default function ProductsContent() {
           </>
         )}
       </div>
+
+      {/* Mobile Filter Drawer */}
+      {mobileFilterOpen && (
+        <div
+          className={styles.mobileFilterBackdrop}
+          onClick={() => setMobileFilterOpen(false)}
+        >
+          <div
+            ref={drawerRef}
+            className={styles.mobileFilterDrawer}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Filters"
+          >
+            <div className={styles.drawerHead}>
+              <h3 className={styles.drawerTitle}>Filter Products</h3>
+              <button
+                type="button"
+                className={styles.drawerCloseBtn}
+                onClick={() => setMobileFilterOpen(false)}
+                aria-label="Close filter drawer"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className={styles.drawerBody}>
+              {/* Categories */}
+              <div className={styles.drawerSection}>
+                <span className={styles.drawerSectionTitle}>Category</span>
+                <div className={styles.drawerCategoryList}>
+                  <label className={styles.drawerRadio}>
+                    <input
+                      type="radio"
+                      name="mobileCategory"
+                      checked={!categoryParam}
+                      onChange={() => updateParams({ category: null })}
+                    />
+                    <span>All Categories</span>
+                  </label>
+                  {categories.map((cat) => (
+                    <label key={cat._id} className={styles.drawerRadio}>
+                      <input
+                        type="radio"
+                        name="mobileCategory"
+                        checked={categoryParam === cat.slug}
+                        onChange={() => updateParams({ category: cat.slug })}
+                      />
+                      <span>{cat.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Price */}
+              <div className={styles.drawerSection}>
+                <span className={styles.drawerSectionTitle}>Price Range (₹)</span>
+                <div className={styles.drawerPriceInputs}>
+                  <input
+                    type="number"
+                    placeholder="Min ₹"
+                    className={styles.priceInput}
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    min={0}
+                  />
+                  <span>–</span>
+                  <input
+                    type="number"
+                    placeholder="Max ₹"
+                    className={styles.priceInput}
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    min={0}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.drawerFooter}>
+              <button
+                type="button"
+                className={styles.drawerClearBtn}
+                onClick={clearAllFilters}
+              >
+                Clear all
+              </button>
+              <button
+                type="button"
+                className={styles.drawerApplyBtn}
+                onClick={applyPriceFilter}
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

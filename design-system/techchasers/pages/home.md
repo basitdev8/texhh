@@ -17,7 +17,7 @@ Orient a new visitor, expose the major shopping paths, and move them into a cata
 7. Recently added or recommended rail.
 8. Compact footer.
 
-Desktop hero is a 5/7 or 6/6 text/image split on a `--color-bg-soft` stage with a maximum height near 720px. Mobile stacks text before image; both primary actions remain above the fold on a 667px-tall viewport.
+Desktop hero uses a centered campaign hierarchy above one large product-led image on a `--color-bg-soft` stage with a maximum height near 720px. This translates the supplied `hero.md` composition without copying its demo dependencies or decoration. Mobile keeps text before the image; both primary actions remain above the fold on a 667px-tall viewport.
 
 ## Keep from the current page
 

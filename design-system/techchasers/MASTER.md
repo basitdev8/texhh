@@ -45,17 +45,17 @@ Use semantic tokens in components. The existing token names may remain during mi
 | Role | Target token | Value | Use |
 | --- | --- | --- | --- |
 | Canvas | `--color-bg` | `#FFFFFF` | Page background |
-| Subtle surface | `--color-bg-soft` | `#F7F7F8` | Product image wells, grouped content |
-| Muted surface | `--color-bg-alt` | `#F1F2F4` | Selected/filter/step surfaces |
+| Subtle surface | `--color-bg-soft` | `#F5F6F8` | Product image wells, grouped content |
+| Muted surface | `--color-bg-alt` | `#ECEFF3` | Selected/filter/step surfaces |
 | Raised surface | `--color-surface` | `#FFFFFF` | Header, summary, modal |
-| Ink | `--color-ink` | `#111114` | Primary text and dark actions |
-| Secondary text | `--color-text-secondary` | `#5F6368` | Supporting copy |
-| Muted text | `--color-text-muted` | `#767A81` | Metadata that still passes contrast |
-| Border | `--color-border` | `#DCDDDF` | Controls and strong dividers |
-| Soft border | `--color-border-light` | `#ECEDEF` | Section and card separation |
-| Action blue | `--color-accent` | `#155EEF` | Links, focus, selected states, key highlights |
-| Action hover | `--color-accent-hover` | `#0B4DD8` | Hover/pressed action |
-| Action tint | `--color-accent-subtle` | `#EEF4FF` | Selected state background |
+| Ink | `--color-ink` | `#101114` | Primary text and dark actions |
+| Secondary text | `--color-text-secondary` | `#4B5563` | Supporting copy |
+| Muted text | `--color-text-muted` | `#667085` | Metadata that passes contrast on white and soft surfaces |
+| Border | `--color-border` | `#D8DCE3` | Controls and strong dividers |
+| Soft border | `--color-border-light` | `#E9EBEF` | Section and card separation |
+| Action blue | `--color-accent` | `#1428A0` | Links, focus, selected states, key highlights |
+| Action hover | `--color-accent-hover` | `#0E1E7A` | Hover/pressed action |
+| Action tint | `--color-accent-subtle` | `#F0F3FF` | Selected state background |
 | Success | `--color-success` | `#18794E` | In stock, complete, paid |
 | Success tint | `--color-success-light` | `#ECFDF3` | Success notice background |
 | Warning | `--color-warning` | `#A15C00` | Low stock, compatibility caution |
@@ -73,11 +73,11 @@ Rules:
 
 ### Typography
 
-Keep the fonts already installed by `next/font`:
+Load fonts through `next/font` with separate raw face variables and semantic family tokens; never point a semantic font custom property back to itself.
 
-- Outfit, weights 600–700: logo, page titles, section titles, and compact promotional headlines.
+- Manrope, weights 600–800: logo, page titles, section titles, and compact promotional headlines.
 - Inter, weights 400–700: navigation, body, controls, prices, specs, tables, and metadata.
-- Remove Fraunces and all serif/italic display treatments from the redesigned UI.
+- Do not use Outfit, Fraunces, or serif/italic display treatments in the redesigned UI.
 
 Type scale:
 
@@ -131,7 +131,7 @@ Default cards have no shadow. Use a border or a subtle surface change. Shadows a
 
 - 64–72px white header with a soft bottom divider; sticky after the first viewport.
 - Logo left. Primary categories center or immediately after the logo. Search, account, and cart right.
-- Desktop search opens a full-width command surface with recent/popular suggestions and product results. Mobile search is a first-class row or full-screen surface, not a tiny icon-only afterthought.
+- Search never navigates to a separate search page from the header. It opens an in-place catalogue command surface over the current route: focus the input, return debounced product results, keep loading/no-result/error states in the surface, and restore focus to the trigger on close. Mobile uses the same surface full-screen, not a tiny icon-only afterthought.
 - Category menu groups `Mobiles`, `Computers`, `PC Components`, `Accessories`, and `Build a PC`; labels come from real catalog taxonomy when available.
 - Cart count has an accessible label. Icon targets are at least 44×44px.
 

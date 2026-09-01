@@ -6,46 +6,125 @@
 .form {
   display: flex;
   align-items: center;
-  background: var(--color-surface);
+  background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
-  padding: 0 var(--space-4);
-  transition: all var(--transition-fast);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-3);
+  min-height: 48px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .form:focus-within {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(14, 124, 123, 0.12);
+  box-shadow: 0 0 0 3px var(--color-accent-subtle);
 }
 
 .icon {
   color: var(--color-text-muted);
   flex-shrink: 0;
+  margin-right: var(--space-2);
 }
 
 .input {
   flex: 1;
-  padding: 0.75rem var(--space-3);
-  font-size: var(--text-base);
+  /* Fill the field's full height so the whole control is tappable, not just
+     the 36px text box inside it. */
+  align-self: stretch;
+  min-width: 0;
+  padding: var(--space-2) 0;
+  font-family: var(--font-body);
+  font-size: 1rem;
   background: transparent;
   border: none;
   color: var(--color-text);
+  outline: none;
 }
 
-.input:focus { outline: none; }
-.input::placeholder { color: var(--color-text-muted); }
+.input::placeholder {
+  color: var(--color-text-muted);
+}
 
 .submitBtn {
-  padding: 0.5rem var(--space-4);
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-body);
   font-size: var(--text-sm);
-  font-weight: 500;
-  color: white;
-  background: var(--color-accent);
-  border-radius: var(--radius-full);
-  transition: background var(--transition-fast);
+  font-weight: 600;
+  color: var(--color-on-ink);
+  background-color: var(--color-ink);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
+  flex-shrink: 0;
 }
 
-.submitBtn:hover { background: var(--color-accent-hover); }
+.submitBtn:hover {
+  background-color: var(--color-ink-soft);
+  color: var(--color-on-ink);
+}
+
+.submitBtn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.submitIcon {
+  display: none;
+}
+
+/* Header search: one calm, continuously visible commerce control. */
+.headerVariant .form {
+  min-height: 40px;
+  padding: 0 3px 0 var(--space-3);
+  border-color: var(--color-border);
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg-soft);
+}
+
+.headerVariant .form:focus-within {
+  background-color: var(--color-surface);
+  border-color: var(--color-text-secondary);
+  box-shadow: none;
+}
+
+.headerVariant .input:focus-visible {
+  outline: none;
+}
+
+.headerVariant .icon {
+  display: none;
+}
+
+.headerVariant .input {
+  padding: 0 var(--space-2) 0 0;
+  font-size: var(--text-sm);
+}
+
+.headerVariant .submitBtn {
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background-color: var(--color-ink);
+}
+
+.headerVariant .submitIcon {
+  display: block;
+}
+
+.headerVariant .submitLabel {
+  display: none;
+}
+
+.headerVariant .dropdown {
+  top: calc(100% + 6px);
+  max-height: min(520px, 70vh);
+  overflow-y: auto;
+  border-radius: var(--radius-lg);
+}
 
 /* ── Live-search dropdown ───────────────────────────────────── */
 .dropdown {
@@ -54,7 +133,7 @@
   left: 0;
   right: 0;
   z-index: var(--z-dropdown);
-  background: var(--color-surface);
+  background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -75,12 +154,12 @@
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
-  transition: background var(--transition-fast);
+  transition: background-color var(--transition-fast);
 }
 
 .item:hover,
 .itemActive {
-  background: var(--color-bg-soft);
+  background-color: var(--color-bg-soft);
 }
 
 .thumb {
@@ -90,7 +169,7 @@
   flex-shrink: 0;
   border-radius: var(--radius-sm);
   overflow: hidden;
-  background: var(--color-bg-alt);
+  background-color: var(--color-bg-soft);
   border: 1px solid var(--color-border-light);
 }
 
@@ -119,7 +198,7 @@
   font-size: var(--text-xs);
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
 }
 
 .itemPrice {
@@ -127,6 +206,7 @@
   font-weight: 700;
   color: var(--color-ink);
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .seeAll {
@@ -136,14 +216,33 @@
   margin-top: var(--space-1);
   padding: var(--space-3);
   border-top: 1px solid var(--color-border-light);
+  font-family: var(--font-body);
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--color-accent);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  background: none;
+  border-bottom: none;
+  border-left: none;
+  border-right: none;
+  transition: background-color var(--transition-fast);
   border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
 
 .seeAll:hover {
-  background: var(--color-accent-subtle);
+  background-color: var(--color-accent-subtle);
+}
+
+@media (max-width: 640px) {
+  .headerVariant .dropdown {
+    max-height: min(430px, 60vh);
+  }
+
+  .headerVariant .item {
+    padding-inline: var(--space-2);
+  }
+
+  .headerVariant .itemPrice {
+    display: none;
+  }
 }

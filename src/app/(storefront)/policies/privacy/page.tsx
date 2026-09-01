@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PolicyLayout, { Todo } from "../PolicyLayout";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — TechChasers",
+  title: "Privacy Policy",
   description:
     "What personal data TechChasers collects, why, who it is shared with, and how to have it deleted.",
 };

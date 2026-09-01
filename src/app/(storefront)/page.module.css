@@ -1,651 +1,313 @@
-/* ===============================================================
-   HOME — TechChasers editorial
-   Same tokens as the rest of the site. Cream ground, one teal
-   accent, ink used for the two dark moments only.
-
-   Seven sections, seven different layout families:
-   cover · horizontal rail · sticky column and spread ·
-   full-bleed statement · kinetic marquee · ink split · figure ledger
-
-   Motion is native CSS. Reveals use IntersectionObserver through
-   <Reveal>; drift and progress use scroll-driven animations behind
-   @supports, so a browser without them simply gets the static page.
-   =============================================================== */
-
-/* --------------------------------------------------------------
-   SHARED TYPE
-   -------------------------------------------------------------- */
-.section {
-  /* Keep the shared .container inline padding intact. Using the `padding`
-     shorthand here previously reset it to zero on sections that combine both
-     classes, making the featured rail bleed past the viewport on phones. */
-  padding-block: var(--space-24);
-  position: relative;
-}
-
-.eyebrowRow {
+.homeContainer {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  color: var(--color-text-secondary);
+  flex-direction: column;
+  gap: var(--space-12);
+  padding-bottom: var(--space-12);
 }
 
-.eyebrowLine {
-  width: 56px;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.45;
+.section {
+  padding: 0;
 }
 
-.eyebrow {
+.sectionHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.sectionEyebrow {
   font-family: var(--font-body);
   font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.32em;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  display: block;
+  margin-bottom: 2px;
 }
 
 .sectionTitle {
   font-family: var(--font-heading);
-  font-size: clamp(2.5rem, 5.2vw, 4.5rem);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  padding-bottom: 0.08em;
+  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+  font-weight: 700;
   color: var(--color-ink);
-}
-
-.italic {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
-  color: var(--color-accent);
-}
-
-.sectionBody {
-  font-size: var(--text-lg);
-  line-height: 1.6;
-  color: var(--color-text-secondary);
-  max-width: 34rem;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
 }
 
 .sectionLink {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  width: fit-content;
-  padding-bottom: var(--space-1);
-  border-bottom: 1px solid currentColor;
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
   font-weight: 600;
-  transition: gap var(--transition-base), color var(--transition-fast);
+  color: var(--color-accent);
+  transition: color var(--transition-fast);
 }
 
-.sectionLink:hover { gap: var(--space-4); color: var(--color-accent); }
-
-.sectionLink:focus-visible,
-.buildCtaButton:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 3px;
+.sectionLink:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
 }
 
-.empty {
-  padding: var(--space-12);
-  text-align: center;
-  background: var(--color-paper);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-lg);
-  color: var(--color-text-secondary);
-}
-
-/* --------------------------------------------------------------
-   1. CATEGORY RAIL
-   Bleeds off the right edge so the edit reads as longer than the
-   viewport. The cut-off card is the affordance; no scroll label.
-   -------------------------------------------------------------- */
-.railSection { padding: var(--space-24) 0 var(--space-20); }
-
-.railHead {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-  margin-bottom: var(--space-12);
-}
-
-.railScroller {
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x proximity;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding-inline: max(
-    var(--container-padding),
-    calc((100% - var(--container-max)) / 2)
-  );
-  /* snap to the same inset as the padding, or the first card jumps flush
-     to the viewport edge when it snaps */
-  scroll-padding-inline-start: max(
-    var(--container-padding),
-    calc((100% - var(--container-max)) / 2)
-  );
-  /* overflow-y is clipped, so the hover lift needs headroom inside the box */
-  padding-top: var(--space-4);
-  -webkit-mask-image: linear-gradient(
-    to right,
-    #000 0,
-    #000 calc(100% - 96px),
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    #000 0,
-    #000 calc(100% - 96px),
-    transparent 100%
-  );
-}
-
-.railScroller::-webkit-scrollbar { display: none; }
-
-.railTrack {
+/* ── Grids ──────────────────────────────────────────────────── */
+.categoryGrid {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 320px);
-  gap: var(--space-6);
-  width: max-content;
-  padding-bottom: var(--space-4);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-4);
 }
 
-.railItem {
-  scroll-snap-align: start;
-  transition: transform var(--transition-base);
-}
-
-.railItem:hover { transform: translateY(-6px); }
-
-/* --------------------------------------------------------------
-   2. THE EDIT
-   The heading column stays with you while the spread moves, and a
-   hairline in that column reports how far through the edit you are.
-   -------------------------------------------------------------- */
-.editLayout {
+.productGrid {
   display: grid;
-  grid-template-columns: 0.8fr 1.55fr;
-  gap: var(--space-16);
-  align-items: start;
-}
-
-.editAside {
-  position: sticky;
-  /* 80px header plus breathing room */
-  top: calc(var(--space-20) + var(--space-6));
-  display: flex;
-  flex-direction: column;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-5);
 }
 
-.editProgress {
-  display: none;
-  height: 2px;
-  margin-top: var(--space-4);
-  background: var(--color-border-light);
+/* ── PC Builder Section ─────────────────────────────────────── */
+.builderSection {
+  padding: var(--space-6) 0;
 }
 
-.editProgress span {
-  display: block;
-  height: 100%;
-  background: var(--color-accent);
-  transform-origin: left center;
-  transform: scaleX(0);
-}
-
-.editSpread {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-12) var(--space-6);
-}
-
-.spreadItem { transition: transform var(--transition-base); }
-.spreadItem:nth-child(even) { margin-top: var(--space-16); }
-.spreadItem:hover { transform: translateY(-6px); }
-
-/* --------------------------------------------------------------
-   3. FULL-BLEED STATEMENT
-   The brand line over a real photograph, the image drifting against
-   the scroll so the type feels fixed to the page.
-   -------------------------------------------------------------- */
-.band {
-  position: relative;
-  padding: var(--space-32) 0;
-  background: var(--color-ink);
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.bandMedia {
-  position: absolute;
-  inset: -8% 0;
-  z-index: 0;
-}
-
-.bandImage {
-  object-fit: cover;
-  opacity: 0.5;
-}
-
-.bandScrim {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    to bottom,
-    rgba(14, 14, 12, 0.72),
-    rgba(14, 14, 12, 0.52) 45%,
-    rgba(14, 14, 12, 0.78)
-  );
-}
-
-.bandInner {
-  position: relative;
-  z-index: 2;
-}
-
-.bandText {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(2rem, 4.6vw, 4rem);
-  line-height: 1.14;
-  letter-spacing: -0.03em;
-  text-align: center;
-  color: var(--color-paper);
-  padding-bottom: 0.08em;
-}
-
-.bandText em {
-  font-style: italic;
-  color: var(--color-accent-light);
-}
-
-/* --------------------------------------------------------------
-   4. MARQUEE
-   The one marquee on the page.
-   -------------------------------------------------------------- */
-.marqueeBlock {
-  padding: var(--space-20) 0;
-  border-bottom: 1px solid var(--color-border);
-}
-
-/* --------------------------------------------------------------
-   5. PC BUILDER — the ink band
-   -------------------------------------------------------------- */
-.buildCta {
-  position: relative;
-  padding: var(--space-24) 0;
-  background: var(--color-ink);
-  color: var(--color-paper);
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.buildCta::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background: radial-gradient(
-    ellipse at 72% 50%,
-    rgba(14, 124, 123, 0.25) 0%,
-    transparent 55%
-  );
-}
-
-.buildCtaInner {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: 1.25fr 1fr;
-  gap: var(--space-16);
-  align-items: center;
-}
-
-.buildCtaHeader {
+.builderCard {
+  background-color: var(--color-bg-soft);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  padding: var(--space-10);
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-8);
 }
 
-.buildCtaEyebrow {
+.builderHeader {
   display: flex;
-  align-items: center;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.builderHeaderMain {
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-3);
+}
+
+.builderEyebrow {
   font-size: var(--text-xs);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.32em;
-  font-weight: 600;
-  color: var(--color-paper);
-}
-
-.buildCtaEyebrowLine {
-  width: 56px;
-  height: 1px;
-  background: var(--color-paper);
-  opacity: 0.4;
-}
-
-.buildCtaTitle {
-  font-family: var(--font-heading);
-  font-size: clamp(3rem, 6vw, 5.5rem);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  padding-bottom: 0.08em;
-  color: var(--color-paper);
-}
-
-.buildCtaTitle em {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
-  color: var(--color-accent-light);
-}
-
-.buildCtaText {
-  font-size: var(--text-lg);
-  line-height: 1.55;
-  color: rgba(251, 247, 238, 0.72);
-  max-width: 32rem;
-}
-
-.buildCtaButton {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-4);
-  width: fit-content;
-  margin-top: var(--space-2);
-  padding: 1.05rem 1.5rem 1.05rem 2rem;
-  background: var(--color-paper);
-  color: var(--color-ink);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  border-radius: var(--radius-full);
-  transition: background var(--transition-base), color var(--transition-base),
-    transform var(--transition-base);
-}
-
-.buildCtaButton::after {
-  content: "";
-  display: inline-block;
-  width: 40px;
-  height: 40px;
-  margin: -10px -10px -10px 0;
-  border-radius: 50%;
-  background-color: var(--color-accent);
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'><path d='M2 7h10M8 3l4 4-4 4' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  background-repeat: no-repeat;
-  background-position: center;
-  transition: transform var(--transition-base);
-}
-
-.buildCtaButton:hover {
-  color: var(--color-ink);
-  transform: translateY(-2px);
-}
-
-.buildCtaButton:hover::after { transform: rotate(-12deg) scale(1.08); }
-
-.buildCtaSteps {
-  border-top: 1px solid rgba(251, 247, 238, 0.18);
-}
-
-/* transform, not padding: hovering a row must not reflow the column */
-.buildCtaStep {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: var(--space-4);
-  align-items: center;
-  padding: var(--space-5) 0;
-  border-bottom: 1px solid rgba(251, 247, 238, 0.18);
-  transition: transform var(--transition-base);
-}
-
-.buildCtaStep:hover { transform: translateX(var(--space-3)); }
-
-.buildCtaStepBody {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.buildCtaStepTitle {
-  font-family: var(--font-heading);
-  font-size: var(--text-xl);
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: var(--color-paper);
-}
-
-.buildCtaStepSub {
-  font-size: var(--text-sm);
-  color: rgba(251, 247, 238, 0.6);
-}
-
-.buildCtaStepArrow {
-  flex: none;
-  width: 32px;
-  height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  border: 1px solid rgba(251, 247, 238, 0.3);
-  color: rgba(251, 247, 238, 0.6);
-  transition: background var(--transition-base), border-color var(--transition-base),
-    color var(--transition-base), transform var(--transition-base);
-}
-
-.buildCtaStep:hover .buildCtaStepArrow {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-paper);
-  transform: rotate(-10deg);
-}
-
-/* --------------------------------------------------------------
-   6. FIGURE LEDGER
-   Real counts from the catalog plus the two service commitments.
-   No cards, hairlines only, same ledger language as /account.
-   -------------------------------------------------------------- */
-/* auto-fit so the grid has exactly as many cells as there is real
-   data for, never a blank column */
-.ledger {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  border-top: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  margin: var(--space-24) 0;
-}
-
-.ledgerCell {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-10) var(--space-6);
-}
-
-.ledgerCell + .ledgerCell { border-left: 1px solid var(--color-border-light); }
-.ledgerCell:first-child { padding-left: 0; }
-.ledgerCell:last-child { padding-right: 0; }
-
-.ledgerFigure {
-  font-family: var(--font-display);
-  font-size: clamp(2.5rem, 4vw, 3.5rem);
-  font-weight: 400;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  color: var(--color-ink);
-  font-variant-numeric: tabular-nums;
-}
-
-.ledgerFigure em {
-  font-style: italic;
+  letter-spacing: 0.08em;
   color: var(--color-accent);
 }
 
-.ledgerLabel {
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
+.builderTitle {
+  font-family: var(--font-heading);
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 700;
+  color: var(--color-ink);
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
+.builderSubtitle {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.builderCtaRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.builderCtaBtn {
+  min-height: 48px;
+  padding: 0 var(--space-6);
+  background-color: var(--color-ink);
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+}
+
+.builderCtaBtn:hover {
+  background-color: var(--color-ink-soft);
+  color: #ffffff;
+}
+
+.builderMeta {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.builderHighlights {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.highlightItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.highlightIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+}
+
+.highlightTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.highlightDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+}
+
+/* ── Confidence Strip ───────────────────────────────────────── */
+.confidenceSection {
+  padding: var(--space-4) 0;
+}
+
+.confidenceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-6);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+}
+
+.confidenceItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.confidenceIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.confidenceText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.confidenceTitle {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.confidenceDesc {
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
   line-height: 1.5;
 }
 
-/* --------------------------------------------------------------
-   SCROLL-DRIVEN ENHANCEMENTS
-   -------------------------------------------------------------- */
-@supports (animation-timeline: view()) {
-  .bandMedia {
-    animation: bandPan linear both;
-    animation-timeline: view();
-    animation-range: cover 0% cover 100%;
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .productGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-@keyframes bandPan {
-  from { transform: translateY(-6%); }
-  to { transform: translateY(6%); }
-}
-
-/* The progress hairline reads the spread's own scroll position. It is
-   hidden entirely where named timelines are unavailable. */
-@supports (timeline-scope: --edit) {
-  .editLayout { timeline-scope: --edit; }
-
-  .editSpread {
-    view-timeline-name: --edit;
-    view-timeline-axis: block;
+@media (max-width: 960px) {
+  .categoryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .editProgress { display: block; }
+  .productGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
-  .editProgress span {
-    animation: editFill linear both;
-    animation-timeline: --edit;
-    animation-range: cover 0% cover 100%;
+  .builderHighlights {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .confidenceGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
   }
 }
 
-@keyframes editFill {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
-}
+@media (max-width: 768px) {
+  .sectionLink {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
 
-/* --------------------------------------------------------------
-   RESPONSIVE
-   -------------------------------------------------------------- */
-@media (max-width: 1024px) {
-  .editLayout { grid-template-columns: 1fr; gap: var(--space-10); }
-  .editAside { position: static; top: auto; }
-  /* the heading scrolls away here, so a progress hairline reports nothing */
-  .editProgress { display: none; }
-  .editSpread { gap: var(--space-8) var(--space-5); }
-  .spreadItem:nth-child(even) { margin-top: 0; }
-  .buildCtaInner { grid-template-columns: 1fr; gap: var(--space-10); }
-  .ledger { grid-template-columns: repeat(2, 1fr); }
-  .ledgerCell { padding: var(--space-8) var(--space-5); }
-  .ledgerCell:nth-child(odd) { padding-left: 0; border-left: none; }
-  .ledgerCell:nth-child(even) { padding-right: 0; }
-  .ledgerCell:nth-child(n + 3) { border-top: 1px solid var(--color-border-light); }
+  .sectionHeader {
+    align-items: flex-start;
+    margin-bottom: var(--space-4);
+    gap: var(--space-1);
+  }
+
+  .builderCtaBtn {
+    width: 100%;
+  }
+
+  .builderCtaRow {
+    align-items: stretch;
+  }
 }
 
 @media (max-width: 640px) {
-  .section,
-  .railSection,
-  .buildCta { padding-block: var(--space-16); }
-
-  .sectionTitle {
-    font-size: clamp(2.25rem, 11vw, 3rem);
-    line-height: 0.98;
+  .homeContainer {
+    gap: var(--space-10);
   }
 
-  .sectionBody { font-size: var(--text-base); line-height: 1.55; }
-  .railHead { gap: var(--space-4); margin-bottom: var(--space-6); }
-  .band { padding: var(--space-20) 0; }
-  .marqueeBlock { padding: var(--space-12) 0; }
-  .ledger { margin: var(--space-16) 0; }
-  .editLayout { gap: var(--space-8); }
-  .editAside { gap: var(--space-4); }
-
-  .editSpread {
-    display: flex;
-    gap: var(--space-4);
-    width: calc(100% + (var(--container-padding) * 2));
-    margin-inline: calc(var(--container-padding) * -1);
-    padding: var(--space-1) var(--container-padding) var(--space-3);
-    overflow-x: auto;
-    /* Without this, overflow-x:auto computes a second vertical scroll rail on
-       mobile and traps a normal downward swipe inside the product strip. */
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: var(--container-padding);
-    scrollbar-width: none;
+  .builderCard {
+    padding: var(--space-6);
   }
 
-  .editSpread::-webkit-scrollbar { display: none; }
-
-  .spreadItem {
-    flex: 0 0 min(82vw, 310px);
-    scroll-snap-align: start;
+  .categoryGrid {
+    gap: var(--space-3);
   }
 
-  .railTrack {
-    grid-auto-columns: min(78vw, 292px);
-    gap: var(--space-4);
+  .productGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
   }
 
-  .railScroller {
-    scroll-snap-type: x mandatory;
-    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 48px), transparent 100%);
-    mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 48px), transparent 100%);
+  .confidenceGrid {
+    padding: var(--space-5);
   }
-
-  .bandText { font-size: clamp(1.95rem, 9.5vw, 2.65rem); line-height: 1.1; }
-
-  .buildCtaInner { gap: var(--space-8); }
-  .buildCtaHeader { gap: var(--space-5); }
-  .buildCtaTitle { font-size: clamp(3rem, 15vw, 4rem); }
-  .buildCtaText { font-size: var(--text-base); }
-  .buildCtaButton { width: 100%; justify-content: space-between; }
-  .buildCtaSteps {
-    padding: 0 var(--space-4);
-    border: 1px solid rgba(251, 247, 238, 0.18);
-    border-radius: var(--radius-lg);
-  }
-  .buildCtaStep { padding: var(--space-4) 0; }
-  .buildCtaStepTitle { font-size: var(--text-lg); }
-  .buildCtaStepSub { font-size: var(--text-xs); line-height: 1.5; }
-
-  .ledgerCell { gap: var(--space-2); padding: var(--space-6) var(--space-4); }
-  .ledgerFigure { font-size: 2.35rem; }
-  .ledgerLabel { letter-spacing: 0.15em; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bandMedia,
-  .editProgress span {
-    animation: none;
-  }
-
-  .editProgress span { transform: scaleX(1); }
-
-  .railItem:hover,
-  .spreadItem:hover,
-  .buildCtaStep:hover,
-  .buildCtaStep:hover .buildCtaStepArrow,
-  .buildCtaButton:hover { transform: none; }
 }

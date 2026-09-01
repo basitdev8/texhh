@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PolicyLayout, { Todo } from "../PolicyLayout";
 
 export const metadata: Metadata = {
-  title: "Shipping Policy — TechChasers",
+  title: "Shipping Policy",
   description:
     "Dispatch times, delivery estimates, shipping charges, and what happens if a parcel is damaged or lost.",
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,6 +12,7 @@ interface SearchBarProps {
   initialQuery?: string;
   placeholder?: string;
   autoFocus?: boolean;
+  variant?: "default" | "header";
 }
 
 const DEBOUNCE_MS = 220;
@@ -22,6 +23,7 @@ export default function SearchBar({
   initialQuery = "",
   placeholder = "Search products, brands, categories...",
   autoFocus = false,
+  variant = "default",
 }: SearchBarProps) {
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<IProduct[]>([]);
@@ -32,13 +34,16 @@ export default function SearchBar({
   const router = useRouter();
   const wrapperRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const suggestionsId = useId();
 
   // Debounced fetch of suggestions as the user types.
   useEffect(() => {
     const q = query.trim();
     if (q.length < MIN_CHARS) {
+      abortRef.current?.abort();
       setResults([]);
       setLoading(false);
+      setActiveIndex(-1);
       return;
     }
 
@@ -52,7 +57,10 @@ export default function SearchBar({
         `/api/products?search=${encodeURIComponent(q)}&limit=${MAX_SUGGESTIONS}`,
         { signal: controller.signal }
       )
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) throw new Error("Search request failed");
+          return res.json();
+        })
         .then((data) => {
           setResults(data.data || []);
           setActiveIndex(-1);
@@ -60,11 +68,17 @@ export default function SearchBar({
         .catch((err) => {
           if (err?.name !== "AbortError") setResults([]);
         })
-        .finally(() => setLoading(false));
+        .finally(() => {
+          if (abortRef.current === controller) setLoading(false);
+        });
     }, DEBOUNCE_MS);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+    };
   }, [query]);
+
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   // Close on outside click.
   useEffect(() => {
@@ -79,7 +93,7 @@ export default function SearchBar({
     const trimmed = q.trim();
     if (!trimmed) return;
     setOpen(false);
-    router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+    router.push(`/products?search=${encodeURIComponent(trimmed)}`);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -109,7 +123,10 @@ export default function SearchBar({
   const showDropdown = open && query.trim().length >= MIN_CHARS;
 
   return (
-    <div className={styles.wrapper} ref={wrapperRef}>
+    <div
+      className={`${styles.wrapper} ${variant === "header" ? styles.headerVariant : ""}`}
+      ref={wrapperRef}
+    >
       <form
         className={styles.form}
         onSubmit={handleSubmit}
@@ -141,15 +158,20 @@ export default function SearchBar({
           aria-label="Search"
           aria-expanded={showDropdown}
           role="combobox"
-          aria-controls="search-suggestions"
+          aria-controls={suggestionsId}
+          aria-autocomplete="list"
         />
-        <button className={styles.submitBtn} type="submit">
-          Search
+        <button className={styles.submitBtn} type="submit" aria-label="Submit search">
+          <svg className={styles.submitIcon} width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+            <path d="m16.25 16.25 4.25 4.25" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          <span className={styles.submitLabel}>Search</span>
         </button>
       </form>
 
       {showDropdown && (
-        <div className={styles.dropdown} id="search-suggestions" role="listbox">
+        <div className={styles.dropdown} id={suggestionsId} role="listbox">
           {loading && results.length === 0 ? (
             <div className={styles.dropdownStatus}>Searching…</div>
           ) : results.length === 0 ? (
