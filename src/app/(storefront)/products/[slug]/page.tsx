@@ -4,7 +4,6 @@ import React, { useEffect, useRef, useState, use } from "react";
 import Link from "next/link";
 import ProductGallery from "@/components/storefront/ProductGallery";
 import ProductCard from "@/components/storefront/ProductCard";
-import Badge from "@/components/ui/Badge";
 import LoadingState from "@/components/ui/LoadingState";
 import { useCartStore } from "@/store/cartStore";
 import { useToast } from "@/components/ui/Toast";
@@ -88,14 +87,11 @@ export default function ProductDetailPage({ params }: PageProps) {
         <div className={styles.notFound}>
           <h1 className={styles.notFoundTitle}>Product not found</h1>
           <p className={styles.notFoundText}>
-            The product you are looking for may have been retired or renamed.
+            This product may have been removed or renamed.
           </p>
           <div className={styles.notFoundActions}>
             <Link href="/products" className={styles.notFoundBtn}>
-              ← Browse all products
-            </Link>
-            <Link href="/search" className={styles.notFoundSecondaryBtn}>
-              Search catalog
+              View products
             </Link>
           </div>
         </div>
@@ -173,21 +169,25 @@ export default function ProductDetailPage({ params }: PageProps) {
           {/* Right Column: Sticky Purchase Details */}
           <div className={styles.purchaseCol}>
             <div className={styles.purchaseInner}>
+              {/* Identity */}
               {product.brand && (
                 <span className={styles.brand}>{product.brand}</span>
               )}
 
               <h1 className={styles.title}>{product.name}</h1>
 
-              {/* Signal Rail */}
               {signalRail && (
                 <div className={styles.signalRail}>
                   <span>{signalRail}</span>
                 </div>
               )}
 
-              {/* Pricing & Stock Card */}
-              <div className={styles.priceCard}>
+              {product.shortDescription && (
+                <p className={styles.shortDesc}>{product.shortDescription}</p>
+              )}
+
+              {/* Price and availability */}
+              <div className={styles.priceBlock}>
                 <div className={styles.priceRow}>
                   <span className={styles.price}>{formatPrice(product.price)}</span>
                   {isOnSale && product.comparePrice && (
@@ -200,31 +200,18 @@ export default function ProductDetailPage({ params }: PageProps) {
                   )}
                 </div>
 
-                <div className={styles.stockRow}>
-                  {isOutOfStock ? (
-                    <Badge variant="error">Out of Stock</Badge>
-                  ) : (
-                    <Badge variant="success">In Stock</Badge>
-                  )}
-                  {isLowStock && (
-                    <span className={styles.lowStock}>
-                      Only {product.stock} items remaining
-                    </span>
-                  )}
-                  {isOnSale && product.comparePrice && (
-                    <span className={styles.savingsText}>
-                      Save {formatPrice(product.comparePrice - product.price)}
-                    </span>
-                  )}
-                </div>
+                {isOutOfStock ? (
+                  <span className={`${styles.stockLine} ${styles.stockOut}`}>Out of stock</span>
+                ) : isLowStock ? (
+                  <span className={`${styles.stockLine} ${styles.stockLow}`}>
+                    Only {product.stock} left
+                  </span>
+                ) : (
+                  <span className={`${styles.stockLine} ${styles.stockIn}`}>In stock</span>
+                )}
               </div>
 
-              {/* Short Description */}
-              {product.shortDescription && (
-                <p className={styles.shortDesc}>{product.shortDescription}</p>
-              )}
-
-              {/* Quantity & Add to Cart Controls */}
+              {/* Purchase action */}
               <div className={styles.actionSection}>
                 <div className={styles.quantityControls}>
                   <label htmlFor="product-qty" className="sr-only">
@@ -281,7 +268,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                     <circle cx="18.5" cy="18.5" r="2.5" />
                   </svg>
                   <div>
-                    <span className={styles.assuranceTitle}>Express Delivery</span>
+                    <span className={styles.assuranceTitle}>Express delivery</span>
                     <span className={styles.assuranceSub}>Dispatched within 24–48 hours</span>
                   </div>
                 </div>
@@ -291,8 +278,8 @@ export default function ProductDetailPage({ params }: PageProps) {
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
                   <div>
-                    <span className={styles.assuranceTitle}>Manufacturer Warranty</span>
-                    <span className={styles.assuranceSub}>100% genuine guaranteed product</span>
+                    <span className={styles.assuranceTitle}>Manufacturer warranty</span>
+                    <span className={styles.assuranceSub}>Genuine product</span>
                   </div>
                 </div>
 
@@ -302,8 +289,8 @@ export default function ProductDetailPage({ params }: PageProps) {
                     <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
                   </svg>
                   <div>
-                    <span className={styles.assuranceTitle}>Hassle-free Returns</span>
-                    <span className={styles.assuranceSub}>Eligible for return per store policy</span>
+                    <span className={styles.assuranceTitle}>Returns</span>
+                    <span className={styles.assuranceSub}>Per store policy</span>
                   </div>
                 </div>
               </div>
@@ -316,7 +303,7 @@ export default function ProductDetailPage({ params }: PageProps) {
           <div className={styles.detailsGrid}>
             {/* Overview */}
             <div className={styles.overviewCol}>
-              <h2 className={styles.sectionHeading}>Product Overview</h2>
+              <h2 className={styles.sectionHeading}>Overview</h2>
               <div className={styles.descriptionText}>
                 <p>{product.description}</p>
               </div>
@@ -335,7 +322,7 @@ export default function ProductDetailPage({ params }: PageProps) {
             {/* Specifications */}
             {specEntries.length > 0 && (
               <div className={styles.specsCol}>
-                <h2 className={styles.sectionHeading}>Technical Specifications</h2>
+                <h2 className={styles.sectionHeading}>Specifications</h2>
                 <div className={styles.specsTable} id="product-specification-list">
                   {visibleSpecEntries.map(([key, val]) => (
                     <div key={key} className={styles.specRow}>
@@ -379,11 +366,11 @@ export default function ProductDetailPage({ params }: PageProps) {
           <section className={styles.relatedSection} aria-labelledby="related-heading">
             <div className={styles.relatedHeader}>
               <h2 id="related-heading" className={styles.sectionHeading}>
-                Related Products
+                Related products
               </h2>
               {category && (
                 <Link href={`/products?category=${category.slug}`} className={styles.relatedLink}>
-                  View all in {category.name} →
+                  View all in {category.name}
                 </Link>
               )}
             </div>

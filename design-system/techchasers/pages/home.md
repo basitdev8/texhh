@@ -8,16 +8,17 @@ Orient a new visitor, expose the major shopping paths, and move them into a cata
 
 ## Structure
 
-1. Global header.
-2. One campaign hero: short product-specific headline, one sentence, `Shop products`, `Build a PC`, and one real featured product image.
-3. Category row using real categories and imagery.
-4. `Popular right now` product rail using the standard Product Card.
-5. PC Builder module: the parts journey, compatibility promise, current component count, and `Start a build`.
-6. Confidence strip: delivery, secure payment, support, and returns using live settings where available.
-7. Recently added or recommended rail.
-8. Compact footer.
+The homepage is four primary moments, in this order, plus one slim reassurance line. Nothing else belongs on it.
 
-Desktop hero uses a centered campaign hierarchy above one large product-led image on a `--color-bg-soft` stage with a maximum height near 720px. This translates the supplied `hero.md` composition without copying its demo dependencies or decoration. Mobile keeps text before the image; both primary actions remain above the fold on a 667px-tall viewport.
+1. Global header.
+2. **Featured product hero.** One product, one concise title, one short supporting line, the price when available, and no more than two actions (`Shop`, `View products`). The product image is the dominant element and sits in the wider grid track. No eyebrow, no specification rail, no separate `View featured product` bubble, no explanatory paragraph.
+3. **Visual category row.** A small number (max six) of image-led destinations with compact labels and product counts. No descriptive category cards.
+4. **One curated product collection** (`Popular right now`) using the standard Product Card in `discoveryOnly` mode. One collection only — the second `Recently Added` rail is removed and must not return.
+5. **PC Builder campaign.** One visual banner: one headline, one short sentence, one `Start a build` action. No instructional cards, no component-slot metadata paragraph.
+6. **Reassurance strip.** Shipping, payment, and warranty as one slim line above the footer. Never three paragraph cards.
+7. Compact footer.
+
+The hero is a two-column stage on a `--color-bg-soft` surface: copy in a 5/12 track, product media in a 7/12 track, sized to its content with no dead zone. Below 900px it stacks copy then image. Long catalog names use the controlled long-title treatment (reduced size, clamped to three lines) so the hero never becomes a text wall.
 
 ## Keep from the current page
 
@@ -30,17 +31,21 @@ Desktop hero uses a centered campaign hierarchy above one large product-led imag
 - “atelier,” “edit,” “pieces,” and “objects” language with retail language.
 - Three-line serif/italic hero, grain overlay, marquee, numbered ornaments, staggered cards, and manifesto copy.
 - Large editorial dead zones and the oversized narrative footer.
+- Uppercase section eyebrows (`BROWSE CATALOG`, `TOP PICKS`, `LATEST ADDITIONS`, `INTERACTIVE PC CONFIGURATOR`).
+- The three PC-builder instruction cards and the three reassurance cards.
+- The duplicate `Recently Added` product rail.
 
 ## States
 
-- No featured product: category-first hero with `Shop products`; no placeholder orb or internal seeding message.
+- No featured product: the hero falls back to a short brand line with `Shop` and `Start a build`; no placeholder orb, no internal seeding message.
 - No categories: omit the row and preserve section rhythm.
-- No recommendations: show recently added products; if none exist, omit the rail.
+- No curated selection: the collection falls back to featured, then recently added products in the data layer; if none exist, omit the section. Do not add a second rail to fill the space.
 - Data error: render the stable shell and a compact retry notice for the failed module.
 
 ## Acceptance
 
 - Exactly one H1 and one dominant primary action in the hero.
-- At least one real category and one real product are reachable without scrolling on desktop.
-- Product cards use the Signal Rail where specs exist.
+- Each viewport has one obvious dominant idea; no section reads like a paragraph-heavy explainer.
+- The hero product image is visually dominant over its headline.
+- Homepage product cards contain no stock messaging, no add-to-cart control, and no Signal Rail.
 - No text is baked into product images and no CTA depends on hover.

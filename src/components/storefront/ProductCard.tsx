@@ -29,7 +29,8 @@ export default function ProductCard({ product, discoveryOnly = false }: ProductC
     : 0;
   const isOutOfStock = product.stock <= 0;
   const isLowStock = product.stock > 0 && product.stock <= 5;
-  const signalRail = getProductSignalRail(product.specifications);
+  // The spec rail competes with product recognition on discovery rails.
+  const signalRail = discoveryOnly ? null : getProductSignalRail(product.specifications);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();

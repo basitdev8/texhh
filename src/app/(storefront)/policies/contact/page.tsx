@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function ContactPage() {
   return (
-    <PolicyLayout eyebrow="Studio / Contact" title="Contact us" updated="23 August 2026">
+    <PolicyLayout title="Contact us" updated="23 August 2026">
       <p>
         Questions about an order, a return, or a product are all welcome. Quote your order
         number (it looks like <strong>TH-XXXXX-XXXX</strong>) and we can answer faster.

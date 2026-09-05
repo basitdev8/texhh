@@ -315,7 +315,7 @@ export default function CheckoutPage() {
         {/* Step Indicator Header */}
         <header className={styles.header}>
           <h1 className={styles.title}>Checkout</h1>
-          <nav className={styles.stepper} aria-label="Checkout Progress">
+          <nav className={styles.stepper} aria-label="Checkout progress">
             <button
               type="button"
               className={`${styles.stepBtn} ${currentStep === 1 ? styles.stepBtnActive : currentStep > 1 ? styles.stepBtnDone : ""}`}
@@ -359,12 +359,12 @@ export default function CheckoutPage() {
 
         {blockers.length > 0 && (
           <div className={styles.noticeWrap}>
-            <StatusNotice variant="error" title="Cart conflicts detected">
+            <StatusNotice variant="error" title="Cart needs attention">
               {blockers.map((b) => (
                 <div key={`${b.product}-${b.kind}`}>{b.message}</div>
               ))}
               <Link href="/cart" className={styles.cartLink}>
-                Return to cart to resolve →
+                Return to cart
               </Link>
             </StatusNotice>
           </div>
@@ -378,13 +378,13 @@ export default function CheckoutPage() {
             {currentStep === 1 && (
               <section className={styles.stepSection} aria-labelledby="step-1-title">
                 <h2 id="step-1-title" className={styles.stepTitle}>
-                  1. Delivery Information
+                  Delivery
                 </h2>
 
                 <div className={styles.formGrid}>
                   <div className={`${styles.field} ${styles.fullWidth}`}>
                     <label htmlFor="input-fullName" className={styles.label}>
-                      Full Name *
+                      Full name *
                     </label>
                     <input
                       id="input-fullName"
@@ -392,7 +392,7 @@ export default function CheckoutPage() {
                       value={shipping.fullName}
                       onChange={handleChange}
                       className={`${styles.input} ${errors.fullName ? styles.inputError : ""}`}
-                      placeholder="Receiver's full name"
+                      placeholder="Full name"
                       required
                     />
                     {errors.fullName && (
@@ -402,7 +402,7 @@ export default function CheckoutPage() {
 
                   <div className={`${styles.field} ${styles.fullWidth}`}>
                     <label htmlFor="input-street" className={styles.label}>
-                      Street Address &amp; Flat / House No. *
+                      Street address *
                     </label>
                     <input
                       id="input-street"
@@ -410,7 +410,7 @@ export default function CheckoutPage() {
                       value={shipping.street}
                       onChange={handleChange}
                       className={`${styles.input} ${errors.street ? styles.inputError : ""}`}
-                      placeholder="Street name, building, apartment"
+                      placeholder="Street, building, apartment"
                       required
                     />
                     {errors.street && (
@@ -446,7 +446,7 @@ export default function CheckoutPage() {
                       value={shipping.state}
                       onChange={handleChange}
                       className={`${styles.input} ${errors.state ? styles.inputError : ""}`}
-                      placeholder="State / Province"
+                      placeholder="State"
                       required
                     />
                     {errors.state && (
@@ -456,7 +456,7 @@ export default function CheckoutPage() {
 
                   <div className={styles.field}>
                     <label htmlFor="input-zipCode" className={styles.label}>
-                      Postal Code / PIN *
+                      PIN code *
                     </label>
                     <input
                       id="input-zipCode"
@@ -474,7 +474,7 @@ export default function CheckoutPage() {
 
                   <div className={styles.field}>
                     <label htmlFor="input-phone" className={styles.label}>
-                      Mobile Number *
+                      Mobile number *
                     </label>
                     <input
                       id="input-phone"
@@ -501,7 +501,7 @@ export default function CheckoutPage() {
                     }}
                     id="checkout-step-1-next"
                   >
-                    Continue to Payment →
+                    Continue to payment
                   </button>
                 </div>
               </section>
@@ -511,7 +511,7 @@ export default function CheckoutPage() {
             {currentStep === 2 && (
               <section className={styles.stepSection} aria-labelledby="step-2-title">
                 <h2 id="step-2-title" className={styles.stepTitle}>
-                  2. Select Payment Method
+                  Payment
                 </h2>
 
                 <div className={styles.paymentOptions}>
@@ -527,9 +527,9 @@ export default function CheckoutPage() {
                       onChange={(e) => setPaymentMethod(e.target.value)}
                     />
                     <div className={styles.optionContent}>
-                      <span className={styles.optionTitle}>Online Payment (Razorpay)</span>
+                      <span className={styles.optionTitle}>Online payment</span>
                       <span className={styles.optionDesc}>
-                        Cards, UPI, Netbanking, and Wallets. Verified 256-bit encrypted transaction.
+                        Cards, UPI, netbanking, and wallets via Razorpay.
                       </span>
                     </div>
                   </label>
@@ -548,11 +548,11 @@ export default function CheckoutPage() {
                         onChange={(e) => setPaymentMethod(e.target.value)}
                       />
                       <div className={styles.optionContent}>
-                        <span className={styles.optionTitle}>Cash on Delivery (COD)</span>
+                        <span className={styles.optionTitle}>Cash on delivery</span>
                         <span className={styles.optionDesc}>
                           {total > settings.codMaxOrderAmount
-                            ? `Unavailable for orders over ${formatPrice(settings.codMaxOrderAmount)}. Please choose Online Payment.`
-                            : `Pay in cash when order is delivered. Available up to ${formatPrice(settings.codMaxOrderAmount)}.`}
+                            ? `Unavailable over ${formatPrice(settings.codMaxOrderAmount)}. Choose online payment.`
+                            : `Pay on delivery, up to ${formatPrice(settings.codMaxOrderAmount)}.`}
                         </span>
                       </div>
                     </label>
@@ -571,9 +571,9 @@ export default function CheckoutPage() {
                         onChange={(e) => setPaymentMethod(e.target.value)}
                       />
                       <div className={styles.optionContent}>
-                        <span className={styles.optionTitle}>Direct Bank Transfer (NEFT/IMPS)</span>
+                        <span className={styles.optionTitle}>Bank transfer</span>
                         <span className={styles.optionDesc}>
-                          Order will be processed once wire transfer is verified. Bank details will be shown on confirmation.
+                          Bank details are shown on confirmation. Processed once the transfer clears.
                         </span>
                       </div>
                     </label>
@@ -582,12 +582,12 @@ export default function CheckoutPage() {
 
                 <div className={styles.notesWrap}>
                   <label htmlFor="input-notes" className={styles.label}>
-                    Delivery Instructions / Notes (Optional)
+                    Delivery notes (optional)
                   </label>
                   <textarea
                     id="input-notes"
                     className={styles.textarea}
-                    placeholder="Specific delivery time or landmark instructions..."
+                    placeholder="Landmark or preferred delivery time"
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={3}
@@ -600,7 +600,7 @@ export default function CheckoutPage() {
                     className={styles.prevStepBtn}
                     onClick={() => setCurrentStep(1)}
                   >
-                    ← Back to Delivery
+                    Back
                   </button>
                   <button
                     type="button"
@@ -608,7 +608,7 @@ export default function CheckoutPage() {
                     onClick={() => setCurrentStep(3)}
                     id="checkout-step-2-next"
                   >
-                    Review Order →
+                    Review order
                   </button>
                 </div>
               </section>
@@ -618,14 +618,14 @@ export default function CheckoutPage() {
             {currentStep === 3 && (
               <section className={styles.stepSection} aria-labelledby="step-3-title">
                 <h2 id="step-3-title" className={styles.stepTitle}>
-                  3. Review &amp; Place Order
+                  Review
                 </h2>
 
                 <div className={styles.reviewBlocks}>
                   {/* Delivery summary block */}
                   <div className={styles.reviewBlock}>
                     <div className={styles.reviewBlockHeader}>
-                      <h3 className={styles.reviewBlockTitle}>Shipping Address</h3>
+                      <h3 className={styles.reviewBlockTitle}>Delivery</h3>
                       <button
                         type="button"
                         className={styles.editStepBtn}
@@ -646,7 +646,7 @@ export default function CheckoutPage() {
                   {/* Payment summary block */}
                   <div className={styles.reviewBlock}>
                     <div className={styles.reviewBlockHeader}>
-                      <h3 className={styles.reviewBlockTitle}>Payment Method</h3>
+                      <h3 className={styles.reviewBlockTitle}>Payment</h3>
                       <button
                         type="button"
                         className={styles.editStepBtn}
@@ -656,9 +656,9 @@ export default function CheckoutPage() {
                       </button>
                     </div>
                     <p className={styles.reviewPaymentText}>
-                      {paymentMethod === "razorpay" && "Online Payment via Razorpay (UPI, Card, Netbanking)"}
-                      {paymentMethod === "cash_on_delivery" && "Cash on Delivery (COD)"}
-                      {paymentMethod === "bank_transfer" && "Direct Bank Transfer (NEFT / IMPS)"}
+                      {paymentMethod === "razorpay" && "Online payment via Razorpay"}
+                      {paymentMethod === "cash_on_delivery" && "Cash on delivery"}
+                      {paymentMethod === "bank_transfer" && "Bank transfer"}
                     </p>
                   </div>
                 </div>
@@ -669,7 +669,7 @@ export default function CheckoutPage() {
                     className={styles.prevStepBtn}
                     onClick={() => setCurrentStep(2)}
                   >
-                    ← Back to Payment
+                    Back
                   </button>
                   <button
                     type="button"
@@ -683,7 +683,7 @@ export default function CheckoutPage() {
                       ? "Processing…"
                       : paymentMethod === "razorpay"
                       ? `Pay ${formatPrice(total)}`
-                      : `Place Order · ${formatPrice(total)}`}
+                      : `Place order · ${formatPrice(total)}`}
                   </button>
                 </div>
               </section>
@@ -694,7 +694,7 @@ export default function CheckoutPage() {
           <aside className={styles.summaryCol} aria-label="Order summary breakdown">
             <div className={styles.summaryCard}>
               <div className={styles.summaryHead}>
-                <h2 className={styles.summaryHeading}>Order Summary</h2>
+                <h2 className={styles.summaryHeading}>Order summary</h2>
                 <button
                   type="button"
                   className={styles.summaryToggle}
@@ -760,7 +760,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className={`${styles.breakdownRow} ${styles.totalBreakdownRow}`}>
-                  <span>Total Amount</span>
+                  <span>Total</span>
                   <span className={styles.totalNum}>{formatPrice(total)}</span>
                 </div>
               </div>
@@ -771,13 +771,13 @@ export default function CheckoutPage() {
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
-                  <span>Encrypted 256-bit payment transaction</span>
+                  <span>Secure payment</span>
                 </div>
                 <div className={styles.assuranceLine}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
-                  <span>Official manufacturer warranty coverage</span>
+                  <span>Manufacturer warranty</span>
                 </div>
               </div>
               </div>

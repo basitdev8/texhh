@@ -10,7 +10,6 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <PolicyLayout
-      eyebrow="Studio / Terms"
       title="Terms of service"
       updated="23 August 2026"
     >

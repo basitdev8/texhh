@@ -166,11 +166,7 @@ export default function AccountPage() {
         {/* Account Header */}
         <header className={styles.header}>
           <div className={styles.headerMain}>
-            <span className={styles.eyebrow}>Account Overview</span>
             <h1 className={styles.title}>Hello, {firstName}</h1>
-            <p className={styles.subtitle}>
-              Manage your orders, saved addresses, and profile details.
-            </p>
           </div>
 
           <div className={styles.headerMeta}>
@@ -180,12 +176,12 @@ export default function AccountPage() {
             </div>
             {profile?.createdAt && (
               <div className={styles.metaField}>
-                <span className={styles.metaKey}>Member Since</span>
+                <span className={styles.metaKey}>Member since</span>
                 <span className={styles.metaVal}>{formatDate(profile.createdAt)}</span>
               </div>
             )}
             <button type="button" onClick={handleLogout} className={styles.signOutBtn}>
-              Sign Out
+              Sign out
             </button>
           </div>
         </header>
@@ -195,7 +191,7 @@ export default function AccountPage() {
           <div className={styles.statsGrid}>
             <div className={styles.statCard}>
               <span className={styles.statNumber}>{orderTotal}</span>
-              <span className={styles.statLabel}>Total Orders</span>
+              <span className={styles.statLabel}>Orders</span>
             </div>
             <div className={styles.statCard}>
               <span className={styles.statNumber}>{formatPrice(stats.spend)}</span>

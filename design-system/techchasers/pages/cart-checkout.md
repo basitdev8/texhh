@@ -6,13 +6,16 @@ Applies to `/cart`, `/checkout`, Cart Item, checkout fields, payment choices, an
 
 Preserve confidence from cart review through successful order creation. The business rules already in the app—server cart validation, stock changes, authentication, Razorpay, cash on delivery, and bank transfer—remain authoritative.
 
+Reduce instructional prose and repeated boxed summaries. Compact labels, clear totals, one dominant next action, and progressive disclosure for secondary order information. Copy is sentence case: `Cart`, `Order summary`, `Checkout`, `Total`, `Shipping`, `GST (n%)`, `Secure checkout`.
+
 ## Cart
 
-- H1 and item count.
+- H1 (`Cart`) and item count.
+- The free-shipping line is text only and appears only while the customer does not yet qualify. No progress bar.
 - Desktop: item list plus sticky Order Summary; mobile: list then summary with a sticky `Checkout` bar after content.
 - Each line includes image, product/component label, name, quantity, current price, stock warning, remove action, and line total.
 - Server validation changes appear above the affected lines and inside them. `Review changes` is not enough: state the old/new price or stock limit.
-- Empty cart: product-focused message, `Browse products`, and `Build a PC`.
+- Empty cart: one short message, `View products`, and `Build a PC`. No marketing sentence.
 
 ## Checkout flow
 
@@ -22,7 +25,9 @@ Adopt the useful structure from `references/checkout.md`, adapted to current pay
 2. Payment: Razorpay, cash on delivery when eligible, or bank transfer; never collect raw card fields.
 3. Review: address, payment choice, notes, item list, and final total before placing the order.
 
-Use a semantic stepper with text labels. Completed steps are editable. Validation is step-local, and the first invalid field receives focus.
+Use a semantic stepper with text labels. Step headings are the step name only (`Delivery`, `Payment`, `Review`) — the stepper already numbers them. Completed steps are editable. Validation is step-local, and the first invalid field receives focus.
+
+Review blocks and the order summary use a hairline border on the page background, not a tinted panel.
 
 Desktop uses a 2/3 form and 1/3 sticky summary. Mobile shows a compact expandable summary near the top and a safe-area-aware bottom action with the current total.
 

@@ -108,6 +108,11 @@ export default function SearchBar({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Escape always dismisses the surface, including the no-result state.
+    if (e.key === "Escape") {
+      setOpen(false);
+      return;
+    }
     if (!open || results.length === 0) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -115,8 +120,6 @@ export default function SearchBar({
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setActiveIndex((i) => (i <= 0 ? results.length - 1 : i - 1));
-    } else if (e.key === "Escape") {
-      setOpen(false);
     }
   };
 
@@ -211,7 +214,7 @@ export default function SearchBar({
                 className={styles.seeAll}
                 onClick={() => goToSearch(query)}
               >
-                See all results for “{query.trim()}” →
+                See all results for “{query.trim()}”
               </button>
             </>
           )}

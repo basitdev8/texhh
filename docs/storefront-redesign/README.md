@@ -2,6 +2,8 @@
 
 Use this documentation when implementing or reviewing any TechChasers storefront or admin UI.
 
+For the active storefront simplification pass inspired by Apple, Samsung, and Tesla, execute [`CLEAN-STOREFRONT-IMPLEMENTATION-PROMPT.md`](./CLEAN-STOREFRONT-IMPLEMENTATION-PROMPT.md). It is the implementation brief and overrides older density, typography, hero, and header guidance where explicitly stated.
+
 ## Read in this order
 
 1. [`CURRENT-CONTEXT.md`](../../CURRENT-CONTEXT.md) when resuming work, for current implementation state, verification evidence, and known gaps.

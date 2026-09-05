@@ -10,7 +10,6 @@ export const metadata: Metadata = {
 export default function ShippingPolicyPage() {
   return (
     <PolicyLayout
-      eyebrow="Studio / Shipping"
       title="Shipping policy"
       updated="23 August 2026"
     >

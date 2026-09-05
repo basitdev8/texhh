@@ -26,7 +26,6 @@ export default function CartPage() {
   const freeShippingThreshold = settings.freeShippingThreshold || 5000;
   const isFreeShipping = subtotal >= freeShippingThreshold;
   const amountNeededForFreeShipping = Math.max(0, freeShippingThreshold - subtotal);
-  const freeShippingProgress = Math.min(100, (subtotal / freeShippingThreshold) * 100);
 
   if (items.length === 0) {
     return (
@@ -40,13 +39,10 @@ export default function CartPage() {
                 <path d="M16 10a4 4 0 0 1-8 0" />
               </svg>
             </div>
-            <h1 className={styles.emptyTitle}>Your cart is currently empty</h1>
-            <p className={styles.emptySubtitle}>
-              Explore our range of precision electronics, smartphones, and custom PC components.
-            </p>
+            <h1 className={styles.emptyTitle}>Your cart is empty</h1>
             <div className={styles.emptyActions}>
               <Link href="/products" className={styles.primaryActionBtn}>
-                Browse Products
+                View products
               </Link>
               <Link href="/pc-builder" className={styles.secondaryActionBtn}>
                 Build a PC
@@ -62,7 +58,7 @@ export default function CartPage() {
     <div className={styles.page}>
       <div className="container">
         <header className={styles.header}>
-          <h1 className={styles.title}>Shopping Cart</h1>
+          <h1 className={styles.title}>Cart</h1>
           <span className={styles.itemCountBadge}>
             {itemCount} {itemCount === 1 ? "item" : "items"}
           </span>
@@ -73,7 +69,7 @@ export default function CartPage() {
           <div className={styles.noticeWrap}>
             <StatusNotice
               variant="error"
-              title="Items requiring attention before checkout"
+              title="Resolve these items to continue"
             >
               <ul className={styles.noticeList}>
                 {blockers.map((b) => (
@@ -84,7 +80,7 @@ export default function CartPage() {
                       className={styles.noticeBtn}
                       onClick={() => removeItem(b.product)}
                     >
-                      Remove item
+                      Remove
                     </button>
                   </li>
                 ))}
@@ -95,7 +91,7 @@ export default function CartPage() {
 
         {changes.length > 0 && (
           <div className={styles.noticeWrap}>
-            <StatusNotice variant="info" title="Catalog price updates applied">
+            <StatusNotice variant="info" title="Prices updated">
               <ul className={styles.noticeList}>
                 {changes.map((c) => (
                   <li key={`${c.product}-${c.kind}`}>
@@ -120,7 +116,7 @@ export default function CartPage() {
 
             <div className={styles.cartFooterActions}>
               <Link href="/products" className={styles.continueLink}>
-                ← Continue Shopping
+                Continue shopping
               </Link>
             </div>
           </div>
@@ -128,22 +124,15 @@ export default function CartPage() {
           {/* Right: Order Summary */}
           <aside className={styles.summarySection} aria-label="Order summary">
             <div className={styles.summaryCard}>
-              <h2 className={styles.summaryTitle}>Order Summary</h2>
+              <h2 className={styles.summaryTitle}>Order summary</h2>
 
-              {/* Free Shipping Progress Indicator */}
-              <div className={styles.shippingIndicator}>
-                <div className={styles.shippingBarBg}>
-                  <div
-                    className={styles.shippingBarFill}
-                    style={{ width: `${freeShippingProgress}%` }}
-                  />
+              {!isFreeShipping && (
+                <div className={styles.shippingIndicator}>
+                  <p className={styles.shippingText}>
+                    Add {formatPrice(amountNeededForFreeShipping)} for free shipping
+                  </p>
                 </div>
-                <p className={styles.shippingText}>
-                  {isFreeShipping
-                    ? "✓ You qualify for free express delivery"
-                    : `Add ${formatPrice(amountNeededForFreeShipping)} more to qualify for free shipping`}
-                </p>
-              </div>
+              )}
 
               <div className={styles.summaryRows}>
                 <div className={styles.summaryRow}>
@@ -152,19 +141,19 @@ export default function CartPage() {
                 </div>
 
                 <div className={styles.summaryRow}>
-                  <span>Estimated Shipping</span>
+                  <span>Shipping</span>
                   <span className={styles.num}>
-                    {shipping === 0 ? "FREE" : formatPrice(shipping)}
+                    {shipping === 0 ? "Free" : formatPrice(shipping)}
                   </span>
                 </div>
 
                 <div className={styles.summaryRow}>
-                  <span>Estimated GST ({settings.gstRate}%)</span>
+                  <span>GST ({settings.gstRate}%)</span>
                   <span className={styles.num}>{formatPrice(tax)}</span>
                 </div>
 
                 <div className={`${styles.summaryRow} ${styles.summaryTotalRow}`}>
-                  <span>Order Total</span>
+                  <span>Total</span>
                   <span className={styles.totalNum}>{formatPrice(total)}</span>
                 </div>
               </div>
@@ -176,7 +165,7 @@ export default function CartPage() {
                   </button>
                 ) : (
                   <Link href="/checkout" className={styles.checkoutBtn} id="cart-proceed-checkout">
-                    Proceed to Checkout
+                    Checkout
                   </Link>
                 )}
               </div>
@@ -186,7 +175,7 @@ export default function CartPage() {
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                   <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
-                <span>Encrypted 256-bit secure checkout</span>
+                <span>Secure checkout</span>
               </div>
             </div>
           </aside>
@@ -198,7 +187,7 @@ export default function CartPage() {
       <div className={styles.mobileCheckoutBar} data-mobile-action-bar="compact">
         <div className={styles.mobileCheckoutInner}>
           <div className={styles.mobileTotal}>
-            <span className={styles.mobileTotalLabel}>Order total</span>
+            <span className={styles.mobileTotalLabel}>Total</span>
             <span className={styles.mobileTotalValue}>{formatPrice(total)}</span>
           </div>
           {blockers.length > 0 ? (

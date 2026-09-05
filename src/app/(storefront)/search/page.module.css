@@ -17,9 +17,8 @@
 }
 
 .title {
-  font-family: var(--font-heading);
-  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
-  font-weight: 700;
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  font-weight: 600;
   color: var(--color-ink);
   letter-spacing: -0.025em;
   line-height: 1.2;
@@ -59,9 +58,8 @@
 }
 
 .emptyTitle {
-  font-family: var(--font-heading);
   font-size: var(--text-xl);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-ink);
 }
 
@@ -107,7 +105,7 @@
 .searchTag {
   display: inline-flex;
   align-items: center;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 var(--space-4);
   background-color: var(--color-bg-soft);
   border: 1px solid var(--color-border-light);

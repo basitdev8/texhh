@@ -1,10 +1,9 @@
+/* Low-weight closing surface: compact type, two link groups, one legal row. */
 .footer {
-  background-color: var(--color-bg-soft);
   border-top: 1px solid var(--color-border-light);
   margin-top: var(--space-16);
-  padding: var(--space-12) 0 var(--space-8);
+  padding: var(--space-10) 0 var(--space-8);
   color: var(--color-text);
-  font-family: var(--font-body);
 }
 
 .inner {
@@ -15,61 +14,32 @@
 
 .grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: var(--space-8);
-  padding-bottom: var(--space-8);
-  border-bottom: 1px solid var(--color-border-light);
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: var(--space-8) var(--space-16);
+  align-items: start;
 }
 
-.column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.brandTitle {
-  font-family: var(--font-heading);
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-ink);
-  letter-spacing: -0.02em;
-}
-
-.brandText {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  line-height: 1.6;
-  max-width: 320px;
-}
-
-.assuranceList {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
-}
-
-.assuranceItem {
-  display: flex;
+.brand {
+  display: inline-flex;
   align-items: center;
+}
+
+.brandImage {
+  height: 22px;
+  width: auto;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
   gap: var(--space-2);
+  min-width: 0;
+}
+
+.groupTitle {
   font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-}
-
-.assuranceItem svg {
-  color: var(--color-accent);
-  flex-shrink: 0;
-}
-
-.colTitle {
-  font-family: var(--font-heading);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--color-text);
-  margin-bottom: var(--space-1);
+  font-weight: 500;
+  color: var(--color-text-muted);
 }
 
 .links {
@@ -92,9 +62,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: var(--space-6);
   flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: var(--space-2) var(--space-4);
+  margin-top: var(--space-10);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--color-border-light);
 }
 
 .copyright {
@@ -105,6 +77,7 @@
 .bottomLinks {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--space-4);
 }
 
@@ -120,14 +93,15 @@
 
 @media (max-width: 1024px) {
   .grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-6);
   }
-}
 
-@media (max-width: 1024px) {
-  /* Below the desktop breakpoint the footer is a touch surface, so its links
-     need real 44px targets instead of 22px text rows. */
+  .brand {
+    grid-column: 1 / -1;
+  }
+
+  /* Touch layouts need real targets instead of 20px text rows. */
   .links {
     gap: 0;
   }
@@ -139,28 +113,34 @@
     font-size: var(--text-base);
   }
 
-  .bottomLinks {
-    flex-wrap: wrap;
-    gap: var(--space-1) var(--space-4);
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
   }
 
   .bottomLink {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    min-width: 44px;
     min-height: 44px;
     font-size: var(--text-sm);
   }
 }
 
 @media (max-width: 640px) {
+  .footer {
+    margin-top: var(--space-12);
+    padding: var(--space-8) 0 var(--space-6);
+  }
+
   .grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
   }
 
   .bottom {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-2);
+    margin-top: var(--space-6);
   }
 }

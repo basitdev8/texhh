@@ -18,29 +18,12 @@
   max-width: 520px;
 }
 
-.eyebrow {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-accent);
-  display: block;
-  margin-bottom: 2px;
-}
-
 .title {
-  font-family: var(--font-heading);
-  font-size: clamp(1.75rem, 2.5vw, 2.25rem);
-  font-weight: 700;
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  font-weight: 600;
   color: var(--color-ink);
   letter-spacing: -0.025em;
   line-height: 1.2;
-}
-
-.subtitle {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  margin-top: var(--space-1);
 }
 
 .headerMeta {
@@ -108,7 +91,7 @@
 .statNumber {
   font-family: var(--font-body);
   font-size: 1.5rem;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--color-ink);
   font-variant-numeric: tabular-nums;
 }
@@ -134,9 +117,8 @@
 }
 
 .sectionTitle {
-  font-family: var(--font-heading);
   font-size: var(--text-xl);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-ink);
   margin: 0;
 }
@@ -229,7 +211,7 @@
 }
 
 .thumbInitial {
-  font-weight: 700;
+  font-weight: 600;
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
@@ -251,9 +233,8 @@
 }
 
 .orderNumber {
-  font-family: var(--font-heading);
   font-size: var(--text-sm);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-ink);
   letter-spacing: -0.01em;
 }
@@ -280,7 +261,7 @@
 .orderAmount {
   font-family: var(--font-body);
   font-size: var(--text-base);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-ink);
   font-variant-numeric: tabular-nums;
 }
@@ -339,9 +320,8 @@
 }
 
 .cardHeading {
-  font-family: var(--font-heading);
   font-size: var(--text-base);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-ink);
   margin: 0;
 }

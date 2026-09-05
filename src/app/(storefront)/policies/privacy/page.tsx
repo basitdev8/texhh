@@ -10,7 +10,6 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <PolicyLayout
-      eyebrow="Studio / Privacy"
       title="Privacy policy"
       updated="23 August 2026"
     >

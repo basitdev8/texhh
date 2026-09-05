@@ -261,18 +261,17 @@ export default function PCBuilderPage() {
         {/* Page Header */}
         <header className={styles.header}>
           <div className={styles.headerMain}>
-            <span className={styles.eyebrow}>PC Configurator</span>
-            <h1 className={styles.title}>Custom PC Builder</h1>
+            <h1 className={styles.title}>PC Builder</h1>
             <p className={styles.subtitle}>
-              Configure your ideal setup with real-time socket, form factor, and wattage validation.
+              Compatibility is checked as you pick each part.
             </p>
           </div>
 
           <div className={styles.progressCard}>
             <div className={styles.progressRow}>
-              <span className={styles.progressLabel}>Configuration Progress</span>
+              <span className={styles.progressLabel}>Progress</span>
               <span className={styles.progressVal}>
-                {filledCount} of {STEPS.length} Selected
+                {filledCount} of {STEPS.length} selected
               </span>
             </div>
             <div className={styles.progressBar}>
@@ -407,7 +406,7 @@ export default function PCBuilderPage() {
                 onClick={handlePrev}
                 disabled={stepIndex === 0}
               >
-                ← Previous Step
+                Previous
               </button>
               <button
                 type="button"
@@ -415,7 +414,7 @@ export default function PCBuilderPage() {
                 onClick={handleNext}
                 disabled={stepIndex >= STEPS.length - 1}
               >
-                Next Step →
+                Next
               </button>
             </div>
           </section>

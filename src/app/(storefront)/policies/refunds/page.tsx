@@ -10,7 +10,6 @@ export const metadata: Metadata = {
 export default function RefundPolicyPage() {
   return (
     <PolicyLayout
-      eyebrow="Studio / Refunds"
       title="Refund &amp; cancellation policy"
       updated="23 August 2026"
     >

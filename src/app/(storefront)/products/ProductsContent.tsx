@@ -155,14 +155,11 @@ export default function ProductsContent() {
                 ? `Results for “${searchParam}”`
                 : activeCategory
                   ? activeCategory.name
-                  : "All Products"}
+                  : "Products"}
             </h1>
-            <p className={styles.subtitle}>
-              {searchParam
-                ? "Search across phones, computers, components, and accessories."
-                : activeCategory?.description ||
-                  "Browse our curated catalog of flagship electronics, computer parts, and accessories."}
-            </p>
+            {!searchParam && activeCategory?.description && (
+              <p className={styles.subtitle}>{activeCategory.description}</p>
+            )}
           </div>
 
           <div className={styles.headerStats} aria-live="polite">
@@ -252,10 +249,10 @@ export default function ProductsContent() {
                 onChange={(e) => updateParams({ sort: e.target.value })}
                 aria-label="Sort products"
               >
-                <option value="-createdAt">Newest arrivals</option>
+                <option value="-createdAt">Newest</option>
                 <option value="createdAt">Oldest</option>
-                <option value="price">Price: Low to High</option>
-                <option value="-price">Price: High to Low</option>
+                <option value="price">Price: low to high</option>
+                <option value="-price">Price: high to low</option>
                 <option value="name">Name: A to Z</option>
               </select>
               <svg
@@ -281,7 +278,7 @@ export default function ProductsContent() {
         {/* Active Filter Chips */}
         {hasActiveFilters && (
           <div className={styles.activeChipsRow}>
-            <span className={styles.chipsLabel}>Active filters:</span>
+            <span className={styles.chipsLabel}>Filters</span>
             {searchParam && (
               <span className={styles.chip}>
                 Search: {searchParam}
@@ -342,17 +339,16 @@ export default function ProductsContent() {
               title="Products couldn’t be loaded"
               action={{ label: "Try again", onClick: fetchProducts }}
             >
-              An unexpected network error occurred while fetching products. Check your connection
-              and try again.
+              Check your connection and try again.
             </StatusNotice>
           </div>
         ) : products.length === 0 ? (
           <div className={styles.emptyState}>
-            <h2 className={styles.emptyTitle}>No matching products found</h2>
+            <h2 className={styles.emptyTitle}>No products found</h2>
             <p className={styles.emptyText}>
               {hasActiveFilters
-                ? "No items match your active filter criteria. Try expanding the price range or clearing filters."
-                : "No products are currently listed in this category."}
+                ? "Nothing matches the active filters. Try a wider price range or clear the filters."
+                : "No products are listed in this category yet."}
             </p>
             {hasActiveFilters ? (
               <button
@@ -400,7 +396,7 @@ export default function ProductsContent() {
             aria-label="Filters"
           >
             <div className={styles.drawerHead}>
-              <h3 className={styles.drawerTitle}>Filter Products</h3>
+              <h3 className={styles.drawerTitle}>Filters</h3>
               <button
                 type="button"
                 className={styles.drawerCloseBtn}
@@ -423,7 +419,7 @@ export default function ProductsContent() {
                       checked={!categoryParam}
                       onChange={() => updateParams({ category: null })}
                     />
-                    <span>All Categories</span>
+                    <span>All categories</span>
                   </label>
                   {categories.map((cat) => (
                     <label key={cat._id} className={styles.drawerRadio}>
@@ -441,7 +437,7 @@ export default function ProductsContent() {
 
               {/* Price */}
               <div className={styles.drawerSection}>
-                <span className={styles.drawerSectionTitle}>Price Range (₹)</span>
+                <span className={styles.drawerSectionTitle}>Price (₹)</span>
                 <div className={styles.drawerPriceInputs}>
                   <input
                     type="number"
@@ -477,7 +473,7 @@ export default function ProductsContent() {
                 className={styles.drawerApplyBtn}
                 onClick={applyPriceFilter}
               >
-                Apply Filters
+                Apply
               </button>
             </div>
           </div>

@@ -22,7 +22,7 @@ The primary customer is comparing expensive technical products on mobile or desk
 | --- | --- | --- |
 | Variance | 3/10 | Symmetric, grid-led layouts with one deliberate exception: the Signal Rail |
 | Motion | 3/10 | State feedback and short entrances only |
-| Density | 4/10 | Spacious marketing surfaces; efficient catalog, builder, checkout, and admin surfaces |
+| Density | 3/10 | One dominant idea per marketing viewport; efficient catalog, builder, checkout, and admin surfaces |
 
 ## Signature: the Signal Rail
 
@@ -33,6 +33,8 @@ The Signal Rail is a quiet row of two or three category-specific facts placed be
 - Keep one line on cards; allow two lines only on a product detail page.
 - Use tabular numerals and subtle separators. It is information, not a badge cloud.
 - Omit the rail when reliable specs are unavailable.
+
+The rail belongs on comparison surfaces. It is **not** rendered on homepage discovery cards, where it competes with product recognition; there the image, name, and price carry the card. The product detail page is its primary home.
 
 This is the single expressive system element. Everything around it remains quiet.
 
@@ -73,25 +75,25 @@ Rules:
 
 ### Typography
 
-Load fonts through `next/font` with separate raw face variables and semantic family tokens; never point a semantic font custom property back to itself.
+One family. Load Inter through `next/font` with a raw face variable and semantic family tokens; never point a semantic font custom property back to itself. `--font-heading` and `--font-display` remain as aliases of `--font-body` so existing rules keep working — do not repoint them at a second family.
 
-- Manrope, weights 600–800: logo, page titles, section titles, and compact promotional headlines.
-- Inter, weights 400–700: navigation, body, controls, prices, specs, tables, and metadata.
-- Do not use Outfit, Fraunces, or serif/italic display treatments in the redesigned UI.
+- Inter, weights 400–600: logo, headings, navigation, body, controls, prices, specs, tables, and metadata.
+- Weight `700` is reserved for a truly primary headline or price. Prefer `400`, `500`, and `600`.
+- Manrope is removed from the rendered UI. Do not reintroduce a display face, Outfit, Fraunces, or serif/italic display treatments.
 
 Type scale:
 
 | Token | Desktop | Mobile | Use |
 | --- | --- | --- | --- |
-| Display | `clamp(2.75rem, 5vw, 5.5rem)` | fluid | Homepage campaign only |
-| H1 | `clamp(2.25rem, 4vw, 4rem)` | fluid | One per page |
-| H2 | `clamp(1.75rem, 2.5vw, 2.75rem)` | fluid | Major sections |
-| H3 | `1.25rem–1.5rem` | same | Card/group titles |
-| Body | `1rem` | `1rem` | Default copy, 1.5–1.65 line height |
+| Hero | `clamp(2rem, 3.6vw, 3rem)` | `clamp(1.75rem, 7.4vw, 2.25rem)` | Homepage featured product only, and always subordinate to the product image |
+| H1 | `clamp(1.75rem, 2.6vw, 2.25rem)` | fluid | One per page |
+| H2 | `clamp(1.5rem, 2.2vw, 2rem)` | fluid | Major sections |
+| H3 | `1.125rem` | same | Card/group titles |
+| Body | `0.875rem–1rem` | same | Default copy, 1.45–1.6 line height |
 | Small | `0.875rem` | `0.875rem` | Metadata and helper text |
-| Micro | `0.75rem` | `0.75rem` | Labels only; never long copy |
+| Micro | `0.75rem` | `0.75rem` | Labels only; never long copy, never below 12px |
 
-Use sentence case. Reserve all caps for short brand or status labels. Do not add wide letter spacing to body, buttons, or navigation. Prices and comparison data use tabular numerals.
+Use sentence case everywhere. Do not use repeated uppercase eyebrow labels above section headings — they were removed from the homepage, catalog, account, PC Builder, and policy pages and must not return. Reserve all caps for a short brand or status label. Do not add wide letter spacing to body, buttons, or navigation. Prices and comparison data use tabular numerals.
 
 ### Spacing and layout
 
@@ -104,18 +106,22 @@ Use the existing 4px-based spacing tokens. Favor `8, 12, 16, 24, 32, 48, 64, 96`
 - Transactional section spacing: 32–48px desktop, 24–32px mobile.
 - Product grids: 4 columns large desktop, 3 at 1024–1279px, 2 at 640–1023px, 2 compact or 1 detailed below 640px depending on content.
 
-Whitespace groups related content. Do not use empty space to create drama around routine forms or catalog controls.
+Whitespace groups related content. Do not use empty space to create drama around routine forms or catalog controls, and do not leave dead zones inside a campaign stage — size the stage to its content.
+
+Marketing sections are serialized: one dominant idea per viewport, separated by 80–112px on desktop and 48–72px on mobile.
 
 ### Shape and elevation
 
 | Element | Radius |
 | --- | --- |
 | Buttons, inputs, chips | 8px |
-| Cards and grouped panels | 12px |
-| Hero/image stage | 16px |
-| Pills | 999px only for filters, statuses, and compact toggles |
+| Product media wells and grouped panels | 12px |
+| Campaign/image stage | 16px |
+| Pills | 999px only for statuses and compact toggles |
 
-Default cards have no shadow. Use a border or a subtle surface change. Shadows are reserved for floating navigation, menus, sticky purchase summaries, drawers, and modals. Hover must not change layout.
+One radius language. Product media may be rounded; ordinary sections must not all become rounded cards.
+
+Prefer whitespace and alignment over borders, nested cards, tinted panels, and shadows. Product and category cards carry **no** border, no card fill, and no shadow — the image well and the spacing define them. Reserve borders for genuine grouping (order summary, review blocks, spec rows) and shadows for genuinely floating UI: search suggestions, menus, drawers, modals, and sticky purchase bars. Hover must not change layout.
 
 ### Imagery
 
@@ -129,15 +135,21 @@ Default cards have no shadow. Use a border or a subtle surface change. Shadows a
 
 ### Header and navigation
 
-- 64–72px white header with a soft bottom divider; sticky after the first viewport.
-- Logo left. Primary categories center or immediately after the logo. Search, account, and cart right.
-- Search never navigates to a separate search page from the header. It opens an in-place catalogue command surface over the current route: focus the input, return debounced product results, keep loading/no-result/error states in the surface, and restore focus to the trigger on close. Mobile uses the same surface full-screen, not a tiny icon-only afterthought.
-- Category menu groups `Mobiles`, `Computers`, `PC Components`, `Accessories`, and `Build a PC`; labels come from real catalog taxonomy when available.
+One compact commerce row. There is no second navigation tier at any width.
+
+- 60–68px white header with a soft bottom divider; sticky from the first pixel.
+- One row: logo, persistent search, at most two inline destinations (`Products`, `Build a PC`), then account, cart, and `Menu`.
+- Search is a continuously visible field with the placeholder `Search for products`. Focus uses a quiet neutral border — never a blue rectangle or glow. Suggestions render in a compact anchored dropdown with loading, no-result, and error states, and submitting routes to `/products?search=…`. Do not reintroduce a search icon, modal, overlay, or full-screen mobile search surface.
+- Lower-priority category navigation lives in the `Menu` drawer, not in the bar. The drawer is a labelled dialog: it locks background scroll, moves focus to its close button, closes on Escape or backdrop click, and restores focus to the trigger.
+- Category labels come from real catalog taxonomy.
 - Cart count has an accessible label. Icon targets are at least 44×44px.
+- Below 480px the bar may add one full-width search row; the result must stay near 100px, well under the retired two-tier header.
 
 ### Buttons and links
 
-- Primary: dark ink fill with white text. Use for the page’s decisive action.
+Labels are direct: `Shop`, `Learn more`, `View products`, `Start a build`, `Add to cart`, `Checkout`. No ornamental `→`/`←` glyphs inside labels.
+
+- Primary: dark ink fill with white text. Use for the page’s decisive action — one per view.
 - Accent: blue fill with white text. Use for selected/transactional emphasis, not alongside another equally strong action.
 - Secondary: white/transparent with a 1px border.
 - Tertiary: text link with underline on hover/focus.
@@ -147,16 +159,21 @@ Default cards have no shadow. Use a border or a subtle surface change. Shadows a
 
 ### Product card
 
-Reading order: image → availability/promotion → brand → product name → Signal Rail → price → action.
+Reading order: image → promotion → brand → product name → Signal Rail (comparison surfaces only) → price → action.
 
-- The entire descriptive area may link to the product; keep “Add to cart” a separate button.
+- Borderless: a rounded `--color-bg-soft` image well, then text on the page background. No card border, fill, or shadow.
+- The image link and the name link both reach the product; the name link fills its clamped block so it is a real target.
+- Catalog add-to-cart is a **secondary** control (bordered, ink text, ink fill on hover). A grid of filled buttons out-shouts the products. Reserve the filled style for a page's single decisive action.
 - Add-to-cart is visible without hover on touch and keyboard layouts.
+- Homepage discovery cards (`discoveryOnly`) render no stock messaging, no add-to-cart, and no Signal Rail.
 - Show compare price and savings only when real.
-- Show `Out of stock` or `Only n left` close to price/action.
-- Limit names to two or three lines without destructive ellipsis on the only product link.
+- Show `Out of stock` or `Only n left` close to price/action on comparison surfaces.
+- Names clamp to two lines (three below 640px) with the block reserved so prices and actions stay aligned across a row.
 - Avoid index numbers, ornamental arrows, image zoom beyond 1.02, or staggered card offsets.
 
 ### Filters and sorting
+
+Filters and sorting read as utilities, not as a dashboard toolbar: borderless category chips with a quiet selected state, one divider, and compact price/sort controls.
 
 - Desktop: visible category/brand/price/availability filters with result count and sort.
 - Mobile: filter and sort buttons remain visible; filters open a drawer with Apply and Clear actions.
@@ -216,13 +233,17 @@ Use the customer’s vocabulary: products, categories, cart, checkout, parts, bu
 
 - Use `Catalog`, not `The Edit`.
 - Use `Product`, not `Piece` or `Object`.
+- Retired: `Studio / …` policy eyebrows, `Configuration Progress`, `Shopping Cart`, `Proceed to Checkout`, `Encrypted 256-bit …`. Use `Cart`, `Checkout`, `Progress`, `Secure checkout`.
+- Every marketing section gets one headline and at most one short supporting sentence. Delete copy that explains what the layout already demonstrates.
 - Use `PC Builder`, not `Atelier` or `Compose your rig` as navigation language.
 - Button verbs remain consistent through feedback: `Add to cart` → `Added to cart`.
 - Product copy leads with the practical benefit or key differentiator, not abstract luxury language.
 
 ## Reference translation
 
+- `docs/storefront-redesign/CLEAN-STOREFRONT-IMPLEMENTATION-PROMPT.md`: the executed simplification brief. Where it and this file disagree on density, typography, hero composition, or header height, the brief's contract is what shipped and this file has been updated to match it.
 - `references/hero.md`: retain the clear hero hierarchy, responsive category access, product-led image, and paired primary/secondary actions. Do not adopt Tailwind, shadcn, Framer Motion, gradient text, glass effects, irregular corner cutouts, or its generic sample taxonomy.
+- Apple, Samsung, and Tesla: learn the discipline — one dominant idea per viewport, product imagery over explanatory copy, short headlines, restrained actions, compact neutral type. Do not copy their branding, assets, layouts, fonts, or marketing language.
 - `references/checkout.md`: retain the three-step progression, visible labels, persistent order summary, shipping/payment choices, skeletons, and security reassurance. Adapt payment to existing Razorpay, cash-on-delivery, and bank-transfer behavior; do not collect card data directly.
 - Samsung: learn from its neutral chrome, product-scale imagery, short headlines, clear category navigation, repeated `Learn more`/`Buy` hierarchy, product rails, and support reassurance. Create a TechChasers system rather than a visual clone.
 
@@ -231,6 +252,8 @@ Use the customer’s vocabulary: products, categories, cart, checkout, parts, bu
 The redesigned surface is not complete until all applicable checks pass:
 
 - Real catalog content exercises long names, missing images, discounts, low/out-of-stock, and missing specs.
+- The header is one compact row with search continuously visible, and no page reintroduces a second navigation tier.
+- No storefront section reads like a paragraph-heavy explainer, and each marketing viewport has one obvious dominant idea.
 - Loading, empty, error, ready, disabled, and success states are visible and recoverable.
 - Keyboard order follows visual order; focus is never hidden by sticky UI.
 - Controls have accessible names and at least 44×44px pointer targets.

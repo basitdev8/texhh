@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { formatPrice, getProductSignalRail } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import type { IProduct } from "@/types";
 import styles from "./HeroBanner.module.css";
 
@@ -8,80 +8,73 @@ interface HeroBannerProps {
   product?: IProduct | null;
 }
 
+/**
+ * One featured product per viewport: the image carries the moment, the copy
+ * stays to a title, one line, the price, and two actions.
+ */
 export default function HeroBanner({ product }: HeroBannerProps) {
   const heroImage = product?.images?.[0];
-  const signalRail = product ? getProductSignalRail(product.specifications) : null;
-  const hasLongTitle = (product?.name.length ?? 0) > 52;
-  const description =
-    product?.shortDescription && product.shortDescription.trim().length >= 32
+  const hasLongTitle = (product?.name.length ?? 0) > 40;
+  const supportingLine =
+    product?.shortDescription && product.shortDescription.trim().length >= 24
       ? product.shortDescription
-      : "See the key specifications, current price, and availability at a glance.";
+      : null;
 
   return (
-    <section className={styles.hero} id="hero-banner" aria-label="Featured highlight">
+    <section className={styles.hero} id="hero-banner" aria-label="Featured product">
       <div className={`${styles.stage} ${product ? "" : styles.stageEmpty}`}>
         <div className={styles.copy}>
-          <span className={styles.eyebrow}>
-            {product?.brand ? `Featured · ${product.brand}` : "TechChasers"}
-          </span>
-
-          <h1 className={`${styles.headline} ${hasLongTitle ? styles.longHeadline : ""}`}>
-            {product
-              ? product.name
-              : "Phones, PCs, and parts—chosen with precision."}
+          <h1 className={`${styles.headline} ${hasLongTitle ? styles.headlineLong : ""}`}>
+            {product ? product.name : "Electronics, computers, and PC parts."}
           </h1>
 
-          <p className={styles.subheading}>
+          <p className={styles.support}>
             {product
-              ? description
-              : "Compare the specifications that matter, shop trusted electronics, or build a compatible PC from the ground up."}
+              ? supportingLine ?? "Featured this week at TechChasers."
+              : "Shop the catalog or build a compatible PC."}
           </p>
 
           {product && (
-            <div className={styles.productFacts} aria-label="Featured product details">
-              <span className={styles.price}>{formatPrice(product.price)}</span>
-              {signalRail && <span className={styles.signalRail}>{signalRail}</span>}
-            </div>
+            <p className={styles.price}>{formatPrice(product.price)}</p>
           )}
 
-          <div className={styles.ctaRow}>
-            <Link href="/products" className={styles.ctaPrimary}>
-              Shop products
-            </Link>
-            <Link href="/pc-builder" className={styles.ctaSecondary}>
-              Build a PC
-            </Link>
+          <div className={styles.actions}>
+            {product ? (
+              <>
+                <Link href={`/products/${product.slug}`} className={styles.primary}>
+                  Shop
+                </Link>
+                <Link href="/products" className={styles.secondary}>
+                  View products
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/products" className={styles.primary}>
+                  Shop
+                </Link>
+                <Link href="/pc-builder" className={styles.secondary}>
+                  Start a build
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
         {product && (
-          <div className={styles.showcase}>
-            <Link
-              href={`/products/${product.slug}`}
-              className={styles.imageLink}
-              aria-label={`View ${product.name}`}
-            >
-              <div className={styles.imageStage}>
-                {heroImage ? (
-                  <Image
-                    src={heroImage}
-                    alt={product.name}
-                    fill
-                    sizes="(max-width: 768px) 92vw, (max-width: 1200px) 80vw, 1120px"
-                    className={styles.productImage}
-                    priority
-                  />
-                ) : (
-                  <div className={styles.fallbackVisual}>{product.brand || "TechChasers"}</div>
-                )}
-              </div>
-              <span className={styles.viewProduct}>
-                View featured product
-                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M3 13 13 3M6 3h7v7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
-            </Link>
+          <div className={styles.media}>
+            {heroImage ? (
+              <Image
+                src={heroImage}
+                alt={product.name}
+                fill
+                sizes="(max-width: 900px) 92vw, 60vw"
+                className={styles.image}
+                priority
+              />
+            ) : (
+              <span className={styles.imageFallback}>{product.brand || "TechChasers"}</span>
+            )}
           </div>
         )}
       </div>
