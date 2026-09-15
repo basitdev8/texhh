@@ -113,9 +113,7 @@ export default function EditProductPage({ params }: PageProps) {
               ← Catalogue / Products
             </Link>
           </div>
-          <h1 className={styles.pageTitle}>
-            Edit <span className={styles.pageTitleItalic}>piece</span>.
-          </h1>
+          <h1 className={styles.pageTitle}>Edit product</h1>
           <p className={styles.pageSubtitle}>
             Updating <strong>{product.name}</strong>. Changes go live the
             moment you save.

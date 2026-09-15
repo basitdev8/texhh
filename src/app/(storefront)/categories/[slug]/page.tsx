@@ -51,7 +51,7 @@ export default async function CategoryRedirectPage({ params }: PageProps) {
         href="/products"
         style={{ display: "inline-block", marginTop: "var(--space-5)", color: "var(--color-accent)" }}
       >
-        ← Browse all products
+        View products
       </Link>
     </div>
   );

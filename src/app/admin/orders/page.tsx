@@ -121,9 +121,7 @@ export default function AdminOrdersPage() {
               Activity / {total} order{total !== 1 ? "s" : ""}
             </span>
           </div>
-          <h1 className={styles.pageTitle}>
-            The <span className={styles.pageTitleItalic}>order book</span>.
-          </h1>
+          <h1 className={styles.pageTitle}>Orders</h1>
           <p className={styles.pageSubtitle}>
             Every order placed across the storefront, filterable by status
             and openable for status updates.

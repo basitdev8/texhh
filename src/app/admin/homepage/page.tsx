@@ -49,15 +49,15 @@ export default function AdminHomepagePage() {
           setHeroProductId(settings.heroProductId);
           setEditProductIds(settings.homeFeaturedProductIds || []);
         } else {
-          // Preserve the current storefront selections as a starting point, but
-          // do not write anything until the admin explicitly saves this screen.
           setHeroProductId(legacyProducts[0]?._id || null);
           setEditProductIds(legacyProducts.slice(1).map((product) => product._id));
           setLegacyImported(legacyProducts.length > 0);
         }
       })
-      .catch(() => showToast("Could not load homepage products", "error"))
-      .finally(() => !cancelled && setLoading(false));
+      .catch(() => showToast("Could not load storefront featured products", "error"))
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
     return () => {
       cancelled = true;
     };
@@ -85,7 +85,7 @@ export default function AdminHomepagePage() {
 
   const toggleEditProduct = (productId: string) => {
     if (productId === heroProductId) {
-      showToast("The main featured product is kept separate from the home edit", "error");
+      showToast("Hero spotlight product cannot be duplicated in the popular products rail", "error");
       return;
     }
     setEditProductIds((ids) =>
@@ -106,108 +106,159 @@ export default function AdminHomepagePage() {
       });
       const data = await response.json();
       if (!response.ok || !data.success) {
-        showToast(data.error || "Could not save homepage curation", "error");
+        showToast(data.error || "Could not save featured settings", "error");
         return;
       }
       setHeroProductId(data.data.heroProductId);
       setEditProductIds(data.data.homeFeaturedProductIds || []);
       setLegacyImported(false);
-      showToast("Homepage curation saved", "success");
+      showToast("Homepage featured products updated", "success");
     } catch {
-      showToast("Network error", "error");
+      showToast("Network error while saving", "error");
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <>
+    <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <div className={styles.eyebrow}>Store / Homepage</div>
-          <h1 className={styles.title}>Homepage <em>curation</em>.</h1>
+          <h1 className={styles.title}>Featured &amp; Hero Curation</h1>
           <p className={styles.subtitle}>
-            Choose one main featured product for the hero, then build the separate
-            collection shown below it. Products can only occupy one placement.
+            Select the hero spotlight product and configure items shown in the Popular Products rail.
           </p>
         </div>
-        <button type="button" className={styles.saveButton} onClick={save} disabled={loading || saving}>
-          {saving ? "Saving…" : "Save homepage"}
+        <button
+          type="button"
+          className={styles.saveButton}
+          onClick={save}
+          disabled={loading || saving}
+        >
+          {saving ? "Saving…" : "Save Placements"}
         </button>
       </header>
 
       {loading ? (
-        <div className={styles.loading}>Loading product placements…</div>
+        <div className={styles.loading}>Loading catalog products…</div>
       ) : (
         <div className={styles.layout}>
           {legacyImported && (
-            <p className={styles.migrationNote}>
-              Your existing featured products were brought in as a starting point. Save once to make these new, separate homepage placements live.
-            </p>
+            <div className={styles.migrationNotice}>
+              Existing featured products have been pre-loaded. Click &ldquo;Save Placements&rdquo; to persist this layout.
+            </div>
           )}
 
+          {/* Section 1: Hero Banner Selection */}
           <section className={styles.section}>
             <div className={styles.sectionHead}>
               <div>
-                <span className={styles.sectionKicker}>01 / Hero</span>
-                <h2>Main featured product</h2>
+                <span className={styles.sectionKicker}>Placement 01</span>
+                <h2 className={styles.sectionHeading}>Hero Spotlight Product</h2>
               </div>
               {heroProduct && (
-                <button type="button" className={styles.textButton} onClick={() => selectHero(null)}>
-                  Remove
+                <button
+                  type="button"
+                  className={styles.textButton}
+                  onClick={() => selectHero(null)}
+                >
+                  Remove Hero Selection
                 </button>
               )}
             </div>
-            <p className={styles.help}>Only one product can be in the main hero at a time.</p>
-            <label className={styles.selectLabel}>
-              <span>Choose as main featured product</span>
-              <select value={heroProductId || ""} onChange={(event) => selectHero(event.target.value || null)}>
-                <option value="">No hero product selected</option>
+
+            <div className={styles.selectWrap}>
+              <label htmlFor="hero-select" className={styles.label}>
+                Select Product for Homepage Hero
+              </label>
+              <select
+                id="hero-select"
+                className={styles.select}
+                value={heroProductId || ""}
+                onChange={(e) => selectHero(e.target.value || null)}
+              >
+                <option value="">No hero product selected (uses fallback banner)</option>
                 {products.map((product) => (
-                  <option key={product._id} value={product._id}>{product.name} — {product.brand}</option>
+                  <option key={product._id} value={product._id}>
+                    {product.name} ({product.brand}) — {formatPrice(product.price)}
+                  </option>
                 ))}
               </select>
-            </label>
+            </div>
+
             {heroProduct ? (
-              <ProductPlacement product={heroProduct} label="Main featured product" />
+              <div className={styles.heroPreview}>
+                <div className={styles.heroImage}>
+                  <Image
+                    src={heroProduct.images[0] || "/placeholder.svg"}
+                    alt={heroProduct.name}
+                    fill
+                    sizes="120px"
+                  />
+                </div>
+                <div className={styles.heroInfo}>
+                  <span className={styles.heroBadge}>Current Hero Item</span>
+                  <span className={styles.heroName}>{heroProduct.name}</span>
+                  <span className={styles.heroMeta}>
+                    {heroProduct.brand} · {formatPrice(heroProduct.price)}
+                  </span>
+                </div>
+              </div>
             ) : (
-              <div className={styles.empty}>Choose one active product to show in the home hero.</div>
+              <div className={styles.empty}>No hero spotlight item assigned.</div>
             )}
           </section>
 
+          {/* Section 2: Popular Products Rail */}
           <section className={styles.section}>
             <div className={styles.sectionHead}>
               <div>
-                <span className={styles.sectionKicker}>02 / Home edit</span>
-                <h2>Featured products below the hero</h2>
+                <span className={styles.sectionKicker}>Placement 02</span>
+                <h2 className={styles.sectionHeading}>Popular Products Rail</h2>
               </div>
               {editProductIds.length > 0 && (
-                <button type="button" className={styles.textButton} onClick={() => setEditProductIds([])}>
-                  Clear all
+                <button
+                  type="button"
+                  className={styles.textButton}
+                  onClick={() => setEditProductIds([])}
+                >
+                  Clear All
                 </button>
               )}
             </div>
-            <p className={styles.help}>Choose another featured product for the collection below the hero. Add as many as you need; the selection order is used on the storefront.</p>
 
             {selectedEditProducts.length > 0 && (
-              <div className={styles.selectedList} aria-label="Selected home edit products">
+              <div className={styles.selectedList} aria-label="Selected popular products">
                 {selectedEditProducts.map((product, index) => (
                   <div className={styles.selectedItem} key={product._id}>
-                    <span className={styles.selectedIndex}>{String(index + 1).padStart(2, "0")}</span>
+                    <span className={styles.selectedIndex}>{index + 1}</span>
                     <span className={styles.selectedName}>{product.name}</span>
-                    <button type="button" onClick={() => toggleEditProduct(product._id)} aria-label={`Remove ${product.name} from the home edit`}>×</button>
+                    <button
+                      type="button"
+                      className={styles.removeBtn}
+                      onClick={() => toggleEditProduct(product._id)}
+                      aria-label={`Remove ${product.name}`}
+                    >
+                      ×
+                    </button>
                   </div>
                 ))}
               </div>
             )}
 
             <div className={styles.catalogueHead}>
-              <label className={styles.searchLabel}>
-                <span className="sr-only">Search products</span>
-                <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search products or brands…" />
-              </label>
-              <span>{editProductIds.length} selected</span>
+              <input
+                className={styles.searchInput}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search catalog products..."
+                aria-label="Search catalog"
+              />
+              <span className={styles.selectedCount}>
+                {editProductIds.length} items selected
+              </span>
             </div>
+
             <div className={styles.productList}>
               {filteredProducts.map((product) => {
                 const isHero = product._id === heroProductId;
@@ -222,13 +273,20 @@ export default function AdminHomepagePage() {
                     disabled={isHero}
                   >
                     <span className={styles.optionImage}>
-                      <Image src={product.images[0] || "/placeholder.svg"} alt="" fill sizes="56px" />
+                      <Image
+                        src={product.images[0] || "/placeholder.svg"}
+                        alt=""
+                        fill
+                        sizes="48px"
+                      />
                     </span>
                     <span className={styles.optionCopy}>
                       <strong>{product.name}</strong>
                       <span>{product.brand} · {formatPrice(product.price)}</span>
                     </span>
-                    <span className={styles.optionState}>{isHero ? "Hero" : isSelected ? "Selected" : "Add"}</span>
+                    <span className={styles.optionState}>
+                      {isHero ? "Hero" : isSelected ? "Selected" : "+ Add"}
+                    </span>
                   </button>
                 );
               })}
@@ -236,21 +294,6 @@ export default function AdminHomepagePage() {
           </section>
         </div>
       )}
-    </>
-  );
-}
-
-function ProductPlacement({ product, label }: { product: IProduct; label: string }) {
-  return (
-    <div className={styles.heroPreview}>
-      <div className={styles.heroImage}>
-        <Image src={product.images[0] || "/placeholder.svg"} alt={product.name} fill sizes="160px" />
-      </div>
-      <div>
-        <span>{label}</span>
-        <strong>{product.name}</strong>
-        <small>{product.brand} · {formatPrice(product.price)}</small>
-      </div>
     </div>
   );
 }

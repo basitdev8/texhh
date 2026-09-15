@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PolicyLayout, { Todo } from "../PolicyLayout";
 
 export const metadata: Metadata = {
-  title: "Refund & Cancellation Policy — TechChasers",
+  title: "Refund & Cancellation Policy",
   description:
     "How to cancel an order, when a return is accepted, and how long a refund takes.",
 };
@@ -10,7 +10,6 @@ export const metadata: Metadata = {
 export default function RefundPolicyPage() {
   return (
     <PolicyLayout
-      eyebrow="Studio / Refunds"
       title="Refund &amp; cancellation policy"
       updated="23 August 2026"
     >

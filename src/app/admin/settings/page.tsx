@@ -99,9 +99,7 @@ export default function AdminSettingsPage() {
             <span className={styles.pageHeaderEyebrowLine} />
             <span className={styles.pageHeaderEyebrow}>Store / Settings</span>
           </div>
-          <h1 className={styles.pageTitle}>
-            Store <span className={styles.pageTitleItalic}>settings</span>.
-          </h1>
+          <h1 className={styles.pageTitle}>Store settings</h1>
           <p className={styles.pageSubtitle}>
             Shipping, tax and payment rules. These apply to every new order the
             moment you save — existing orders keep the figures they were placed with.

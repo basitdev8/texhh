@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import StatsCard from "@/components/admin/StatsCard";
 import DataTable, { Column } from "@/components/admin/DataTable";
+import Badge from "@/components/ui/Badge";
+import LoadingState from "@/components/ui/LoadingState";
 import { formatDate, formatPrice } from "@/lib/utils";
 import type { IOrder, IUser } from "@/types";
 import styles from "./admin.module.css";
@@ -28,42 +30,13 @@ interface AdminStats {
   lowStock: LowStockItem[];
 }
 
-const STATUS_LABEL: Record<IOrder["status"], { label: string; tone: string }> = {
-  pending: { label: "Pending", tone: "var(--color-warning)" },
-  processing: { label: "Processing", tone: "var(--color-info)" },
-  shipped: { label: "Shipped", tone: "var(--color-info)" },
-  delivered: { label: "Delivered", tone: "var(--color-success)" },
-  cancelled: { label: "Cancelled", tone: "var(--color-error)" },
+const STATUS_VARIANT: Record<IOrder["status"], "warning" | "info" | "success" | "error"> = {
+  pending: "warning",
+  processing: "info",
+  shipped: "info",
+  delivered: "success",
+  cancelled: "error",
 };
-
-function StatusPill({ status }: { status: IOrder["status"] }) {
-  const info = STATUS_LABEL[status];
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        fontSize: 10,
-        textTransform: "uppercase",
-        letterSpacing: "0.22em",
-        fontWeight: 600,
-        color: info.tone,
-      }}
-    >
-      <span
-        style={{
-          width: 6,
-          height: 6,
-          borderRadius: "50%",
-          background: info.tone,
-          display: "inline-block",
-        }}
-      />
-      {info.label}
-    </span>
-  );
-}
 
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -82,15 +55,11 @@ export default function AdminDashboardPage() {
   const orderColumns: Column<IOrder & { user: IUser }>[] = [
     {
       key: "orderNumber",
-      name: "Order №",
+      name: "Order Number",
       render: (o) => (
         <Link
           href={`/admin/orders/${o._id}`}
-          style={{
-            fontWeight: 600,
-            color: "var(--color-ink)",
-            fontSize: "var(--text-sm)",
-          }}
+          className={styles.orderLink}
         >
           {o.orderNumber}
         </Link>
@@ -101,35 +70,21 @@ export default function AdminDashboardPage() {
       name: "Customer",
       sortable: false,
       render: (o) => (
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <span style={{ fontWeight: 600, color: "var(--color-ink)" }}>
-            {o.user?.name || "Guest"}
+        <div className={styles.customerCol}>
+          <span className={styles.customerName}>
+            {o.user?.name || o.shippingAddress?.fullName || "Guest Customer"}
           </span>
           {o.user?.email && (
-            <span
-              style={{
-                fontSize: 11,
-                color: "var(--color-text-muted)",
-                letterSpacing: 0.2,
-              }}
-            >
-              {o.user.email}
-            </span>
+            <span className={styles.customerEmail}>{o.user.email}</span>
           )}
         </div>
       ),
     },
     {
       key: "totalAmount",
-      name: "Total",
+      name: "Total Amount",
       render: (o) => (
-        <span
-          style={{
-            fontWeight: 600,
-            fontSize: "var(--text-sm)",
-            color: "var(--color-ink)",
-          }}
-        >
+        <span className={styles.orderAmount}>
           {formatPrice(o.totalAmount)}
         </span>
       ),
@@ -137,13 +92,17 @@ export default function AdminDashboardPage() {
     {
       key: "status",
       name: "Status",
-      render: (o) => <StatusPill status={o.status} />,
+      render: (o) => (
+        <Badge variant={STATUS_VARIANT[o.status] || "info"}>
+          {o.status}
+        </Badge>
+      ),
     },
     {
       key: "createdAt",
-      name: "Placed",
+      name: "Date Placed",
       render: (o) => (
-        <span style={{ color: "var(--color-text-secondary)" }}>
+        <span className={styles.dateCol}>
           {formatDate(o.createdAt)}
         </span>
       ),
@@ -151,229 +110,147 @@ export default function AdminDashboardPage() {
   ];
 
   if (loading) {
-    return <div className={styles.loading}>Loading…</div>;
+    return (
+      <div style={{ padding: "var(--space-12) 0" }}>
+        <LoadingState label="Loading dashboard metrics" />
+      </div>
+    );
   }
 
-  const today = new Date().toLocaleDateString("en-IN", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-
   return (
-    <>
-      {/* Editorial page header */}
+    <div className={styles.dashboard}>
+      {/* Page Header */}
       <header className={styles.pageHeader}>
         <div>
-          <div className={styles.pageHeaderEyebrowRow}>
-            <span className={styles.pageHeaderEyebrow}>{today}</span>
-          </div>
-          <h1 className={styles.pageTitle}>Dashboard</h1>
+          <h1 className={styles.pageTitle}>Dashboard Overview</h1>
           <p className={styles.pageSubtitle}>
-            Revenue, orders, and customers at a glance. Figures refresh on
-            every visit.
+            Real-time business performance, order processing queues, and inventory alerts.
           </p>
         </div>
-        <Link
-          href="/admin/orders"
-          className={styles.primaryBtn}
-        >
-          Open orders
-        </Link>
+        <div className={styles.headerActions}>
+          <Link href="/admin/products/new" className={styles.primaryBtn}>
+            + Add Product
+          </Link>
+          <Link href="/admin/orders" className={styles.secondaryBtn}>
+            View All Orders
+          </Link>
+        </div>
       </header>
 
-      {/* Stats row — typographic, no cards */}
+      {/* Primary KPI Metrics Grid */}
       <div className={styles.statsGrid}>
         <StatsCard
-          label="Total revenue"
-          value={`₹${(stats?.totalRevenue ?? 0).toLocaleString("en-IN")}`}
-          sublabel="Paid orders, lifetime"
+          label="Total Revenue"
+          value={formatPrice(stats?.totalRevenue ?? 0)}
+          sublabel="Cumulative paid sales"
           variant="accent"
         />
         <StatsCard
-          label="Orders placed"
+          label="Orders Placed"
           value={stats?.orderCount ?? 0}
-          sublabel="All-time order count"
+          sublabel="All lifetime orders"
         />
         <StatsCard
-          label="Active products"
+          label="Active Catalog Products"
           value={stats?.productCount ?? 0}
           sublabel="Visible on storefront"
         />
         <StatsCard
-          label="Customers"
+          label="Registered Customers"
           value={stats?.customerCount ?? 0}
-          sublabel="Registered accounts"
+          sublabel="Customer accounts"
         />
       </div>
 
-      {/* Operations — actionable tiles that link straight to work queues */}
-      <section className={styles.opsGrid}>
+      {/* Actionable Queues Strip */}
+      <section className={styles.opsGrid} aria-label="Operational queues">
         <Link href="/admin/orders?status=pending" className={styles.opCard}>
           <span className={styles.opValue}>{stats?.ordersToFulfill ?? 0}</span>
-          <span className={styles.opLabel}>Orders to fulfill</span>
-          <span className={styles.opHint}>Pending &amp; processing → ship these</span>
+          <span className={styles.opLabel}>Orders to Fulfill</span>
+          <span className={styles.opHint}>Pending &amp; processing orders →</span>
         </Link>
         <Link href="/admin/orders" className={styles.opCard}>
           <span
             className={styles.opValue}
             style={{
-              color:
-                (stats?.pendingPayments ?? 0) > 0
-                  ? "var(--color-warning)"
-                  : undefined,
+              color: (stats?.pendingPayments ?? 0) > 0 ? "var(--color-warning)" : undefined,
             }}
           >
             {stats?.pendingPayments ?? 0}
           </span>
-          <span className={styles.opLabel}>Pending payments</span>
-          <span className={styles.opHint}>Awaiting capture or confirmation</span>
+          <span className={styles.opLabel}>Pending Payments</span>
+          <span className={styles.opHint}>Awaiting verification →</span>
         </Link>
         <Link href="/admin/products" className={styles.opCard}>
           <span
             className={styles.opValue}
             style={{
-              color:
-                (stats?.outOfStock ?? 0) > 0 ? "var(--color-error)" : undefined,
+              color: (stats?.outOfStock ?? 0) > 0 ? "var(--color-error)" : undefined,
             }}
           >
             {stats?.outOfStock ?? 0}
           </span>
-          <span className={styles.opLabel}>Out of stock</span>
-          <span className={styles.opHint}>Active products at zero stock</span>
+          <span className={styles.opLabel}>Out of Stock</span>
+          <span className={styles.opHint}>Items requiring restock →</span>
         </Link>
-        <Link href="/admin/products/new" className={styles.opCardAction}>
-          <span className={styles.opActionPlus}>＋</span>
-          <span className={styles.opLabel}>Quick actions</span>
-          <span className={styles.opHint}>Add a product · manage catalog</span>
+        <Link href="/admin/products/new" className={styles.opCard}>
+          <span className={styles.opValue} style={{ color: "var(--color-accent)" }}>+</span>
+          <span className={styles.opLabel}>Catalog Quick Action</span>
+          <span className={styles.opHint}>Add new item or part →</span>
         </Link>
       </section>
 
-      {/* Low stock — restock queue */}
+      {/* Low Stock Alerts */}
       {stats?.lowStock && stats.lowStock.length > 0 && (
         <section className={styles.section}>
           <div className={styles.sectionHead}>
             <div>
-              <div className={styles.sectionEyebrowRow}>
-                <span className={styles.sectionEyebrowLine} />
-                <span className={styles.sectionEyebrow}>
-                  Inventory / Running low
-                </span>
-              </div>
-              <h2 className={styles.sectionTitle}>Restock soon.</h2>
+              <h2 className={styles.sectionTitle}>Low Inventory Alerts</h2>
+              <p className={styles.sectionSubtitle}>
+                Items with 5 or fewer remaining units in active stock.
+              </p>
             </div>
             <Link href="/admin/products" className={styles.sectionLink}>
-              Manage products →
+              Manage inventory →
             </Link>
           </div>
-          <div className={styles.lowStockList}>
+
+          <div className={styles.lowStockGrid}>
             {stats.lowStock.map((p) => (
               <Link
                 key={p._id}
                 href={`/admin/products/${p._id}`}
-                className={styles.lowStockRow}
+                className={styles.lowStockCard}
               >
                 <span className={styles.lowStockName}>{p.name}</span>
-                <span className={styles.lowStockQty}>
-                  {p.stock} left
-                </span>
+                <span className={styles.lowStockQty}>{p.stock} units left</span>
               </Link>
             ))}
           </div>
         </section>
       )}
 
-      {/* Status breakdown — quiet, in-page list */}
-      {stats?.statusBreakdown && Object.keys(stats.statusBreakdown).length > 0 && (
-        <section className={styles.section}>
-          <div className={styles.sectionHead}>
-            <div>
-              <div className={styles.sectionEyebrowRow}>
-                <span className={styles.sectionEyebrowLine} />
-                <span className={styles.sectionEyebrow}>
-                  Breakdown / Order status
-                </span>
-              </div>
-              <h2 className={styles.sectionTitle}>Order status</h2>
-            </div>
-          </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${Object.keys(stats.statusBreakdown).length}, 1fr)`,
-              borderTop: "1px solid var(--color-border)",
-              borderBottom: "1px solid var(--color-border)",
-            }}
-          >
-            {Object.entries(stats.statusBreakdown).map(([status, count]) => {
-              const info = STATUS_LABEL[status as IOrder["status"]];
-              return (
-                <div
-                  key={status}
-                  style={{
-                    padding: "var(--space-6)",
-                    borderRight: "1px solid var(--color-border)",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "var(--space-2)",
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: "var(--font-heading)",
-                      fontWeight: 700,
-                      fontSize: "var(--text-3xl)",
-                      letterSpacing: "-0.02em",
-                      color: info?.tone || "var(--color-ink)",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {count}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 10,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.22em",
-                      fontWeight: 600,
-                      color: "var(--color-text-muted)",
-                    }}
-                  >
-                    {info?.label || status}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Recent orders — editorial table */}
+      {/* Recent Orders Table */}
       <section className={styles.section}>
         <div className={styles.sectionHead}>
           <div>
-            <div className={styles.sectionEyebrowRow}>
-              <span className={styles.sectionEyebrowLine} />
-              <span className={styles.sectionEyebrow}>
-                Activity / Recent orders
-              </span>
-            </div>
-            <h2 className={styles.sectionTitle}>Recent orders</h2>
+            <h2 className={styles.sectionTitle}>Recent Orders</h2>
+            <p className={styles.sectionSubtitle}>
+              Latest orders placed across all categories and custom PC builds.
+            </p>
           </div>
-          <Link
-            href="/admin/orders"
-            className={styles.sectionLink}
-          >
-            View all orders →
+          <Link href="/admin/orders" className={styles.sectionLink}>
+            View full order queue →
           </Link>
         </div>
+
         <DataTable
           columns={orderColumns}
           data={stats?.recentOrders ?? []}
-          emptyMessage="No orders yet"
-          emptyDescription="When customers place orders, they will appear here."
+          emptyMessage="No recent orders"
+          emptyDescription="Customer orders will populate in this queue upon placement."
         />
       </section>
-    </>
+    </div>
   );
 }

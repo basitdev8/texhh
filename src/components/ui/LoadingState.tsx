@@ -19,10 +19,7 @@ export default function LoadingState({
       role="status"
       aria-live="polite"
     >
-      <span className={styles.mark} aria-hidden="true">
-        <span className={styles.ring} />
-        <span className={styles.core} />
-      </span>
+      <span className={styles.spinner} aria-hidden="true" />
       <span className={styles.copy}>
         <span className={styles.label}>{label}</span>
         {detail && <span className={styles.detail}>{detail}</span>}

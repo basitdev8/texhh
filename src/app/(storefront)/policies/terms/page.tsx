@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PolicyLayout, { Todo } from "../PolicyLayout";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — TechChasers",
+  title: "Terms of Service",
   description:
     "The terms that govern buying from TechChasers: orders, pricing, payment, delivery, and liability.",
 };
@@ -10,7 +10,6 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <PolicyLayout
-      eyebrow="Studio / Terms"
       title="Terms of service"
       updated="23 August 2026"
     >

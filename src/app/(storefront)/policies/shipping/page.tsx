@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import PolicyLayout, { Todo } from "../PolicyLayout";
 
 export const metadata: Metadata = {
-  title: "Shipping Policy — TechChasers",
+  title: "Shipping Policy",
   description:
     "Dispatch times, delivery estimates, shipping charges, and what happens if a parcel is damaged or lost.",
 };
@@ -10,7 +10,6 @@ export const metadata: Metadata = {
 export default function ShippingPolicyPage() {
   return (
     <PolicyLayout
-      eyebrow="Studio / Shipping"
       title="Shipping policy"
       updated="23 August 2026"
     >

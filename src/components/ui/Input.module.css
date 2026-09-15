@@ -18,14 +18,15 @@
 
 .input {
   width: 100%;
-  padding: var(--space-3) var(--space-4);
+  min-height: 48px;
+  padding: 0 var(--space-4);
   font-family: var(--font-body);
-  font-size: var(--text-base);
+  font-size: 1rem;
   color: var(--color-text);
   background-color: var(--color-surface);
-  border: 1.5px solid var(--color-border);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   outline: none;
 }
 
@@ -35,7 +36,7 @@
 
 .input:focus {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(14, 124, 123, 0.12);
+  box-shadow: 0 0 0 3px var(--color-accent-subtle);
 }
 
 .inputError {
@@ -43,7 +44,8 @@
 }
 
 .inputError:focus {
-  box-shadow: 0 0 0 3px rgba(199, 84, 80, 0.1);
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px var(--color-error-light);
 }
 
 .hasIconLeft {
@@ -82,36 +84,53 @@
   right: var(--space-2);
   top: 50%;
   display: grid;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 44px;
+  height: 44px;
   place-items: center;
   transform: translateY(-50%);
   border-radius: var(--radius-sm);
   color: var(--color-text-muted);
   cursor: pointer;
-  transition: color var(--transition-fast), background var(--transition-fast);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
 }
 
-.passwordToggle:hover { background: var(--color-bg-alt); color: var(--color-ink); }
-.passwordToggle:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
-.passwordToggle svg { width: 1.15rem; height: 1.15rem; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+.passwordToggle:hover {
+  background-color: var(--color-bg-alt);
+  color: var(--color-ink);
+}
+
+.passwordToggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.passwordToggle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.75;
+}
 
 .errorMessage {
   font-size: var(--text-xs);
   color: var(--color-error);
-  margin-top: var(--space-1);
+  margin-top: 2px;
 }
 
 /* Search variant */
 .search .input {
-  background-color: var(--color-bg-alt);
-  border-color: transparent;
+  background-color: var(--color-bg-soft);
+  border-color: var(--color-border-light);
   border-radius: var(--radius-full);
-  padding: var(--space-2) var(--space-4);
+  min-height: 44px;
   padding-left: var(--space-10);
 }
 
 .search .input:focus {
   background-color: var(--color-surface);
-  border-color: var(--color-border);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-subtle);
 }

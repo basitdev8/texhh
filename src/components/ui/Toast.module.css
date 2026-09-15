@@ -13,8 +13,9 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-3) var(--space-4);
   background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   border-left: 4px solid transparent;
@@ -37,7 +38,7 @@
 }
 
 .info {
-  border-left-color: var(--color-info);
+  border-left-color: var(--color-accent);
 }
 
 .icon {
@@ -58,7 +59,7 @@
 }
 
 .infoIcon {
-  color: var(--color-info);
+  color: var(--color-accent);
 }
 
 .message {
@@ -70,14 +71,14 @@
 
 .closeBtn {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
   color: var(--color-text-muted);
-  transition: all var(--transition-fast);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
   cursor: pointer;
   background: none;
   border: none;
@@ -85,29 +86,34 @@
 }
 
 .closeBtn:hover {
-  background-color: var(--color-bg-alt);
+  background-color: var(--color-bg-soft);
   color: var(--color-text);
+}
+
+.closeBtn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
 }
 
 @keyframes toastSlideIn {
   from {
     opacity: 0;
-    transform: translateX(100%);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
 @keyframes toastSlideOut {
   from {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
   to {
     opacity: 0;
-    transform: translateX(100%);
+    transform: translateY(-8px);
   }
 }
 
@@ -121,5 +127,12 @@
   .toast {
     min-width: unset;
     max-width: unset;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast,
+  .toastExiting {
+    animation: none;
   }
 }

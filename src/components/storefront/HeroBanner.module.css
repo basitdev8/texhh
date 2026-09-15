@@ -1,438 +1,218 @@
-/* ===============================================================
-   HERO — editorial cover
-   Type is the thesis, the plate is the object. Four text elements,
-   nothing else: eyebrow, headline, one line of prose, two actions.
-
-   Motion: headline lines rise out of their own clip on load, and
-   the plate drifts as the page scrolls (native scroll-driven CSS,
-   no library, no scroll listeners). Both collapse under
-   prefers-reduced-motion.
-   =============================================================== */
-
 .hero {
-  position: relative;
-  /* main gets 80px of header clearance; the hero reclaims it so the
-     transparent header still floats over the cover */
-  margin-top: calc(var(--space-20) * -1);
-  padding: var(--space-24) 0 var(--space-20);
-  min-height: 100dvh;
-  display: flex;
-  align-items: center;
-  background: var(--color-bg);
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.inner {
   width: 100%;
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: 0 var(--container-padding);
-  position: relative;
+  padding: var(--space-4) var(--container-padding) 0;
 }
 
-.grid {
+/* Media column is the wider track so the product stays dominant. */
+.stage {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: var(--space-16);
-  align-items: center;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  align-items: stretch;
+  gap: var(--space-8);
+  padding: var(--space-8) var(--space-10);
+  background: var(--color-bg-soft);
+  border-radius: var(--radius-xl);
 }
 
-.headlineWrap {
-  position: relative;
-  z-index: 2;
+.stageEmpty {
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 320px;
+  justify-items: center;
+  text-align: center;
 }
 
-.eyebrowRow {
+.copy {
   display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.stageEmpty .copy {
   align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-6);
-  animation: fadeIn 700ms ease both;
-}
-
-.eyebrowLine {
-  height: 1px;
-  width: 56px;
-  background: var(--color-ink);
-}
-
-.eyebrow {
-  font-family: var(--font-body);
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.32em;
-  font-weight: 600;
-  color: var(--color-ink);
 }
 
 .headline {
-  font-family: var(--font-heading);
-  /* width-driven, but capped by viewport height so a laptop screen never
-     pushes the actions below the fold */
-  font-size: clamp(3.5rem, min(8.2vw, 12dvh), 8rem);
-  font-weight: 600;
-  letter-spacing: -0.045em;
-  color: var(--color-ink);
   margin: 0;
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+  text-wrap: balance;
 }
 
-/* Each line is its own clip window. line-height 1 plus a padding
-   reserve keeps the italic q descender inside the mask. */
-.line {
-  display: block;
+/* Long catalog names stay a headline instead of becoming a text wall. */
+.headlineLong {
+  font-size: clamp(1.625rem, 2.6vw, 2.25rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  line-height: 1;
-  padding-bottom: 0.14em;
 }
 
-.line + .line { margin-top: -0.18em; }
-
-.lineInner {
-  display: block;
-  animation: wordReveal 1000ms var(--ease-out-expo) both;
-}
-
-.line:nth-child(1) .lineInner { animation-delay: 80ms; }
-.line:nth-child(2) .lineInner { animation-delay: 200ms; }
-.line:nth-child(3) .lineInner { animation-delay: 320ms; }
-
-.italic {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.05em;
-  color: var(--color-accent);
-}
-
-.subheading {
-  margin-top: var(--space-8);
-  font-size: var(--text-lg);
+.support {
+  margin: var(--space-3) 0 0;
+  max-width: 34ch;
+  font-size: var(--text-base);
   line-height: 1.55;
   color: var(--color-text-secondary);
-  max-width: 34rem;
-  animation: fadeInUp 900ms var(--ease-out-expo) 480ms both;
-}
-
-.ctaRow {
-  margin-top: var(--space-10);
-  display: flex;
-  gap: var(--space-4);
-  align-items: center;
-  flex-wrap: wrap;
-  animation: fadeInUp 900ms var(--ease-out-expo) 620ms both;
-}
-
-.ctaPrimary {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: 1.05rem 1.5rem 1.05rem 1.75rem;
-  background: var(--color-ink);
-  color: var(--color-paper);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  border-radius: var(--radius-full);
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
-}
-
-.ctaPrimary::after {
-  content: "";
-  display: inline-block;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background-color: var(--color-accent);
-  margin: -10px -10px -10px 0;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14' fill='none'><path d='M2 7h10M8 3l4 4-4 4' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-  background-repeat: no-repeat;
-  background-position: center;
-  transition: transform var(--transition-base);
-}
-
-.ctaPrimary:hover {
-  color: var(--color-paper);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.ctaPrimary:hover::after { transform: rotate(-12deg) scale(1.08); }
-
-.ctaSecondary {
-  display: inline-flex;
-  align-items: center;
-  padding: 1.05rem var(--space-6);
-  border: 1px solid var(--color-ink);
-  border-radius: var(--radius-full);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--color-ink);
-  transition: background var(--transition-base), color var(--transition-base),
-    transform var(--transition-base);
-}
-
-.ctaSecondary:hover {
-  background: var(--color-ink);
-  color: var(--color-paper);
-  transform: translateY(-2px);
-}
-
-.ctaPrimary:focus-visible,
-.ctaSecondary:focus-visible,
-.imageFrame:focus-visible {
-  outline: 2px solid var(--color-accent);
-  outline-offset: 3px;
-}
-
-/* --------------------------------------------------------------
-   THE PLATE
-   -------------------------------------------------------------- */
-.visualWrap {
-  position: relative;
-  animation: scaleIn 1100ms var(--ease-out-expo) 260ms both;
-}
-
-/* Three layers, one transform each: load-in on .visualWrap, scroll tilt
-   on .plateTilt, hover lift on .imageFrame. No animation overwrites
-   another. */
-.plateTilt { position: relative; }
-
-.imageFrame {
-  position: relative;
-  display: block;
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  border-radius: var(--radius-xl);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  background: linear-gradient(140deg, #0c2b2a, #0e0e0c 60%, #08201f);
-  isolation: isolate;
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
 }
 
-a.imageFrame:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-xl);
+.price {
+  margin: var(--space-4) 0 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
 }
 
-.imageFrame::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  background: radial-gradient(
-    circle at 28% 22%,
-    rgba(14, 124, 123, 0.42),
-    transparent 55%
-  );
-}
-
-.productImage {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 1;
-}
-
-.imageScrim {
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  pointer-events: none;
-  background: linear-gradient(
-    to top,
-    rgba(14, 14, 12, 0.82) 0%,
-    rgba(14, 14, 12, 0.34) 34%,
-    transparent 62%
-  );
-}
-
-.imageOrb {
-  position: absolute;
-  inset: 12%;
-  z-index: 1;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 30% 30%,
-    #3fb8b5 0%,
-    #0e7c7b 35%,
-    #0a4b49 70%,
-    #04201f 100%
-  );
-  box-shadow: inset -40px -50px 100px rgba(0, 0, 0, 0.6),
-    0 30px 80px rgba(0, 0, 0, 0.5);
-}
-
-.imageOrb::before {
-  content: "";
-  position: absolute;
-  inset: 12%;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 35% 30%,
-    rgba(255, 255, 255, 0.32),
-    transparent 50%
-  );
-}
-
-/* One caption block carries brand, name and price, so the plate
-   needs no floating badges */
-.plate {
-  position: absolute;
-  z-index: 5;
-  left: var(--space-6);
-  right: var(--space-6);
-  bottom: var(--space-6);
+.actions {
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-5);
-  color: var(--color-paper);
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
 }
 
-.plateBrand {
-  display: block;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.28em;
-  color: var(--color-accent-light);
-  margin-bottom: var(--space-2);
-}
-
-.plateName {
-  display: block;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 400;
-  font-size: var(--text-xl);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-}
-
-.plateMeta { text-align: right; flex: none; }
-
-.plateMetaLabel {
-  display: block;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.25em;
-  color: rgba(251, 247, 238, 0.75);
-  margin-bottom: var(--space-1);
-}
-
-.plateMetaValue {
-  display: block;
-  font-family: var(--font-display);
-  font-size: var(--text-2xl);
+.primary,
+.secondary {
+  min-height: 48px;
+  padding: 0 var(--space-6);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
   font-weight: 500;
   line-height: 1;
-  letter-spacing: -0.02em;
+  transition: background-color var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
 }
 
-.plateEmpty {
-  position: absolute;
-  z-index: 5;
-  left: var(--space-6);
-  right: var(--space-6);
-  bottom: var(--space-6);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.25em;
-  line-height: 1.6;
-  color: rgba(251, 247, 238, 0.8);
+.primary {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-on-ink);
 }
 
-/* --------------------------------------------------------------
-   SCROLL-DRIVEN DRIFT (progressive enhancement)
-   -------------------------------------------------------------- */
-@supports (animation-timeline: view()) {
-  .plateTilt {
-    animation: plateSettle linear both;
-    animation-timeline: view();
-    animation-range: entry 0% exit 100%;
-  }
-
-  .productImage {
-    animation: plateDrift linear both;
-    animation-timeline: view();
-    animation-range: entry 0% exit 100%;
-  }
+.primary:hover {
+  background: var(--color-ink-soft);
+  border-color: var(--color-ink-soft);
+  color: var(--color-on-ink);
 }
 
-@keyframes plateSettle {
-  from { transform: rotate(-1.2deg) translateY(1.6%); }
-  to { transform: rotate(0.8deg) translateY(-1.6%); }
+.secondary {
+  border-color: var(--color-border);
+  color: var(--color-ink);
 }
 
-@keyframes plateDrift {
-  from { transform: scale(1.1) translateY(-2.2%); }
-  to { transform: scale(1.16) translateY(2.2%); }
+.secondary:hover {
+  border-color: var(--color-ink);
 }
 
-/* --------------------------------------------------------------
-   RESPONSIVE
-   -------------------------------------------------------------- */
+.media {
+  position: relative;
+  width: 100%;
+  /* The media track sets the stage height so the product stays dominant. */
+  min-height: 400px;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+}
+
+.image {
+  object-fit: contain;
+  object-position: center;
+}
+
+.imageFallback {
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--color-border);
+}
+
 @media (max-width: 1024px) {
-  .hero {
-    min-height: 0;
-    padding: var(--space-24) 0 var(--space-16);
+  .stage {
+    gap: var(--space-6);
+    padding: var(--space-8);
   }
 
-  .grid { grid-template-columns: 1fr; gap: var(--space-12); }
-  .imageFrame { max-width: 640px; aspect-ratio: 1 / 1; }
-  .visualWrap {
-    width: 100%;
-    max-width: 640px;
-    margin-inline: auto;
+  .media {
+    min-height: 340px;
+  }
+}
+
+/* Phones and small tablets keep copy first, then the product image. */
+@media (max-width: 900px) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+    padding: var(--space-8) var(--space-6);
+  }
+
+  .media {
+    aspect-ratio: 5 / 4;
+    min-height: 0;
+    max-height: 320px;
   }
 }
 
 @media (max-width: 640px) {
-  .hero { padding: var(--space-20) 0 var(--space-12); }
-  .grid { gap: var(--space-8); }
-  .eyebrowRow { margin-bottom: var(--space-4); }
-  .eyebrowLine { width: 40px; }
-  .eyebrow { font-size: 10px; letter-spacing: 0.25em; }
-  .headline { font-size: clamp(3.05rem, 14vw, 3.55rem); }
-  .subheading { margin-top: var(--space-5); font-size: var(--text-base); }
-  .ctaRow {
-    display: grid;
-    grid-template-columns: 1fr;
-    width: 100%;
-    gap: var(--space-3);
-    margin-top: var(--space-6);
-  }
-  .ctaPrimary, .ctaSecondary {
-    width: 100%;
-    min-height: 56px;
-    justify-content: center;
-  }
-  .ctaPrimary { justify-content: space-between; padding-left: var(--space-6); }
-  .visualWrap, .imageFrame { width: 100%; max-width: none; }
-  .plate { flex-direction: column; align-items: flex-start; gap: var(--space-3); }
-  .plateMeta { text-align: left; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .eyebrowRow,
-  .lineInner,
-  .subheading,
-  .ctaRow,
-  .visualWrap,
-  .plateTilt,
-  .productImage {
-    animation: none;
-    transform: none;
-    opacity: 1;
+  .hero {
+    padding-top: var(--space-3);
   }
 
-  a.imageFrame:hover,
-  .ctaPrimary:hover,
-  .ctaSecondary:hover { transform: none; }
+  .stage {
+    padding: var(--space-6) var(--space-4) var(--space-4);
+    gap: var(--space-5);
+    border-radius: var(--radius-lg);
+  }
+
+  .headline {
+    font-size: clamp(1.75rem, 7.4vw, 2.25rem);
+  }
+
+  .headlineLong {
+    font-size: clamp(1.375rem, 5.8vw, 1.75rem);
+  }
+
+  .support {
+    margin-top: var(--space-2);
+    font-size: var(--text-sm);
+  }
+
+  .price {
+    margin-top: var(--space-3);
+    font-size: var(--text-base);
+  }
+
+  .actions {
+    width: 100%;
+    margin-top: var(--space-5);
+  }
+
+  .primary,
+  .secondary {
+    flex: 1;
+    min-width: 0;
+    padding-inline: var(--space-4);
+  }
+
+  .media {
+    aspect-ratio: 4 / 3;
+    min-height: 0;
+    max-height: 230px;
+  }
 }

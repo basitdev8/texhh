@@ -61,7 +61,6 @@
 }
 
 .name {
-  font-family: var(--font-heading);
   font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-text);
@@ -89,13 +88,13 @@
 }
 
 .price {
-  font-family: var(--font-heading);
   font-size: var(--text-xl);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text);
 }
 
 .selectBtn {
+  min-height: 44px;
   padding: var(--space-2) var(--space-5);
   font-size: var(--text-sm);
   font-weight: 600;
@@ -107,12 +106,14 @@
 
 .selectBtn:hover { background: var(--color-accent-hover); }
 
+
 .selectBtn:disabled {
   background: var(--color-text-muted);
   cursor: not-allowed;
 }
 
 .removeBtn {
+  min-height: 44px;
   padding: var(--space-2) var(--space-5);
   font-size: var(--text-sm);
   font-weight: 600;

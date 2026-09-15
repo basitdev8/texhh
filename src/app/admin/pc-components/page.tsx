@@ -258,9 +258,7 @@ export default function AdminPCComponentsPage() {
               Catalogue / PC Builder
             </span>
           </div>
-          <h1 className={styles.pageTitle}>
-            The <span className={styles.pageTitleItalic}>parts bin</span>.
-          </h1>
+          <h1 className={styles.pageTitle}>PC components</h1>
           <p className={styles.pageSubtitle}>
             CPUs, GPUs, RAM, storage, motherboards, PSUs, cases, coolers —
             everything the PC Builder pulls from.

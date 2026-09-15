@@ -18,31 +18,26 @@ interface NavSection {
 
 const NAV: NavSection[] = [
   {
-    section: 'Main',
+    section: 'Overview',
     links: [
       { href: '/admin', label: 'Dashboard', exact: true },
-      { href: '/admin/products', label: 'Products' },
       { href: '/admin/orders', label: 'Orders' },
-    ],
-  },
-  {
-    section: 'Catalogue',
-    links: [
-      { href: '/admin/categories', label: 'Categories' },
-      { href: '/admin/pc-components', label: 'PC Components' },
-    ],
-  },
-  {
-    section: 'People',
-    links: [
       { href: '/admin/customers', label: 'Customers' },
     ],
   },
   {
-    section: 'Store',
+    section: 'Catalog Management',
     links: [
-      { href: '/admin/homepage', label: 'Homepage' },
-      { href: '/admin/settings', label: 'Settings' },
+      { href: '/admin/products', label: 'Products' },
+      { href: '/admin/pc-components', label: 'PC Components' },
+      { href: '/admin/categories', label: 'Categories' },
+    ],
+  },
+  {
+    section: 'Storefront & Config',
+    links: [
+      { href: '/admin/homepage', label: 'Featured Selection' },
+      { href: '/admin/settings', label: 'Store Settings' },
     ],
   },
 ];
@@ -76,7 +71,7 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
           onClick={onToggle}
           aria-label="Close sidebar"
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
@@ -84,10 +79,8 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
         <div className={styles.logo}>
           <Link href="/admin" className={styles.logoLink}>
-            <span className={styles.logoText}>
-              Tech<em>Chasers</em>
-            </span>
-            <span className={styles.logoAdmin}>Admin Panel</span>
+            <span className={styles.logoText}>TechChasers</span>
+            <span className={styles.logoAdmin}>Operations Console</span>
           </Link>
         </div>
 
@@ -119,17 +112,15 @@ export default function Sidebar({ isOpen, onToggle }: SidebarProps) {
             href="/"
             className={styles.viewSite}
           >
-            → View storefront
+            ← View Live Storefront
           </Link>
           <button
+            type="button"
             className={styles.logoutBtn}
             onClick={handleLogout}
           >
-            ← Sign out
+            Sign Out
           </button>
-          <span className={styles.footerWordmark} aria-hidden="true">
-            Tech<em>Chasers</em>
-          </span>
         </div>
       </aside>
     </>

@@ -10,6 +10,10 @@ Issues live as local markdown under `.scratch/<feature-slug>/`. See `docs/agents
 
 Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
 
+### Storefront UI redesign
+
+When designing, implementing, or reviewing storefront or admin UI, read `docs/storefront-redesign/README.md`; it routes to the design contract, page override, UX spec, and active implementation phase.
+
 
 Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
 

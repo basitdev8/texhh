@@ -178,12 +178,9 @@ export default function AdminCategoriesPage() {
               Catalogue / {categories.length} categor{categories.length === 1 ? "y" : "ies"}
             </span>
           </div>
-          <h1 className={styles.pageTitle}>
-            The <span className={styles.pageTitleItalic}>shelves</span>.
-          </h1>
+          <h1 className={styles.pageTitle}>Categories</h1>
           <p className={styles.pageSubtitle}>
-            Organise how the storefront is browsed. Each category gets a
-            hero image and short description.
+            Organize storefront browsing with clear names, images, and descriptions.
           </p>
         </div>
         <button className={styles.primaryBtn} onClick={openCreate}>

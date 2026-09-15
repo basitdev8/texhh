@@ -1,45 +1,31 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useCartStore } from "@/store/cartStore";
 import { useAuth } from "@/context/AuthContext";
+import SearchBar from "./SearchBar";
 import styles from "./Header.module.css";
 
 interface NavCategory {
   _id: string;
   name: string;
   slug: string;
-  description?: string;
 }
-
-// Short editorial taglines per category slug. Fallback to truncated description.
-const CATEGORY_TAGLINES: Record<string, string> = {
-  "tws-bluetooth": "True wireless, hand-vetted.",
-  "bluetooth-speakers": "Portable & home audio.",
-  "wireless-headphones": "Over-ear, noise cancelled.",
-  "professional-speakerphones": "Conference-grade voice.",
-  "professional-audio": "Studio headsets for pros.",
-  smartwatches: "Wearables with intent.",
-  cameras: "Mirrorless, instant, lens.",
-  smartphones: "Flagship picks only.",
-  "video-conferencing": "Meeting-room kit.",
-  headphones: "Closed-back & reference.",
-  "gaming-headphones": "Low-latency, game-ready.",
-};
 
 export default function Header() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [mobileMounted, setMobileMounted] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuMounted, setMenuMounted] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
   const [categories, setCategories] = useState<NavCategory[]>([]);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const hamburgerRef = useRef<HTMLButtonElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const drawerCloseRef = useRef<HTMLButtonElement>(null);
   const closeTimer = useRef<number | null>(null);
+  const menuMountedRef = useRef(false);
   const itemCount = useCartStore((s) => s.getItemCount());
   const { isAuthenticated } = useAuth();
 
@@ -48,30 +34,22 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10);
+    const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
-    closeMobileMenu();
-    setDropdownOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
+    document.body.style.overflow = menuMounted ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  }, [menuMounted]);
 
+  // The drawer covers the trigger, so focus moves in on open and back on close.
   useEffect(() => {
-    document.body.style.overflow = mobileMounted ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [mobileMounted]);
+    if (menuOpen) drawerCloseRef.current?.focus();
+  }, [menuOpen]);
 
   useEffect(() => () => {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
@@ -86,22 +64,35 @@ export default function Header() {
       .catch(() => {});
   }, []);
 
-  const isActive = (path: string) => pathname === path;
-
-  function openMobileMenu() {
+  function openMenu() {
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
-    setMobileMounted(true);
-    setMobileOpen(true);
+    menuMountedRef.current = true;
+    setMenuMounted(true);
+    setMenuOpen(true);
   }
 
-  function closeMobileMenu() {
-    setMobileOpen(false);
+  const closeMenu = useCallback((restoreFocus = true) => {
+    setMenuOpen(false);
+    if (!menuMountedRef.current) return;
     if (closeTimer.current) window.clearTimeout(closeTimer.current);
     closeTimer.current = window.setTimeout(() => {
-      setMobileMounted(false);
-      hamburgerRef.current?.focus();
-    }, 340);
-  }
+      menuMountedRef.current = false;
+      setMenuMounted(false);
+      if (restoreFocus) menuButtonRef.current?.focus();
+    }, 240);
+  }, []);
+
+  useEffect(() => {
+    closeMenu();
+  }, [pathname, closeMenu]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && menuOpen) closeMenu();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [menuOpen, closeMenu]);
 
   return (
     <>
@@ -110,250 +101,165 @@ export default function Header() {
         id="main-header"
       >
         <div className={styles.inner}>
-          {/* Logo */}
           <Link href="/" className={styles.logo} id="header-logo">
-            Tech<span className={styles.logoAccent}>Chasers</span>
+            <Image
+              src="/logo.svg"
+              alt="TechChasers"
+              width={1316}
+              height={276}
+              className={styles.logoImage}
+              priority
+              unoptimized
+            />
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className={styles.nav} aria-label="Main navigation">
-            <Link
-              href="/"
-              className={`${styles.navLink} ${isActive("/") ? styles.navLinkActive : ""}`}
-              id="nav-home"
-            >
-              Home
-            </Link>
+          <div className={styles.searchArea}>
+            <SearchBar variant="header" placeholder="Search for products" />
+          </div>
+
+          {/* Two high-intent destinations stay inline; everything else lives in the menu. */}
+          <nav className={styles.quickNav} aria-label="Primary navigation">
             <Link
               href="/products"
-              className={`${styles.navLink} ${pathname.startsWith("/products") ? styles.navLinkActive : ""}`}
+              className={`${styles.navLink} ${pathname === "/products" ? styles.navLinkActive : ""}`}
               id="nav-products"
             >
               Products
             </Link>
             <Link
               href="/pc-builder"
-              className={`${styles.navLink} ${isActive("/pc-builder") ? styles.navLinkActive : ""}`}
+              className={`${styles.navLink} ${pathname === "/pc-builder" ? styles.navLinkActive : ""}`}
               id="nav-pc-builder"
             >
-              PC Builder
+              Build a PC
             </Link>
-            <div
-              className={`${styles.dropdownWrapper} ${dropdownOpen ? styles.dropdownOpen : ""}`}
-              ref={dropdownRef}
-            >
-              <button
-                className={styles.dropdownTrigger}
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                aria-expanded={dropdownOpen}
-                aria-haspopup="true"
-                id="nav-categories-dropdown"
-              >
-                Categories
-                <svg
-                  className={styles.dropdownChevron}
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                >
-                  <path
-                    d="M3 4.5l3 3 3-3"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-              {dropdownOpen && (
-                <div className={styles.dropdownMenu} role="menu">
-                  <div className={styles.dropdownHeader}>
-                    <span className={styles.dropdownEyebrow}>
-                      Browse / The Atelier
-                    </span>
-                    <span className={styles.dropdownEyebrowAccent}>
-                      {categories.length || 11} edits
-                    </span>
-                  </div>
-
-                  {(categories.length > 0
-                    ? categories
-                    : Array.from({ length: 4 }).map((_, i) => ({
-                        _id: `placeholder-${i}`,
-                        name: "Loading…",
-                        slug: "",
-                        description: "",
-                      }))
-                  ).map((cat, i) => (
-                    <Link
-                      key={cat._id || cat.slug || i}
-                      href={cat.slug ? `/products?category=${cat.slug}` : "#"}
-                      className={styles.dropdownItem}
-                      role="menuitem"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <span className={styles.dropdownItemNum}>
-                        №{String(i + 1).padStart(2, "0")}
-                      </span>
-                      <span className={styles.dropdownItemBody}>
-                        <span className={styles.dropdownItemName}>
-                          {cat.name}
-                        </span>
-                        <span className={styles.dropdownItemSub}>
-                          {CATEGORY_TAGLINES[cat.slug] ||
-                            (cat.description?.slice(0, 48) ?? "")}
-                        </span>
-                      </span>
-                      <span className={styles.dropdownItemArrow} aria-hidden="true">
-                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                          <path
-                            d="M2 5.5h7M6 2.5l3 3-3 3"
-                            stroke="currentColor"
-                            strokeWidth="1.4"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </span>
-                    </Link>
-                  ))}
-
-                  <div className={styles.dropdownFooter}>
-                    <span className={styles.dropdownFooterLabel}>
-                      Not sure where to start?
-                    </span>
-                    <Link
-                      href="/products"
-                      className={styles.dropdownFooterCTA}
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      View entire catalogue →
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
           </nav>
 
-          {/* Right Actions */}
           <div className={styles.actions}>
-            <Link href="/search" className={styles.iconBtn} aria-label="Search" id="header-search">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="1.5" />
-                <path d="M13.5 13.5L17 17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </Link>
             <Link
               href={isAuthenticated ? "/account" : "/auth/login"}
               className={styles.iconBtn}
-              aria-label="Account"
+              aria-label={isAuthenticated ? "My account" : "Sign in"}
               id="header-account"
             >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <circle cx="10" cy="7" r="3.5" stroke="currentColor" strokeWidth="1.5" />
-                <path
-                  d="M3 17.5c0-2.485 3.134-4.5 7-4.5s7 2.015 7 4.5"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
               </svg>
             </Link>
-            <Link href="/cart" className={styles.iconBtn} aria-label="Cart" id="header-cart">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M6 6h12l-1.5 7H7.5L6 6z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                />
-                <path d="M6 6L5 3H2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="8.5" cy="16.5" r="1.5" fill="currentColor" />
-                <circle cx="15.5" cy="16.5" r="1.5" fill="currentColor" />
+
+            <Link
+              href="/cart"
+              className={styles.iconBtn}
+              aria-label={`Cart, ${hasMounted ? itemCount : 0} items`}
+              id="header-cart"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
               </svg>
               {hasMounted && itemCount > 0 && (
-                <span className={styles.cartBadge}>{itemCount > 99 ? "99+" : itemCount}</span>
+                <span className={styles.cartBadge} aria-hidden="true">
+                  {itemCount > 99 ? "99+" : itemCount}
+                </span>
               )}
             </Link>
 
-            {/* Hamburger */}
             <button
-              ref={hamburgerRef}
-              className={`${styles.hamburger} ${mobileOpen ? styles.hamburgerOpen : ""}`}
-              onClick={mobileOpen ? closeMobileMenu : openMobileMenu}
-              aria-label={mobileOpen ? "Close menu" : "Open menu"}
-              aria-controls="mobile-navigation-drawer"
-              aria-expanded={mobileOpen}
-              id="header-hamburger"
+              ref={menuButtonRef}
+              type="button"
+              className={styles.menuBtn}
+              onClick={menuOpen ? () => closeMenu() : openMenu}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-controls="storefront-menu"
+              aria-expanded={menuOpen}
+              id="header-menu"
             >
-              <span className={styles.hamburgerLine} />
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                <path d="M2 5h14M2 9h14M2 13h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+              <span className={styles.menuBtnLabel}>Menu</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Drawer */}
-      {mobileMounted && (
+      {menuMounted && (
         <>
           <div
-            className={`${styles.mobileBackdrop} ${mobileOpen ? styles.mobileBackdropOpen : styles.mobileBackdropClosing}`}
-            onClick={closeMobileMenu}
+            className={`${styles.backdrop} ${
+              menuOpen ? styles.backdropOpen : styles.backdropClosing
+            }`}
+            onClick={() => closeMenu()}
             aria-hidden="true"
           />
           <aside
-            className={`${styles.mobileDrawer} ${mobileOpen ? styles.mobileDrawerOpen : styles.mobileDrawerClosing}`}
-            aria-label="Mobile navigation"
-            aria-hidden={!mobileOpen}
-            id="mobile-navigation-drawer"
+            className={`${styles.drawer} ${
+              menuOpen ? styles.drawerOpen : styles.drawerClosing
+            }`}
+            aria-label="Menu"
+            aria-modal="true"
+            role="dialog"
+            id="storefront-menu"
           >
-            <div className={styles.mobileDrawerHead}>
-              <span className={styles.mobileDrawerLabel}>Navigate</span>
-              <button className={styles.mobileClose} onClick={closeMobileMenu} aria-label="Close navigation">
-                <span>Close</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+            <div className={styles.drawerHead}>
+              <span className={styles.drawerTitle}>Menu</span>
+              <button
+                ref={drawerCloseRef}
+                type="button"
+                className={styles.drawerClose}
+                onClick={() => closeMenu()}
+                aria-label="Close menu"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
             </div>
-            <nav className={styles.mobileNav}>
-              <Link href="/" className={styles.mobileNavLinkPrimary}>
-                Home
-              </Link>
-              <Link href="/products" className={styles.mobileNavLinkPrimary}>
-                Products
-              </Link>
-              <Link href="/pc-builder" className={styles.mobileNavLinkPrimary}>
-                PC Builder
-              </Link>
-              <div className={styles.mobileCategories}>
-                <span className={styles.mobileCategoryLabel}>Shop by category</span>
-                <div className={styles.mobileCategoryGrid}>
-                  {categories.map((cat, index) => (
-                    <Link
-                      key={cat._id}
-                      href={`/products?category=${cat.slug}`}
-                      className={styles.mobileCategoryLink}
-                    >
-                      <span>№{String(index + 1).padStart(2, "0")}</span>
-                      {cat.name}
-                    </Link>
-                  ))}
-                </div>
+
+            <nav className={styles.drawerNav}>
+              <div className={styles.drawerLinks}>
+                <Link href="/products" className={styles.drawerLink} onClick={() => closeMenu()}>
+                  Products
+                </Link>
+                <Link href="/pc-builder" className={styles.drawerLink} onClick={() => closeMenu()}>
+                  Build a PC
+                </Link>
+                <Link
+                  href={isAuthenticated ? "/account" : "/auth/login"}
+                  className={styles.drawerLink}
+                  onClick={() => closeMenu()}
+                >
+                  {isAuthenticated ? "My account" : "Sign in"}
+                </Link>
+                <Link href="/cart" className={styles.drawerLink} onClick={() => closeMenu()}>
+                  Cart
+                </Link>
               </div>
-              <Link
-                href={isAuthenticated ? "/account" : "/auth/login"}
-                className={styles.mobileAccountLink}
-              >
-                {isAuthenticated ? "My Account" : "Sign In"}
-              </Link>
+
+              {categories.length > 0 && (
+                <div className={styles.drawerGroup}>
+                  <span className={styles.drawerGroupTitle}>Categories</span>
+                  <div className={styles.drawerCategories}>
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat._id}
+                        href={`/products?category=${cat.slug}`}
+                        className={styles.drawerCategory}
+                        onClick={() => closeMenu()}
+                      >
+                        {cat.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </nav>
           </aside>
         </>
       )}
-
-      {/* Spacer */}
-      <div className={styles.spacer} />
     </>
   );
 }

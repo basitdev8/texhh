@@ -70,7 +70,7 @@ export default function OrderDetailPage({ params }: PageProps) {
               color: "var(--color-accent)",
             }}
           >
-            ← Back to account
+            Back to account
           </Link>
         </div>
       </div>
@@ -122,7 +122,7 @@ export default function OrderDetailPage({ params }: PageProps) {
     <div className={styles.page}>
       <div className="container">
         <Link href="/account" className={styles.back}>
-          ← Back to account
+          Back to account
         </Link>
 
         <div className={styles.header}>

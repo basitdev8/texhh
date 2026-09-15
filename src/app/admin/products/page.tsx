@@ -169,11 +169,9 @@ export default function AdminProductsPage() {
               Catalogue / {total} pieces
             </span>
           </div>
-          <h1 className={styles.pageTitle}>
-            The <span className={styles.pageTitleItalic}>products</span>.
-          </h1>
+          <h1 className={styles.pageTitle}>Products</h1>
           <p className={styles.pageSubtitle}>
-            Edit, retire, or add new pieces to the storefront. Changes go
+            Edit, retire, or add products to the storefront. Changes go
             live the moment you save.
           </p>
         </div>

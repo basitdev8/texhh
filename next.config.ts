@@ -35,6 +35,10 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // The development server is intentionally reachable through the configured
+  // Cloudflare Tunnel. Next blocks its client/HMR resources for forwarded
+  // hostnames unless they are explicitly trusted.
+  allowedDevOrigins: ["test.sajidbanday.me"],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
